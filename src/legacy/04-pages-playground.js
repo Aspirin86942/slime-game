@@ -752,7 +752,7 @@ function renderBag(){
     const priceText = k==='ticket' ? `${it.price}积分` : `${it.price}晶币`;
     const price10 = k==='ticket' ? `${it.price*10}积分` : `${it.price*10}晶币`;
     const owned = S.bag[k] || 0;
-    return `<div class="panel item-row">
+    return `<div class="panel item-row" data-item="${k}">
       <div class="item-icon">${itemIcon(k)}</div>
       <div class="item-info">
         <div class="item-name">${it.name} <span class="owned">×${owned}</span></div>

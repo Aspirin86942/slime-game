@@ -735,38 +735,53 @@ function arenaIsle(){
     <circle cx="98" cy="86" r="9" fill="url(#${id}-glow)"/><circle cx="236" cy="98" r="11" fill="url(#${id}-glow)"/><circle cx="180" cy="126" r="12" fill="url(#${id}-glow)"/>
   </svg>`;
 }
+/* 陪伴庭院：双月从右上方照下来，地面是夜里的苔绿，石板路和蘑菇带一点月光；左上角的灯是唯一的暖色。魔物空间换成更冷的紫灰。 */
 function gardenScene(isMonster){
   const id='garden-'+(++sceneArtId);
-  const colors=isMonster?['#5b526e','#34374e','#252b40','#91879d']:['#72918b','#3f6465','#243e4a','#b1c0a0'];
+  const c=isMonster
+    ?{top:'#4a4466',mid:'#2f2c48',bot:'#1c1b31',leafA:'#5d5578',leafB:'#2c2944',rim:'#b9acd8',stone:'#77708f',pool:'#2a2746'}
+    :{top:'#355f63',mid:'#1f3f4c',bot:'#16223c',leafA:'#5f927e',leafB:'#1b3842',rim:'#d6ecd7',stone:'#8aa39b',pool:'#142440'};
   return `<svg class="garden-art" viewBox="0 0 600 400" preserveAspectRatio="none" aria-hidden="true">
     <defs>
-      <linearGradient id="${id}-ground" x2="0" y2="1"><stop stop-color="${colors[0]}"/><stop offset=".6" stop-color="${colors[1]}"/><stop offset="1" stop-color="${colors[2]}"/></linearGradient>
-      <radialGradient id="${id}-light"><stop stop-color="#f3e6bb" stop-opacity=".32"/><stop offset="1" stop-color="#f3e6bb" stop-opacity="0"/></radialGradient>
-      <linearGradient id="${id}-leaf" x2=".6" y2="1"><stop stop-color="${colors[3]}"/><stop offset="1" stop-color="${colors[1]}"/></linearGradient>
-      <radialGradient id="${id}-lamp"><stop stop-color="#fff4cb"/><stop offset=".2" stop-color="#edcf8b" stop-opacity=".7"/><stop offset="1" stop-color="#edcf8b" stop-opacity="0"/></radialGradient>
+      <linearGradient id="${id}-ground" x2="0" y2="1"><stop stop-color="${c.top}"/><stop offset=".55" stop-color="${c.mid}"/><stop offset="1" stop-color="${c.bot}"/></linearGradient>
+      <radialGradient id="${id}-moon" cx=".82" cy="0" r=".9"><stop stop-color="#f6e6bd" stop-opacity=".28"/><stop offset=".45" stop-color="#f6e6bd" stop-opacity=".08"/><stop offset="1" stop-color="#f6e6bd" stop-opacity="0"/></radialGradient>
+      <linearGradient id="${id}-leaf" x2=".6" y2="1"><stop stop-color="${c.leafA}"/><stop offset="1" stop-color="${c.leafB}"/></linearGradient>
+      <radialGradient id="${id}-lamp"><stop stop-color="#fff4cb"/><stop offset=".2" stop-color="#edcf8b" stop-opacity=".6"/><stop offset="1" stop-color="#edcf8b" stop-opacity="0"/></radialGradient>
+      <radialGradient id="${id}-glow"><stop stop-color="#cbbaff" stop-opacity=".55"/><stop offset="1" stop-color="#cbbaff" stop-opacity="0"/></radialGradient>
+      <linearGradient id="${id}-beam" x1="1" y1="0" x2=".2" y2="1"><stop stop-color="#f6e6bd" stop-opacity=".13"/><stop offset="1" stop-color="#f6e6bd" stop-opacity="0"/></linearGradient>
+      <linearGradient id="${id}-pool" x2="0" y2="1"><stop stop-color="${c.pool}"/><stop offset="1" stop-color="#121a33"/></linearGradient>
     </defs>
     <path fill="url(#${id}-ground)" d="M0 0h600v400H0z"/>
-    <ellipse cx="275" cy="165" rx="260" ry="200" fill="url(#${id}-light)"/>
-    <path d="M-30 302Q110 282 180 229T358 152Q450 124 630 164" fill="none" stroke="#bac0a2" stroke-opacity=".1" stroke-width="74"/>
-    <path d="M-30 302Q110 282 180 229T358 152Q450 124 630 164" fill="none" stroke="#c5c3a4" stroke-opacity=".17" stroke-width="45"/>
-    <g fill="#253f46" opacity=".33"><ellipse cx="100" cy="336" rx="92" ry="21"/><ellipse cx="526" cy="72" rx="90" ry="18"/><ellipse cx="455" cy="350" rx="96" ry="22"/></g>
-    <g fill="#a8b4a2" stroke="#d3d5b6" stroke-opacity=".16">
-      <path d="m87 269 42-9 27 17-14 17-45-2Z"/><path d="m162 237 33-13 29 12-9 17-40 3Z" opacity=".8"/>
-      <path d="m244 193 33-6 20 14-18 14-34-4Z" opacity=".6"/><path d="m324 155 37-5 18 13-13 11-39-3Z" opacity=".45"/>
+    <path fill="url(#${id}-moon)" d="M0 0h600v400H0z"/>
+    <path fill="url(#${id}-beam)" d="M600 0H430L150 400H390L600 120Z"/>
+    <path d="M-30 302Q110 282 180 229T358 152Q450 124 630 164" fill="none" stroke="#e8e2c4" stroke-opacity=".06" stroke-width="80"/>
+    <path d="M-30 302Q110 282 180 229T358 152Q450 124 630 164" fill="none" stroke="#e8e2c4" stroke-opacity=".09" stroke-width="44"/>
+    <g fill="#0f1a2e" opacity=".3"><ellipse cx="100" cy="336" rx="92" ry="21"/><ellipse cx="526" cy="72" rx="90" ry="18"/><ellipse cx="455" cy="350" rx="96" ry="22"/></g>
+    <g fill="${c.stone}" stroke="#f1ead2" stroke-opacity=".28" stroke-width="1.5">
+      <path d="m87 269 42-9 27 17-14 17-45-2Z"/><path d="m162 237 33-13 29 12-9 17-40 3Z" opacity=".85"/>
+      <path d="m244 193 33-6 20 14-18 14-34-4Z" opacity=".7"/><path d="m324 155 37-5 18 13-13 11-39-3Z" opacity=".55"/><path d="m414 140 30-3 15 11-12 9-31-3Z" opacity=".4"/>
     </g>
+    <ellipse cx="164" cy="352" rx="70" ry="17" fill="url(#${id}-pool)" opacity=".9"/>
+    <ellipse cx="164" cy="349" rx="64" ry="13" fill="none" stroke="#cfe2e0" stroke-opacity=".18"/>
+    <ellipse cx="186" cy="350" rx="11" ry="3.2" fill="#f6e6bd" opacity=".5"/><ellipse cx="150" cy="352" rx="4" ry="1.4" fill="#d6e2f7" opacity=".45"/>
     <g fill="url(#${id}-leaf)">
       <path d="M0 117Q22 20 126 7 99 67 0 117ZM0 89Q51 27 63-20H0ZM600 120Q527 78 522 13 583 21 600 75Z"/>
       <path d="M0 400V302q29 5 40 29-3-59 35-72 10 47-9 78 39-43 77-23-20 44-57 54 43-8 64 32Z"/>
       <path d="M600 400V284q-37 0-48 35 0-64-39-75-10 47 6 80-45-39-76-17 19 39 58 53-41-2-66 40Z"/>
       <path d="M600 0H435q7 34 43 43 35 19 67-6 8 42 55 44Z"/>
     </g>
-    <g fill="none" stroke="#d3d8b5" stroke-opacity=".2" stroke-width="2"><path d="M0 114 93 30M19 398l46-111M592 394l-77-123M594 62l-117-40"/></g>
-    <g fill="#819990"><path d="m33 166 16-8 19 10-3 13-25 2Z"/><path d="m513 217 23-12 23 15-10 17-30-2Z"/></g>
-    <g stroke="#c9d2aa" stroke-width="2" stroke-linecap="round" opacity=".45"><path d="m113 118 4-11m0 11 7-7m282 178 3-10m-3 10-7-6m-182 62 3-9m0 9 6-5m258-229 3-9"/></g>
-    <g fill="#ddd6b5" opacity=".7"><circle cx="79" cy="199" r="2"/><circle cx="84" cy="204" r="2"/><circle cx="438" cy="305" r="2"/><circle cx="445" cy="302" r="2"/><circle cx="319" cy="76" r="1.5"/></g>
-    <path d="M83 68v57m-9-46h18v24H74z" stroke="#b9ae8b" stroke-width="3" fill="#4d5c58"/>
-    <circle cx="83" cy="92" r="44" fill="url(#${id}-lamp)"/><path d="M79 86h8v13h-8z" fill="#ffe8a9"/>
-    <path d="M0 395Q170 371 300 391t300-1v10H0Z" fill="${colors[2]}" opacity=".45"/>
+    <g fill="none" stroke="${c.rim}" stroke-opacity=".32" stroke-width="2" stroke-linecap="round"><path d="M522 13q5 50 78 62M435 0q10 36 43 43M513 244q37 11 39 75M75 259q-38 13-35 72"/></g>
+    <g fill="none" stroke="${c.rim}" stroke-opacity=".14" stroke-width="2"><path d="M0 114 93 30M19 398l46-111M592 394l-77-123M594 62l-117-40"/></g>
+    <g stroke="${c.rim}" stroke-width="2" stroke-linecap="round" opacity=".35"><path d="m113 118 4-11m0 11 7-7m282 178 3-10m-3 10-7-6m-182 62 3-9m0 9 6-5m258-229 3-9"/></g>
+    <g>
+      <circle cx="540" cy="212" r="22" fill="url(#${id}-glow)"/><path d="M531 214q9-16 18 0Z" fill="#d9ccff"/><path d="M540 214v8" stroke="#c9bfe6" stroke-width="2.4"/>
+      <circle cx="557" cy="226" r="14" fill="url(#${id}-glow)"/><path d="M551 228q6-11 12 0Z" fill="#e6dcff"/><path d="M557 228v6" stroke="#c9bfe6" stroke-width="2"/>
+      <circle cx="44" cy="178" r="16" fill="url(#${id}-glow)"/><path d="M37 180q7-13 14 0Z" fill="#d9ccff"/><path d="M44 180v7" stroke="#c9bfe6" stroke-width="2"/>
+    </g>
+    <g fill="#f1e8c8" opacity=".6"><circle cx="79" cy="199" r="2"/><circle cx="84" cy="204" r="2"/><circle cx="438" cy="305" r="2"/><circle cx="445" cy="302" r="2"/><circle cx="319" cy="76" r="1.5"/></g>
+    <circle cx="83" cy="92" r="58" fill="url(#${id}-lamp)"/>
+    <path d="M83 68v57m-9-46h18v24H74z" stroke="#c9bb92" stroke-width="3" fill="#3e4a52"/><path d="M79 86h8v13h-8z" fill="#ffe3a0"/>
+    <path d="M0 395Q170 371 300 391t300-1v10H0Z" fill="${c.bot}" opacity=".6"/>
   </svg>`;
 }
 function summonAltar(){
