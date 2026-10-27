@@ -51,6 +51,7 @@ node tools/out/selftest.js             # 末行 TITLE: PASS 42/42；有失败或
 - **界面**：`switchTab(t)` → `renderTab()` 按标签页重绘 `#content`。所有点击都走一个委托监听器：`document.addEventListener('click', ...)` 里按 `data-act` 分派的 `switch`（「事件委托」分区）。新按钮写 `data-act="xxx"` 并在这里加 `case`，不要单独绑监听器。
 - **战斗**：`startAbyssBattle(options)` 是一个很大的闭包。战斗状态 `B`，以及 `nextTurn`、`playerCast`、`performAction`、`dealDamage`、`handleUnitDeath` 等函数都是它的局部变量，外部取不到。自检通过 `window.__TEST__._battle`（只在诊断模式下赋值）拿到这些内部函数。新增需要测试的战斗内部函数时，把它加进这个钩子对象。
 - **FX 门面**（`const FX = {...}`）：震屏、闪白、飘字、死亡、粒子爆散。闪白作用在 `.breath` 上，因为战斗中的 `.slime` 已经被 `scale(.36)` 缩小过。
+- **CSS 分层**：样式表靠后追加的规则覆盖前面的规则，没有就地改旧规则。最后一层是「双月浮岛」设计层：`--font-display`（标题、伙伴名、剧情旁白用宋体）、`--panel-edge`、导航新月标记、开场和深渊场景。夜空插画由 JS 函数 `skyArt(kind)`（开场 / 战斗共用）和 `arenaIsle()` 生成，SVG 渐变 id 用 `sceneArtId` 计数，保证同页不重复。
 - **测试钩子 `window.__TEST__`**：在文件末尾的 `selftestBoot()` 里定义。`__TEST__.startBattle({elements, level, monsterLevel, speed, seed})` 会造出队伍并开一场可控战斗，Node 回归和浏览器脚本都依赖它。
 
 ## 修改约束

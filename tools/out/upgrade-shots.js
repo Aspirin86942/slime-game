@@ -118,6 +118,8 @@ const METRICS_JS = `(() => {
     const cs = getComputedStyle(el);
     if(cs.display === 'none' || cs.visibility === 'hidden' || parseFloat(cs.opacity) === 0) return;
     if(skipClass.test(el.className || '')) return;
+    // SVG 内部图形由 <svg> 自己的视口裁剪，只检查 <svg> 元素本身是否越界
+    if(el instanceof SVGElement && !(el instanceof SVGSVGElement)) return;
     const r = el.getBoundingClientRect();
     if(r.width < 1 || r.height < 1) return;
     if(r.right > vw + 1.5 || r.left < -1.5){

@@ -1256,6 +1256,63 @@ body{background:#05060c;color:#e8e9f3;}
 @media(max-width:360px){.content{padding-left:12px;padding-right:12px}.companion-head h2{font-size:18px}.space-switch{padding:7px}.home-objective{gap:8px}.home-objective strong{font-size:13px}.summon-altar{height:154px}.battle-unit .uname,.intent-label,.status-chip{font-size:11px}.battle-row{padding:0 3px}.hp-value{font-size:9px}.sk-unit{min-width:30px}}
 @media(max-height:700px){.space-playground{height:304px}.summon-reveal-stage{height:155px}.summon-reveal-stage .sr-slime{top:4px}.summon-stats{padding:8px 0;margin:8px 0}.summon-result .sr-name{font-size:20px}.battle-log{font-size:12px}}
 @media(prefers-reduced-motion:reduce){.garden-firefly,.altar-core,.bg-scroll,.summoning .summon-mote,.summoning .sr-slime,.summoning .sr-slime .eyes,.summoning .sr-name,.summoning .summon-identity,.summoning .summon-stats,.summoning .rules-details,.summoning .altar-halo{animation:none!important}.summon-mote{display:none}.btn,.toy-btn{transition:none}}
+
+/* ==================== 双月浮岛：开场剧情里的世界（深紫夜空、两轮月亮、浮空岛、发光水母）落到界面上 ==================== */
+/* 标题、伙伴名与旁白用宋体，像在读一本异世界小说；系统提示、数值和按钮保持黑体，与「系统」的机械感区分 */
+#app{--font-display:"Songti SC","Noto Serif CJK SC","Source Han Serif SC","Source Han Serif CN","STSong","SimSun",serif;--panel-edge:rgba(255,255,255,.065)}
+#app[data-theme="light"],#app[data-theme="peach"],#app[data-theme="mint"],#app[data-theme="lavender"],#app[data-theme="sky"]{--panel-edge:rgba(255,255,255,.75)}
+#app[data-theme="sunset"]{--bgTop:#2b2350;--bgMid:#17142d;--bgBot:#0e0d1d;--accent:#8a78c8;--accent2:#d2c6f2;--gold:#f0d39a;--panel:rgba(196,184,236,.05);--border:rgba(200,190,236,.12);--muted:#aca6c4;--topbar:rgba(25,21,48,.66);--tabbar:rgba(17,15,34,.95);
+  background:radial-gradient(130px 130px at 86% 6%,rgba(242,217,166,.14),transparent 70%),radial-gradient(56px 56px at 69% 3.5%,rgba(188,208,245,.13),transparent 70%),radial-gradient(circle at 50% 0%,var(--bgTop) 0%,var(--bgMid) 55%,var(--bgBot) 100%)}
+#app[data-theme="dark"]{background:radial-gradient(130px 130px at 86% 6%,rgba(242,217,166,.09),transparent 70%),radial-gradient(56px 56px at 69% 3.5%,rgba(188,208,245,.1),transparent 70%),radial-gradient(circle at 50% 0%,var(--bgTop) 0%,var(--bgMid) 55%,var(--bgBot) 100%)}
+
+.companion-head h2,.panel h2,.summon-panel h2,.panel h3,.pname,.sr-name,.summon-result .sr-name,.detail h3,.modal h3,.game-hud .hud-title{font-family:var(--font-display);letter-spacing:.02em}
+.companion-head h2,.summon-panel h2,.panel h2{font-size:22px;font-weight:700;color:var(--text)}
+.panel h3{font-size:16px;font-weight:600;opacity:1}.panel h3 .ui-icon{color:var(--accent2)}
+.pname{font-size:20px;color:var(--text)}.detail h3{font-size:21px;color:var(--text)}.modal h3{font-size:19px}
+.summon-result .sr-name{font-size:24px;font-weight:700}
+@media(max-width:360px){.companion-head h2,.summon-panel h2,.panel h2{font-size:19px}}
+
+/* 面板：月光从上方落下，只在上沿留一道细亮边；圆角按层级区分（面板 20、弹窗 24） */
+.panel{border-radius:20px;box-shadow:inset 0 1px 0 var(--panel-edge)}
+.modal{border-radius:24px;box-shadow:inset 0 1px 0 var(--panel-edge),0 24px 60px rgba(0,0,0,.5)}
+
+/* 导航：当前页上方挂一弯新月 */
+.tabbar button{position:relative}
+.tabbar button::before{content:'';position:absolute;top:4px;left:50%;width:9px;height:9px;margin-left:-4.5px;border-radius:50%;box-shadow:inset 2.6px -1.6px 0 0 var(--gold);filter:drop-shadow(0 0 3px var(--gold));opacity:0;transform:rotate(-20deg) scale(.5);transition:opacity .25s ease,transform .25s ease}
+.tabbar button.active::before{opacity:1;transform:rotate(-20deg)}
+.tabbar button.active .ico{filter:none}
+
+/* 成长页：主题入口是一行设置项 */
+.settings-row{display:flex;align-items:center;gap:12px;width:100%;padding:14px 16px;margin:0 0 16px;border:0;border-radius:20px;background:var(--panel);box-shadow:inset 0 1px 0 var(--panel-edge);color:var(--text);font:inherit;font-size:14px;text-align:left;cursor:pointer}
+.settings-row .ui-icon{width:20px;height:20px;color:var(--accent2)}
+.settings-row-text{display:flex;flex-direction:column;gap:3px;flex:1;min-width:0}
+.settings-row small{font-size:12px;color:var(--muted)}
+.settings-row::after{content:'';flex:none;width:7px;height:7px;margin-right:4px;border-top:1.6px solid var(--muted);border-right:1.6px solid var(--muted);transform:rotate(45deg)}
+.settings-row:active{transform:scale(.99)}
+
+/* 夜空插画（开场与深渊共用） */
+.sky-art{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.sky-jelly{animation:skyDrift 9s ease-in-out infinite;animation-delay:calc(var(--d) * -1s)}
+@keyframes skyDrift{0%,100%{transform:translate(0,0)}50%{transform:translate(4px,-10px)}}
+
+/* 开场：旁白是小说正文（宋体、左对齐），系统播报是金色的系统窗（黑体、居中） */
+#storyScreen{background:linear-gradient(180deg,#261e4a 0%,#1b1638 42%,#151330 70%,#0e0d1f 100%)}
+.story-sky{z-index:0}
+.story-text,.story-action,.story-hint{position:relative;z-index:2}
+.story-text{font-family:var(--font-display);font-size:16px;line-height:2;letter-spacing:.03em;text-align:left;color:#efeaff;background:rgba(22,18,44,.6);border:0;border-radius:20px;padding:20px 22px;box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 18px 40px rgba(6,4,18,.45);backdrop-filter:blur(8px)}
+.story-text.hl{font-family:inherit;font-size:15px;line-height:1.9;letter-spacing:.04em;text-align:center;color:#f6ecd6;background:rgba(32,26,30,.55);box-shadow:inset 0 0 0 1px rgba(240,211,154,.42),0 0 28px rgba(240,211,154,.14)}
+.story-hint{color:#a49dc4}
+
+/* 深渊：敌方站在各自的深渊浮石上，己方站在共同的苔原浮岛上，双月悬在中间的空当 */
+.battle-field{background:radial-gradient(ellipse 60% 26% at 90% 45%,rgba(242,217,166,.08),transparent 70%),linear-gradient(180deg,#231d42 0%,#1d1939 38%,#1c1b37 58%,#13132a 100%);border-color:rgba(200,190,236,.1)}
+.battle-field::before,.battle-field::after{display:none}
+.arena-sky{z-index:0}
+.arena-isle{position:absolute;left:0;width:100%;top:calc(68% + 30px);height:21%;z-index:1;pointer-events:none}
+.battle-row.enemy .battle-unit::before{content:'';position:absolute;left:50%;top:35px;width:72px;height:30px;margin-left:-36px;z-index:-1;pointer-events:none;filter:drop-shadow(0 5px 8px rgba(150,120,230,.3));
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 72 30'%3E%3Cpath d='M2 8C12 3 26 2 36 3C47 2 60 3 70 8C64 14 54 17 47 22C42 26 38 29 36 30C33 28 28 24 24 21C15 17 7 13 2 8Z' fill='%23272140'/%3E%3Cpath d='M2 8C12 3 26 2 36 3C47 2 60 3 70 8C62 11 50 11 36 12C22 11 10 11 2 8Z' fill='%234a406c'/%3E%3Cpath d='M2 8C12 3 26 2 36 3C47 2 60 3 70 8' fill='none' stroke='%23a99be0' stroke-opacity='.35' stroke-width='.8'/%3E%3Cpath d='M33 25l3 5 3-5-3-3zM23 19l1.5 3 1.5-3-1.5-1.5zM47 19l1.5 3 1.5-3-1.5-1.5z' fill='%23bba9f4' fill-opacity='.85'/%3E%3C/svg%3E") center/100% 100% no-repeat}
+.battle-log{text-shadow:0 1px 6px rgba(10,8,24,.95)}
+.battle-row.ally .uname,.battle-row.ally .hp-value,.battle-row.ally .status-chip{text-shadow:0 1px 3px rgba(10,8,24,.95)}
+@media(prefers-reduced-motion:reduce){.sky-jelly{animation:none}.tabbar button::before{transition:none}}
 </style>
 </head>
 <body>
@@ -2208,6 +2265,8 @@ function renderStory(){
   if(storyStep >= STORY_STEPS.length){ finishStory(); return; }
   const st = STORY_STEPS[storyStep];
   const stage = $('#storyStage'), text = $('#storyText'), action = $('#storyAction'), hint = $('#storyHint');
+  const screen = $('#storyScreen');
+  if(!screen.querySelector('.story-sky')) screen.insertAdjacentHTML('afterbegin', skyArt('story'));
   stage.innerHTML=''; action.innerHTML=''; hint.style.display='block';
   text.innerHTML = st.t.split('\n').join('<br>');
   text.classList.toggle('hl', !!st.highlight);
@@ -2314,13 +2373,71 @@ function refreshUIIcons(root){
     let name=acts[a];if(!name||b.querySelector('.ui-icon'))return;
     if(a==='globalplan'&&b.dataset.type==='clear')name='back';
     if(a==='selectToy'&&b.dataset.toy==='stack')name='stack';
-    if(a==='settings'){b.innerHTML=uiIcon(name);return;}
+    if(a==='settings'&&b.classList.contains('settings-trigger')){b.innerHTML=uiIcon(name);return;}
     for(const n of Array.from(b.childNodes)){if(n.nodeType===3)n.textContent=n.textContent.replace(/^[\s✨🗺️↩️👥⚔️🥣🎮⚽🧱⚡🎁◇]+/u,'').replace(/[✨]+$/u,'');}
     b.insertAdjacentHTML('afterbegin',uiIcon(name));
   });
 }
 
 let sceneArtId=0;
+/* 双月浮岛：开场剧情与深渊战斗共用的夜空（两轮月亮、浮空岛、发光水母），纯装饰、不接收触摸。
+   构图按场景分开：开场把月亮放在上方；战斗把月亮放进敌我之间的空当，避开血条、名字和预告 */
+function skyArt(kind){
+  const id='sky-'+(++sceneArtId), arena=kind==='arena';
+  const moonA=arena?{x:322,y:300,r:28}:{x:268,y:116,r:36};
+  const moonB=arena?{x:52,y:250,r:9}:{x:198,y:80,r:12};
+  const isles=arena?[[10,356,.44,.5],[244,226,.3,.42]]:[[34,548,.86,.85],[236,600,.5,.7],[44,150,.32,.55]];
+  const jellies=arena?[[104,292,.75,0],[250,392,.6,2.4],[184,240,.5,4.1]]:[[96,196,.8,0],[150,120,.55,2.2],[292,530,.9,1.6],[176,618,.7,3.2],[62,642,.6,4.4]];
+  const clouds=arena?[[424,.55],[446,.4]]:[[540,.5],[636,.45]];
+  const moon=(m,grad,halo,crater)=>`<circle cx="${m.x}" cy="${m.y}" r="${m.r*3.3}" fill="url(#${id}-${halo})"/>
+    <circle cx="${m.x}" cy="${m.y}" r="${m.r}" fill="url(#${id}-${grad})"/>
+    <circle cx="${m.x+m.r*.32}" cy="${m.y-m.r*.18}" r="${m.r*.17}" fill="${crater}" opacity=".32"/>
+    <circle cx="${m.x-m.r*.3}" cy="${m.y+m.r*.34}" r="${m.r*.11}" fill="${crater}" opacity=".26"/>`;
+  return `<svg class="sky-art ${arena?'arena-sky':'story-sky'}" viewBox="0 0 360 660" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <defs>
+      <radialGradient id="${id}-moonA" cx=".38" cy=".34" r=".78"><stop stop-color="#fffaf0"/><stop offset=".55" stop-color="#f3ddab"/><stop offset="1" stop-color="#d4aa68"/></radialGradient>
+      <radialGradient id="${id}-moonB" cx=".38" cy=".34" r=".78"><stop stop-color="#f5f8ff"/><stop offset=".6" stop-color="#c5d3f0"/><stop offset="1" stop-color="#8d9fcc"/></radialGradient>
+      <radialGradient id="${id}-haloA"><stop stop-color="#f2d9a6" stop-opacity=".3"/><stop offset="1" stop-color="#f2d9a6" stop-opacity="0"/></radialGradient>
+      <radialGradient id="${id}-haloB"><stop stop-color="#bcd0f5" stop-opacity=".26"/><stop offset="1" stop-color="#bcd0f5" stop-opacity="0"/></radialGradient>
+      <radialGradient id="${id}-glow"><stop stop-color="#cbbaff" stop-opacity=".55"/><stop offset="1" stop-color="#cbbaff" stop-opacity="0"/></radialGradient>
+      <linearGradient id="${id}-moss" x2="0" y2="1"><stop stop-color="#87a898"/><stop offset="1" stop-color="#4c6a63"/></linearGradient>
+      <linearGradient id="${id}-rock" x2="0" y2="1"><stop stop-color="#433b62"/><stop offset="1" stop-color="#1d1a32" stop-opacity=".5"/></linearGradient>
+      <linearGradient id="${id}-cloud" x2="0" y2="1"><stop stop-color="#b9aae8" stop-opacity=".2"/><stop offset="1" stop-color="#b9aae8" stop-opacity="0"/></linearGradient>
+      <symbol id="${id}-isle" viewBox="0 0 100 72" overflow="visible">
+        <path d="M0 14C8 6 22 3 36 5C48 1 64 2 76 6C88 4 97 9 100 14C93 22 83 27 76 35C68 47 59 59 51 70C44 58 37 47 28 39C18 31 7 24 0 14Z" fill="url(#${id}-rock)"/>
+        <path d="M0 14C8 6 22 3 36 5C48 1 64 2 76 6C88 4 97 9 100 14C86 18 70 16 50 18C30 16 13 18 0 14Z" fill="url(#${id}-moss)"/>
+        <path d="M30 40q-1 9 2 15M62 44q2 8 0 14M45 52q-1 7 1 12" stroke="#2a2442" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+        <circle cx="51" cy="70" r="6" fill="url(#${id}-glow)"/><circle cx="51" cy="70" r="1.6" fill="#ddd1ff"/>
+      </symbol>
+      <symbol id="${id}-jelly" viewBox="-14 -14 28 34" overflow="visible">
+        <circle r="13" fill="url(#${id}-glow)"/>
+        <path d="M-7 1C-7-8 7-8 7 1C5 3 3.5 1 1.8 3C0 1-1.8 3-3.5 1C-5 3-6 2.5-7 1Z" fill="#ebe3ff" fill-opacity=".86"/>
+        <path d="M-4 3q-2 6 0 12M0 3q1.5 6 0 13M4 3q2 5 0 11" stroke="#d8cbff" stroke-opacity=".6" stroke-width=".9" fill="none" stroke-linecap="round"/>
+      </symbol>
+    </defs>
+    ${moon(moonA,'moonA','haloA','#b98d4f')}
+    ${moon(moonB,'moonB','haloB','#7183b3')}
+    ${isles.map(([x,y,s,o])=>`<use href="#${id}-isle" x="${x}" y="${y}" width="${100*s}" height="${72*s}" opacity="${o}"/>`).join('')}
+    ${clouds.map(([y,o])=>`<path d="M-20 ${y}C40 ${y-14} 90 ${y-4} 140 ${y-12}S240 ${y-2} 300 ${y-14}S370 ${y-6} 390 ${y-10}V${y+44}H-20Z" fill="url(#${id}-cloud)" opacity="${o}"/>`).join('')}
+    ${jellies.map(([x,y,s,d])=>`<g class="sky-jelly" style="--d:${d}s"><use href="#${id}-jelly" x="${x-14*s}" y="${y-14*s}" width="${28*s}" height="${34*s}"/></g>`).join('')}
+  </svg>`;
+}
+/* 己方站立的浮空岛：顶面苔原受右上方月光照亮，底部垂根与水母光；横向拉伸，描边不随之变形 */
+function arenaIsle(){
+  const id='isle-'+(++sceneArtId);
+  return `<svg class="arena-isle" viewBox="0 0 360 130" preserveAspectRatio="none" aria-hidden="true">
+    <defs>
+      <linearGradient id="${id}-moss" x1="0" x2="1"><stop stop-color="#3f5b52"/><stop offset=".7" stop-color="#5f8272"/><stop offset="1" stop-color="#7ea290"/></linearGradient>
+      <linearGradient id="${id}-rock" x2="0" y2="1"><stop stop-color="#3a3354"/><stop offset=".55" stop-color="#262140"/><stop offset="1" stop-color="#1a172c" stop-opacity="0"/></linearGradient>
+      <radialGradient id="${id}-glow"><stop stop-color="#cbbaff" stop-opacity=".7"/><stop offset="1" stop-color="#cbbaff" stop-opacity="0"/></radialGradient>
+    </defs>
+    <path d="M0 16C40 8 90 6 140 9C190 5 250 6 300 10C330 11 350 13 360 18C348 30 330 38 306 48C280 62 250 70 224 84C206 96 190 112 180 128C168 110 152 96 132 86C104 74 76 64 52 52C30 42 12 32 0 16Z" fill="url(#${id}-rock)"/>
+    <path d="M0 16C40 8 90 6 140 9C190 5 250 6 300 10C330 11 350 13 360 18C340 25 300 23 260 25C200 22 150 26 100 23C60 25 24 23 0 16Z" fill="url(#${id}-moss)"/>
+    <path d="M0 16C40 8 90 6 140 9C190 5 250 6 300 10C330 11 350 13 360 18" stroke="#c4e0cc" stroke-opacity=".32" stroke-width="1.2" fill="none" vector-effect="non-scaling-stroke"/>
+    <path d="M96 60q-3 14 2 26M150 84q-2 12 1 22M236 74q3 12 0 24M276 56q2 10 0 18" stroke="#2c2645" stroke-width="1.4" fill="none" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+    <circle cx="98" cy="86" r="9" fill="url(#${id}-glow)"/><circle cx="236" cy="98" r="11" fill="url(#${id}-glow)"/><circle cx="180" cy="126" r="12" fill="url(#${id}-glow)"/>
+  </svg>`;
+}
 function gardenScene(isMonster){
   const id='garden-'+(++sceneArtId);
   const colors=isMonster?['#5b526e','#34374e','#252b40','#91879d']:['#72918b','#3f6465','#243e4a','#b1c0a0'];
@@ -2460,7 +2577,7 @@ function renderStatus(){
     ${taskRows}
   </div>
 
-  <div class="panel"><button class="btn full themed" data-act="settings">界面主题与存档设置</button></div>`;
+  <button class="settings-row" data-act="settings"><span class="settings-row-text">界面主题<small>切换配色，伙伴外观不变</small></span></button>`;
 }
 
 function renderSummon(){
@@ -4438,7 +4555,9 @@ function startAbyssBattle(options){
       <button class="hud-close" id="bClose">撤退</button>
     </div>
     <div class="battle-field">
-      ${Array.from({length:30}).map(()=>`<div class="bg-star" style="left:${rnd(2,98)}%;top:${rnd(2,98)}%;"></div>`).join('')}
+      ${skyArt('arena')}
+      ${Array.from({length:22}).map(()=>`<div class="bg-star" style="left:${rnd(2,98)}%;top:${rnd(2,62)}%;"></div>`).join('')}
+      ${arenaIsle()}
       <div class="battle-row enemy">${enemyHTML}</div>
       <div class="battle-log" id="battleLog">战斗开始！</div>
       <div class="battle-row ally">${allyHTML}</div>
