@@ -1,0 +1,14 @@
+# 浏览器验收的生成产物（脚本在 tools/，这些是可重跑的输出）
+tools/out/shots/
+tools/out/downloads/
+tools/out/*.png
+tools/out/*.html
+tools/out/*.json
+tools/out/selftest.txt
+tools/out/chrome-stderr.txt
+tools/out/review-report.md
+
+# 临时脚本/编辑器
+node_modules/
+*.log
+tools/out/commit-msg.txt

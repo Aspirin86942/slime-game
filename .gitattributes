@@ -1,0 +1,7 @@
+# 统一按 LF 入库并检出，避免 Git 自动换行让文档里的 SHA-256 对不上
+* text=auto eol=lf
+*.zip binary
+*.png binary
+# 备份与测试基线是「原始字节」存档，禁止任何换行转换
+backup/*.html -text
+tests/baseline-original.html -text

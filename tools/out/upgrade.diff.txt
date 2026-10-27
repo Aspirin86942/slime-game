@@ -1,0 +1,1796 @@
+diff --git "a/backup\\\345\217\262\350\216\261\345\247\206-20261027-1404-pre-slime-upgrade.html" "b/\345\217\262\350\216\261\345\247\206.html"
+index 845a0fb..0771c01 100644
+--- "a/backup\\\345\217\262\350\216\261\345\247\206-20261027-1404-pre-slime-upgrade.html"
++++ "b/\345\217\262\350\216\261\345\247\206.html"
+@@ -1094,6 +1094,27 @@ body{background:#05060c;color:#e8e9f3;}
+ @media (prefers-reduced-motion: reduce){
+   .field-shake{ animation: none !important; }
+ }
++
++/* Companion upgrade: interface only; creature drawing rules are intentionally unchanged. */
++.ui-icon{width:18px;height:18px;display:inline-block;vertical-align:-4px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
++.tabbar .ui-icon{width:21px;height:21px}.btn .ui-icon{margin-right:4px}.settings-trigger{border:1px solid var(--border);border-radius:10px;background:var(--panel);color:var(--text);padding:6px;cursor:pointer;display:flex}
++.companion-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}.companion-head h2{font-size:19px;margin:0}.eyebrow{font-size:10px;letter-spacing:2px;color:var(--muted);margin-bottom:4px}.home-objective{display:flex;align-items:center;gap:12px;border:1px solid var(--border);border-radius:14px;padding:12px;background:linear-gradient(110deg,var(--panel),transparent);margin:10px 0}.home-objective strong{display:block;font-size:13px;margin-bottom:5px}.home-objective .btn{flex:none;white-space:nowrap;padding:9px}.home-objective p{margin:0;font-size:11px;line-height:1.5}.dispatch-summary{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:6px;margin:8px 0}.dispatch-summary .pulse{width:6px;height:6px;background:#5ecaa0;border-radius:50%}
++.bond-chip{display:inline-flex;align-items:center;gap:3px;font-size:10px;border:1px solid var(--border);color:var(--accent2);border-radius:20px;padding:3px 7px;margin-top:4px}.bond-chip .ui-icon{width:12px;height:12px}.bond-badge{position:absolute;right:16%;bottom:7%;z-index:9;background:var(--bgMid);border:1px solid var(--gold);color:var(--gold);border-radius:50%;width:19px;height:19px;display:flex;align-items:center;justify-content:center;pointer-events:none}.bond-badge .ui-icon{width:13px;height:13px}.bond-progress{border:1px solid var(--border);border-radius:12px;padding:10px;margin:8px 0 12px;font-size:11px;line-height:1.7}.bond-progress b{color:var(--accent2)}.bond-progress .bar{margin-top:5px;height:4px}.settings-themes .theme-btn{font-size:10px;gap:5px;color:var(--text)}
++.dispatch-list{display:grid;gap:7px;margin-top:10px}.dispatch-row{border:1px solid var(--border);border-radius:10px;padding:8px 10px;font-size:11px}.dispatch-row header{display:flex;justify-content:space-between;gap:8px;margin-bottom:4px}.dispatch-row .bar{height:4px}.dispatch-row .bar i{background:var(--accent2)}.dispatch-row small{display:block;color:var(--muted);margin-top:4px}
++.scene-landmarks{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}.scene-landmarks .landmark-back{opacity:.54}.scene-landmarks .landmark-front{opacity:.96}.region-label{position:absolute;top:9px;left:10px;z-index:3;font-size:10px;padding:4px 7px;border-radius:20px;background:rgba(12,30,34,.42);color:#fff;letter-spacing:1px}
++.battle-row{gap:5px;padding:0 10px;align-items:flex-start!important}.battle-row.enemy{top:21%;height:auto}.battle-row.ally{bottom:16%;height:auto}.battle-unit{flex:1;min-width:0;max-width:140px;width:auto;gap:4px;padding:5px 2px;border:1px solid transparent;border-radius:12px;transition:border-color .2s,background .2s}
++.battle-row .slime-wrap{width:100%;height:calc(118px * var(--unit-scale,.42));margin-top:16px}.battle-row .slime-wrap>.slime{transform:translateX(-50%) scale(var(--unit-scale,.42))}.battle-unit .uname{font-size:var(--unit-font,11px);font-weight:650;max-width:100%;width:100%;line-height:1.35;white-space:normal;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;min-height:1.35em;color:#f4f1fa}
++.battle-unit .hpbar{width:90%;height:6px;bottom:calc(100% + 3px);box-shadow:0 0 0 1px rgba(255,255,255,.16)}.battle-row.ally .hpbar i:not(.ghost){background:linear-gradient(90deg,#3fb28c,#9ee6ac)}.battle-unit .shieldbar{width:90%;height:3px;bottom:calc(100% + 12px)}.hp-value{font-size:10px;color:#d9e3ed;font-variant-numeric:tabular-nums;line-height:1.2}.battle-statuses{display:flex;justify-content:center;gap:2px;flex-wrap:wrap;min-height:15px}.status-chip{display:inline-flex;align-items:center;gap:2px;padding:2px 3px;border-radius:5px;background:rgba(255,255,255,.1);font-size:9px;color:#e4d6ff;border:1px solid rgba(255,255,255,.1);line-height:1}.status-chip .ui-icon{width:11px;height:11px}.status-chip.negative{color:#ffbdc2}.status-chip.positive{color:#a7e1ff}
++.battle-unit.selected-unit{border-color:#74c9ff;background:rgba(80,170,240,.09)}.battle-unit.is-acting{border-color:#ffe19b;background:rgba(255,209,102,.1)}.battle-unit.is-targeted{border-color:#ff8996;background:rgba(255,90,110,.08)}.battle-unit.selected-unit::before,.battle-unit.is-acting::before,.battle-unit.is-targeted::before{position:absolute;top:-15px;left:50%;transform:translateX(-50%);font-size:9px;white-space:nowrap;border-radius:5px;padding:1px 5px;color:#082138;background:#8ed7ff;content:'已选'}.battle-unit.is-acting::before{content:'行动';color:#322100;background:#ffe19b}.battle-unit.is-targeted::before{content:'目标';color:#400b12;background:#ff9aa5}.battle-unit.targetable{outline:1px dashed #ff93a2;outline-offset:2px;cursor:crosshair}.battle-unit.targetable::after{content:'点选';position:absolute;right:0;bottom:-10px;font-size:9px;color:#ffb1bc}.battle-unit[data-fallen="1"]{opacity:.65}.intent-label{max-width:100%;font-size:9px;color:#eacb9a;line-height:1.35;text-align:center;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.battle-log{top:52%;font-size:12px;max-height:16%;overflow:hidden;padding:0 14px;color:#f5d797}.battle-intents{position:absolute;left:9px;right:9px;top:9px;max-height:16%;overflow:auto;z-index:3;display:flex;gap:4px;flex-wrap:wrap;font-size:10px;color:#f9e2b9}.intent-chip{padding:4px 7px;background:rgba(24,13,26,.75);border:1px solid rgba(233,185,115,.25);border-radius:7px;line-height:1.4}.skill-bar{bottom:7px;padding:7px;min-height:43px}.battle-key{position:absolute;left:8px;right:8px;bottom:11%;font-size:9px;color:#b9afc8;text-align:center}.capture-btn{top:-28px;font-size:9px;padding:2px 4px}.battle-row .shield-orb,.battle-row .frozen-orb{max-width:105%;max-height:110%}
++.hit-flash:not(.crit){animation:fxSoftHit .14s ease-out 1}@keyframes fxSoftHit{0%{filter:brightness(1.25)}100%{filter:none}}.field-shake[data-k="light"]{animation:none}.skill-ring.important{border-width:2px}.battle-row .slime-wrap.attack-jump{animation-duration:.42s}
++@media(max-height:700px){.battle-row.enemy{top:22%}.battle-row.ally{bottom:18%}.battle-unit{gap:2px}.battle-unit .uname{font-size:10px}.battle-statuses{min-height:12px}.battle-key{bottom:14%}.battle-log{font-size:10px;max-height:13%;top:54%}.battle-row .slime-wrap{height:calc(102px * var(--unit-scale,.42))}}
++@media(prefers-reduced-motion:reduce){.hit-flash,.hit-flash.crit,.battle-row .slime-wrap.attack-jump{animation:none!important}}
++
++
++.save-warning{font-size:11px;line-height:1.65;border:1px solid var(--gold);border-radius:10px;padding:10px;color:var(--text);background:rgba(255,209,102,.09)}
++.battle-statuses{flex-wrap:nowrap;justify-content:flex-start;max-width:100%;overflow-x:auto;overflow-y:hidden;padding-bottom:2px;scrollbar-width:thin}.status-chip{flex:none}.intent-label{-webkit-line-clamp:1;font-size:9px;min-height:12px}.battle-intents>div:not(.training-hint){display:flex;flex-wrap:wrap;gap:4px;width:100%}.training-hint{width:100%;line-height:1.5;color:#d9edff;background:rgba(91,135,187,.17);padding:5px 7px;border-radius:7px;font-size:10px}.battle-unit{gap:3px}.battle-unit .uname{-webkit-line-clamp:2}.battle-log{top:53%}
++@media(max-height:700px){.battle-row.enemy{top:22%;--unit-scale:.35!important}.battle-row.ally{bottom:20%;--unit-scale:.35!important}.battle-row .slime-wrap{height:42px;margin-top:12px}.battle-unit{gap:2px;padding-top:2px}.battle-unit .uname{line-height:1.2}.battle-log{top:54%;font-size:10px;max-height:9%;line-height:1.3}.battle-key{bottom:16%}.battle-intents{max-height:17%}.skill-bar{bottom:5px}.intent-label{font-size:8px}}
++
+ </style>
+ </head>
+ <body>
+@@ -1111,14 +1132,15 @@ body{background:#05060c;color:#e8e9f3;}
+       <div class="cur g"><span class="sym coin-silver"></span><b id="cCrystal">0</b></div>
+       <div class="cur p"><span class="sym">⭐</span><b id="cPoints">0</b></div>
+       <div class="cur" id="lvCur"><span class="sym">👑</span><b id="cLevel">Lv.1</b></div>
++      <button class="settings-trigger" data-act="settings" title="设置与存档" aria-label="设置与存档"></button>
+     </div>
+     <div id="content" class="content"></div>
+     <nav class="tabbar">
+-      <button data-act="tab" data-tab="status" class="active"><span class="ico">👤</span>状态</button>
+-      <button data-act="tab" data-tab="summon"><span class="ico">✨</span>召唤</button>
+-      <button data-act="tab" data-tab="travel"><span class="ico">🗺️</span>出行</button>
+-      <button data-act="tab" data-tab="space"><span class="ico">🌌</span>空间</button>
+-      <button data-act="tab" data-tab="bag"><span class="ico">🎒</span>背包</button>
++      <button data-act="tab" data-tab="space" class="active"><span class="ico"></span>陪伴</button>
++      <button data-act="tab" data-tab="summon"><span class="ico"></span>召唤</button>
++      <button data-act="tab" data-tab="travel"><span class="ico"></span>探索</button>
++      <button data-act="tab" data-tab="bag"><span class="ico"></span>背包</button>
++      <button data-act="tab" data-tab="status"><span class="ico"></span>成长</button>
+     </nav>
+   </div>
+ 
+@@ -1390,7 +1412,7 @@ const S = {
+   feedTrough:0, totalEarned:0, seq:1, nameSeq:0,
+   theme:'sunset', globalPlan:null, customPlans:{},
+   monItemConfigs: defaultMonItems(),
+-  spaceMode:'free', abyssLevel:1,
++  saveVersion:2, spaceMode:'free', abyssLevel:1, abyssUnlocked:1,
+   lastAbyssSel:[],
+   exploreMapIndex:0,
+   exploreTeam: null,
+@@ -1398,7 +1420,7 @@ const S = {
+   battleSpeed: 1,
+   battleMode: 'auto'
+ };
+-let activeTab='status';
++let activeTab='space';
+ let plSlimes=[];
+ let travelTipsOpen = false;
+ let summonBoost = {};
+@@ -1489,14 +1511,117 @@ function slimePower(s){
+   );
+ }
+ 
+-function save(){ try{ localStorage.setItem('slimeSummonerSave', JSON.stringify(S)); }catch(e){} }
++const DIAGNOSTIC_MODE=/(?:^|[?&])(selftest|gallery|battle|fps)(?:=|&|$)/.test(location.search||'');
++const SAVE_KEY = 'slimeSummonerSave';
++const SAVE_BACKUP_KEY = 'slimeSummonerSave_v1_backup';
++let persistenceWarning = '';
++let persistenceBlocked = false;
++function getPersistenceWarning(){ return persistenceWarning; }
++function hasSaveBackup(){ try{return !!localStorage.getItem(SAVE_BACKUP_KEY);}catch(e){return false;} }
++const SAVE_DEFAULTS=JSON.parse(JSON.stringify(S));
++function validSaveData(d){
++  if(!d || typeof d !== 'object' || Array.isArray(d) || typeof d.started!=='boolean' || !Array.isArray(d.slimes)) return false;
++  const safeTree=value=>{
++    if(!value || typeof value!=='object') return true;
++    return Object.keys(value).every(k=>!['__proto__','prototype','constructor'].includes(k) && safeTree(value[k]));
++  };
++  if(!safeTree(d)) return false;
++  const number=(obj,k,min=0,integer=false)=>obj[k]===undefined || (typeof obj[k]==='number' && Number.isFinite(obj[k]) && obj[k]>=min && (!integer || Number.isInteger(obj[k])));
++  for(const k of ['coins','points','summonerExp','totalEarned','feedTrough','stackRecord']) if(!number(d,k)) return false;
++  for(const k of ['level','abyssLevel','abyssUnlocked','seq']) if(!number(d,k,1,true)) return false;
++  for(const k of ['nameSeq','exploreMapIndex','saveVersion']) if(!number(d,k,0,true)) return false;
++  if(d.monsters !== undefined && !Array.isArray(d.monsters)) return false;
++  for(const k of ['bag','tasks','taskClaimed','customPlans','progress']) if(d[k]!==undefined && (!d[k] || typeof d[k]!=='object' || Array.isArray(d[k]))) return false;
++  if(d.bag && !Object.values(d.bag).every(v=>typeof v==='number' && Number.isFinite(v) && v>=0)) return false;
++  if(d.progress){
++    for(const key of ['abyssClears','challengeClears','regions','collected','claimed']){
++      const record=d.progress[key];
++      if(record!==undefined && (!record || typeof record!=='object' || Array.isArray(record))) return false;
++      if(record && !Object.values(record).every(v=>key==='regions' ? typeof v==='number' && Number.isFinite(v) && v>=0 : typeof v==='boolean')) return false;
++    }
++  }
++
++  const ids=new Set();
++  return [...d.slimes,...(d.monsters||[])].every(s=>{
++    if(!s || typeof s!=='object' || Array.isArray(s) || !Number.isInteger(s.id) || s.id<1 || ids.has(s.id) || typeof s.name!=='string' || !Object.prototype.hasOwnProperty.call(ELEMENTS,s.element)) return false;
++    ids.add(s.id);
++    if(!number(s,'level',1,true) || !number(s,'size',0.001)) return false;
++    for(const k of ['strPotential','agiPotential','magPotential','luck','wit','str','agi','mag','mood','stamina','hp','exp','intimacy','mergeCount']) if(!number(s,k)) return false;
++    if(!number(s,'morality',-100)) return false;
++    if(s.traits!==undefined && (!Array.isArray(s.traits) || !s.traits.every(t=>t && typeof t==='object' && typeof t.n==='string' && typeof t.k==='string' && typeof t.v==='number' && Number.isFinite(t.v)))) return false;
++    return true;
++  });
++}
++function getAbyssUnlocked(){ return clamp(Math.floor(Number(S.abyssUnlocked)||1),1,50); }
++function getAbyssLevel(){ S.abyssLevel=clamp(Math.floor(Number(S.abyssLevel)||1),1,getAbyssUnlocked()); return S.abyssLevel; }
++function save(){
++  if(DIAGNOSTIC_MODE) return true; // Preview/self-tests must never overwrite a player's real save.
++  if(persistenceBlocked) return false;
++  try{ S.saveVersion=2; localStorage.setItem(SAVE_KEY, JSON.stringify(S)); return true; }
++  catch(e){ persistenceWarning='存储空间不足或浏览器禁止存档。请到设置导出存档备份。'; return false; }
++}
++function exportSave(kind){
++  try{
++    const raw=kind==='backup' ? localStorage.getItem(SAVE_BACKUP_KEY) : kind==='preimport' ? localStorage.getItem('slimeSummonerSave_pre_import_backup') : kind==='raw' ? localStorage.getItem(SAVE_KEY) : JSON.stringify(S,null,2);
++    if(!raw){ toast('没有可导出的备份'); return; }
++    const blob=new Blob([raw],{type:'application/json'}), url=URL.createObjectURL(blob);
++    const a=document.createElement('a'); a.href=url; a.download='史莱姆牧场-'+(kind||'current')+'-'+new Date().toISOString().slice(0,10)+'.json';
++    document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),1000);
++  }catch(e){ toast('导出失败：'+e.message); }
++}
++function importSaveData(raw){
++  const data=JSON.parse(raw);
++  if(!validSaveData(data)) throw new Error('不是有效的史莱姆牧场存档');
++  const previousRaw=localStorage.getItem(SAVE_KEY), previousState=JSON.stringify(S);
++  const wasBlocked=persistenceBlocked, previousWarning=persistenceWarning;
++  try{
++    if(previousRaw!==null) localStorage.setItem('slimeSummonerSave_pre_import_backup',previousRaw);
++    localStorage.setItem(SAVE_KEY,raw); persistenceBlocked=false; persistenceWarning='';
++    if(!load()) throw new Error('存档内容无法安全恢复');
++    if(!save()) throw new Error('浏览器无法保存导入的进度');
++    return true;
++  }catch(error){
++    Object.keys(S).forEach(k=>delete S[k]); Object.assign(S,JSON.parse(previousState));
++    persistenceBlocked=wasBlocked; persistenceWarning=previousWarning;
++    try{ if(previousRaw===null) localStorage.removeItem(SAVE_KEY); else localStorage.setItem(SAVE_KEY,previousRaw); }
++    catch(restoreError){ persistenceBlocked=true; persistenceWarning='导入未完成且浏览器拒绝恢复主存档，请导出“导入前备份”保全原进度。'; }
++    throw error;
++  }
++}
++function importSave(){
++  const input=document.createElement('input'); input.type='file'; input.accept='.json,application/json';
++  input.addEventListener('change',()=>{
++    const file=input.files && input.files[0]; if(!file) return;
++    const reader=new FileReader();
++    reader.onload=()=>{
++      try{
++        const raw=String(reader.result), data=JSON.parse(raw);
++        if(!validSaveData(data)) throw new Error('不是有效的史莱姆牧场存档');
++        if(!confirm('导入会替换当前进度。现有存档会保留到导入前备份；是否继续？')) return;
++        importSaveData(raw); location.reload();
++      }catch(e){toast('导入失败：'+e.message);}
++    };
++    reader.onerror=()=>toast('无法读取该文件'); reader.readAsText(file);
++  }); input.click();
++}
+ function load(){
++  const previous=JSON.stringify(S);
+   try{
+-    const raw = localStorage.getItem('slimeSummonerSave');
++    const raw = localStorage.getItem(SAVE_KEY);
+     if(!raw) return false;
+     const d = JSON.parse(raw);
+-    if(!d || !d.started) return false;
+-    Object.assign(S,d);
++    if(!validSaveData(d)) throw new Error('存档结构无效');
++    if(!DIAGNOSTIC_MODE && (Number(d.saveVersion)||0)<2 && !localStorage.getItem(SAVE_BACKUP_KEY)) localStorage.setItem(SAVE_BACKUP_KEY,raw);
++    Object.keys(S).forEach(k=>delete S[k]);
++    Object.assign(S,JSON.parse(JSON.stringify(SAVE_DEFAULTS)),d);
++    const clears=d.progress && d.progress.abyssClears;
++    let proven=1;
++    if(clears && typeof clears==='object') Object.keys(clears).forEach(k=>{ if(clears[k]) proven=Math.max(proven,Math.min(50,(Number(k)||0)+1)); });
++    S.abyssUnlocked=clamp(Math.floor(Number(d.abyssUnlocked)||proven),1,50);
++    const oldSelected=Number(S.abyssLevel)||1;
++    getAbyssLevel(); S.saveVersion=2;
++    persistenceBlocked=false;
++    persistenceWarning=oldSelected>S.abyssUnlocked ? '旧档已安全备份：旧版任意选择层数不是通关记录，深渊按胜利逐层解锁。伙伴、属性和资源全部保留。' : '';
+     if(!S.customPlans) S.customPlans = {};
+     if(S.globalPlan === undefined) S.globalPlan = null;
+     if(typeof S.summonerExp !== 'number') S.summonerExp = 0;
+@@ -1545,30 +1670,35 @@ function load(){
+       if(typeof s.monLight !== 'number') s.monLight = rnd(14,34);
+       if(typeof s.hp !== 'number') s.hp = hpMax(s);
+     });
++    S.seq=Math.max(S.seq||1,...[...S.slimes,...S.monsters].map(s=>s.id+1));
+     return true;
+-  }catch(e){ return false; }
++  }catch(e){
++    const restored=JSON.parse(previous); Object.keys(S).forEach(k=>delete S[k]); Object.assign(S,restored);
++    persistenceBlocked=true; persistenceWarning='现有存档无法安全读取，已停止自动写入以保护原始数据。请先导出原始存档，再导入有效备份。';
++    return false;
++  }
+ }
+ 
+ function normalizeSlime(s){
+   delete s.hunger;
++  if(typeof s.locked !== 'boolean') s.locked = false;
++  if(!Number.isFinite(s.mergeCount) || s.mergeCount < 0) s.mergeCount = 0;
++  else s.mergeCount = Math.floor(s.mergeCount);
+   if(s.resting === undefined) s.resting = false;
+   if(typeof s.mood !== 'number') s.mood = 70;
+   if(typeof s.size !== 'number') s.size = 1;
+   if(typeof s.intimacy !== 'number') s.intimacy = 0;
+-  if(typeof s.strPotential !== 'number'){
+-    const base = 10;
+-    s.strPotential = clamp(base + rndInt(-3, 3), 5, 20);
+-    s.agiPotential = clamp(base + rndInt(-3, 3), 5, 20);
+-    s.magPotential = clamp(base + rndInt(-3, 3), 5, 20);
+-    s.luck = rndInt(0, 10);
+-    s.wit = rndInt(0, 10);
+-  }
+-  if(typeof s.luck !== 'number') s.luck = rndInt(0,10);
+-  if(typeof s.wit !== 'number') s.wit = rndInt(0,10);
+-  const lv = s.level || 1;
+-  if(typeof s.str !== 'number') s.str = s.strPotential * lv;
+-  if(typeof s.agi !== 'number') s.agi = s.agiPotential * lv;
+-  if(typeof s.mag !== 'number') s.mag = s.magPotential * lv;
++  // Fill each absent legacy field independently; never overwrite a present potential/stat.
++  for(const key of ['strPotential','agiPotential','magPotential']) if(typeof s[key]!=='number') s[key]=10;
++  if(typeof s.luck !== 'number') s.luck = 0;
++  if(typeof s.wit !== 'number') s.wit = 0;
++  if(typeof s.level !== 'number') s.level = 1;
++  if(typeof s.exp !== 'number') s.exp = 0;
++  if(typeof s.morality !== 'number') s.morality = 0;
++  const lv = s.level;
++  if(typeof s.str !== 'number') s.str = growthStat(s.strPotential, lv);
++  if(typeof s.agi !== 'number') s.agi = growthStat(s.agiPotential, lv);
++  if(typeof s.mag !== 'number') s.mag = growthStat(s.magPotential, lv);
+   const stMax = staminaMax(s);
+   if(typeof s.stamina !== 'number') s.stamina = stMax;
+   s.stamina = clamp(s.stamina, 0, stMax);
+@@ -2040,8 +2170,9 @@ function buildSysCustom(){
+ }
+ 
+ function finishStory(){
++  if(persistenceBlocked){ toast('请先恢复存档；原始数据仍受保护'); return; }
++  if(!S.started && !S.starterGiftClaimed){S.points += 200;S.starterGiftClaimed=true;}
+   S.started = true;
+-  S.points += 200;
+   save();
+   $('#storyScreen').classList.add('hidden');
+   $('#gameScreen').classList.remove('hidden');
+@@ -2051,11 +2182,50 @@ function finishStory(){
+   renderTab();
+ }
+ 
++/* Local stroke icons belong to the interface, never to creature sprites. */
++function uiIcon(name){
++  const paths={home:'M3 11 12 3l9 8M5 10v11h14V10M9 21v-7h6v7',spark:'m12 3 2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5Z',map:'m3 5 6-2 6 2 6-2v16l-6 2-6-2-6 2ZM9 3v16M15 5v16',bag:'M6 8h12l2 13H4ZM9 8V5a3 3 0 0 1 6 0v3M9 13h6',person:'M16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0ZM4 21v-3a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v3',settings:'M12 8a4 4 0 1 1 0 8 4 4 0 0 1 0-8ZM12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2',heart:'M20.5 5.5a5 5 0 0 0-8.5 2 5 5 0 0 0-8.5-2C-1 10 5 16 12 21c7-5 13-11 8.5-15.5Z',shield:'m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6Z',bolt:'m13 2-9 12h7l-1 8 10-13h-8Z',snow:'M12 2v20M3 7l18 10M3 17 21 7M9 4l3 3 3-3M9 20l3-3 3 3',flame:'M13 2c1 7 7 6 7 13a8 8 0 0 1-16 0c0-5 4-7 5-10 0 4 3 6 4-3Z',leaf:'M20 3C7 2 2 7 5 15c3 8 15 5 15-12ZM5 20 16 8',down:'M12 3v18M5 14l7 7 7-7',eye:'M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12ZM12 9a3 3 0 1 1 0 6 3 3 0 0 1 0-6',ball:'M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0ZM7 4c7 5 7 11 3 17M3 11c7-3 13-1 18 4',stack:'m12 3 9 5-9 5-9-5Zm-9 9 9 5 9-5M3 16l9 5 9-5',food:'M3 10h18c0 7-4 10-9 10s-9-3-9-10ZM7 3v3M12 2v4M17 3v3',back:'m9 5-7 7 7 7M2 12h14a5 5 0 0 1 5 5',sword:'m4 3 13 13M3 3l1 5 12 10 2-2L8 4ZM14 18l4-4M18 18l3 3',gift:'M3 9h18v4H3ZM5 13v8h14v-8M12 9v12M12 9H8a3 3 0 1 1 3-3Zm0 0h4a3 3 0 1 0-3-3Z',download:'M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5',lock:'M6 10h12v11H6ZM8 10V6a4 4 0 0 1 8 0v4'};
++  return `<svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="${paths[name]||paths.spark}"/></svg>`;
++}
++function refreshUIIcons(root){
++  root=root||document;
++  const nav={space:'home',summon:'spark',travel:'map',bag:'bag',status:'person'};
++  const acts={settings:'settings',summon:'spark',mergeopen:'spark',cycleMap:'map',globalplan:'map',setupTeam:'person',abyssSetup:'sword',refill:'food',selectToy:'ball',toggleSpaceMode:'home',buy:'bag',buy10:'bag',feed:'food',treasure:'gift',drinkPotion:'gift',breakthrough:'bolt',claimGoal:'gift',challengeStart:'sword',exportSave:'download',importSave:'download',petlock:'lock'};
++  root.querySelectorAll('button[data-act]').forEach(b=>{
++    const a=b.dataset.act;
++    if(a==='tab'){const ic=b.querySelector('.ico');if(ic)ic.innerHTML=uiIcon(nav[b.dataset.tab]);return;}
++    let name=acts[a];if(!name||b.querySelector('.ui-icon'))return;
++    if(a==='globalplan'&&b.dataset.type==='clear')name='back';
++    if(a==='selectToy'&&b.dataset.toy==='stack')name='stack';
++    if(a==='settings'){b.innerHTML=uiIcon(name);return;}
++    for(const n of Array.from(b.childNodes)){if(n.nodeType===3)n.textContent=n.textContent.replace(/^[\s✨🗺️↩️👥⚔️🥣🎮⚽🧱⚡🎁◇]+/u,'').replace(/[✨]+$/u,'');}
++    b.insertAdjacentHTML('afterbegin',uiIcon(name));
++  });
++}
++function openSettings(){
++  const warning=typeof getPersistenceWarning==='function'?getPersistenceWarning():'';
++  openModal(`<button class="close" data-act="close" aria-label="关闭设置">×</button><h3>${uiIcon('settings')} 设置</h3><p class="muted small">只调整界面主题，不改变伙伴的样子。</p><div class="theme-row settings-themes">${THEMES.map(t=>`<button class="theme-btn ${S.theme===t.id?'on':''}" data-act="theme" data-theme="${t.id}" title="${t.name}"><span class="dot" style="background:${t.color}"></span><span>${t.name}</span></button>`).join('')}</div><hr style="border:0;border-top:1px solid var(--border);margin:18px 0"><h3>存档与离线</h3>${warning?`<p class="save-warning">${esc(warning)}</p>`:''}<p class="muted small">游戏保存在当前浏览器。换设备前请先导出；导入会先保留当前进度，且需要你确认替换。</p><div class="plan-options"><button class="btn full" data-act="exportSave" data-kind="current">导出当前存档</button><button class="btn full themed" data-act="importSave">导入存档</button>${typeof hasSaveBackup==='function'&&hasSaveBackup()?'<button class="btn full themed" data-act="exportSave" data-kind="backup">导出升级前备份</button>':''}<button class="btn full themed" data-act="exportSave" data-kind="preimport">导出上次导入前备份</button><button class="btn full themed" data-act="exportSave" data-kind="raw">导出浏览器原始数据（恢复用）</button></div><p class="muted small" style="margin-top:10px">所有图标与场景均内置，无需联网。升级不会重置已有伙伴、属性或资源。</p>`);
++}
++
++const BOND_MILESTONES=[{need:0,name:'初识',response:'歪着头，认真记住你的声音。',face:'happy'},{need:5,name:'熟悉',response:'蹭了蹭你的手：想和你一起走！',face:'like'},{need:15,name:'信赖',response:'一看到你就跳起来：你终于回来啦！',face:'jump'},{need:30,name:'挚友',response:'把小小的安心交给你：有你在真好。',face:'like'}];
++function bondMilestone(s){return BOND_MILESTONES.slice().reverse().find(m=>(Number(s.intimacy)||0)>=m.need)||BOND_MILESTONES[0];}
++function gainCompanionIntimacy(s,now){
++  const before=bondMilestone(s);
++  const last=Number(s.lastPetAt),hasLast=s.lastPetAt!==undefined && s.lastPetAt!==null && Number.isFinite(last);
++  const gained=!hasLast || now<last || now-last>=30000;
++  if(gained){s.intimacy=(Number(s.intimacy)||0)+1;s.lastPetAt=now;}
++  return {before,bond:bondMilestone(s),gained};
++}
++function bondProgressHTML(s){const v=Math.max(0,Number(s.intimacy)||0),cur=bondMilestone(s),next=BOND_MILESTONES.find(m=>m.need>v);return `<div class="bond-progress"><b>${uiIcon('heart')} ${cur.name} · 亲密度 ${v}</b><div>${esc(cur.response)}</div><div class="bar"><i style="width:${next?Math.min(100,v/next.need*100):100}%;background:var(--accent2)"></i></div><div class="muted">${next?`下一里程碑 ${next.need}：${next.name}`:'已解锁挚友徽章与专属回应'} · 抚摸每 30 秒可增加 1 亲密，滚球与叠叠乐也能增进感情，无需战斗。</div><div class="muted">5 熟悉：跟随手指 · 15 信赖：欢跳回应 · 30 挚友：星心徽章</div></div>`;}
++function homeObjective(){if(!S.slimes.length)return {title:'迎接第一位伙伴',desc:'召唤后就能在这里抚摸、玩耍，一起慢慢成长。',tab:'summon',cta:'去召唤'};if(!S.globalPlan&&!S.slimes.some(s=>getPlan(s.id)))return {title:'让伙伴开始第一段探索',desc:'派遣一支队伍，留下伙伴陪你玩；探索会在后台继续。',tab:'travel',cta:'去探索'};return {title:'今天，向下一段旅程出发',desc:'探索区域、完成教学挑战、收集伙伴，都有可领取的成长奖励。',tab:'travel',cta:'查看目标'};}
++function dispatchProgressHTML(){const list=S.slimes.filter(s=>{const p=getPlan(s.id);return p&&p.type==='explore'&&(!p.global||S.exploreTeam===null||S.exploreTeam.includes(s.id));});return list.length?`<div class="dispatch-list">${list.map(s=>`<div class="dispatch-row"><header><b>${esc(s.name)}</b><span data-rest-label="${s.id}">${s.resting?'恢复中':'探索中'}</span></header><div class="bar"><i data-rest-bar="${s.id}" style="width:${s.resting&&typeof planRestProgress==='function'?planRestProgress(s):Math.min(100,s.stamina/staminaMax(s)*100)}%"></i></div><small data-rest-text="${s.id}">${s.resting&&typeof planRestText==='function'?esc(planRestText(s)):`体力 ${Math.floor(s.stamina)}/${staminaMax(s)} · 每次探索消耗 20`}</small></div>`).join('')}</div>`:'';}
++
+ function renderTop(){
+   $('#cCrystal').textContent = S.coins.toLocaleString();
+   $('#cPoints').textContent = S.points;
+   $('#cLevel').textContent = 'Lv.'+S.level + (S.breakPending?' !':'');
+   $('#lvCur').classList.toggle('alert', S.breakPending);
++  refreshUIIcons(document.querySelector('#gameScreen'));
+ }
+ 
+ function switchTab(t){
+@@ -2077,8 +2247,9 @@ function renderTab(){
+   stopExploreItems();
+   const el = $('#content');
+   const map = {status:renderStatus, summon:renderSummon, travel:renderTravel, space:renderSpace, bag:renderBag};
+-  el.innerHTML = map[activeTab]();
+-  if(activeTab==='space') initPlayground();
++  el.innerHTML = (map[activeTab]||renderSpace)();
++  refreshUIIcons(el);
++  if(activeTab==='space'){initPlayground();el.dataset.spaceIdle=(S.spaceMode==='monster'?S.monsters:S.slimes.filter(s=>!isDispatched(s))).map(s=>s.id).join(',');}
+   if(activeTab==='travel') setTimeout(startExploreItems, 50);
+ }
+ 
+@@ -2122,15 +2293,7 @@ function renderStatus(){
+     ${taskRows}
+   </div>
+ 
+-  <div class="panel">
+-    <h3>◈ 界面主题</h3>
+-    <div class="theme-row">
+-      ${THEMES.map(t=>`
+-        <button class="theme-btn ${S.theme===t.id?'on':''}" data-act="theme" data-theme="${t.id}" title="${t.name}">
+-          <span class="dot" style="background:${t.color}"></span>
+-        </button>`).join('')}
+-    </div>
+-  </div>`;
++  <div class="panel"><button class="btn full themed" data-act="settings">界面主题与存档设置</button></div>`;
+ }
+ 
+ function renderSummon(){
+@@ -2164,11 +2327,16 @@ function renderSummon(){
+ 
+   <div class="panel">
+     <h3>◈ 史莱姆合体</h3>
+-    <p class="muted small">选择两只史莱姆合体（普通史莱姆与魔物均可参与，但主史莱姆不能是魔物）。先选为主史莱姆，继承其词条与各属性潜力。若副史莱姆有相同词条则升级，加成增加20%；若主词条不足3且有不同词条，有50%概率额外继承一条。小概率提升各属性潜力。合成后大概率继承主史莱姆属性，小概率继承副史莱姆属性，极小概率变异为少见及以上属性。</p>
++    <p class="muted small">主宠保留名字、ID、亲密度、经验和已有属性，等级取较高者；副宠永久消耗。珍爱锁定宠物不能作为副宠。合体需晶币：500 + 100 × 较高等级 + 250 × 主宠融合次数 ×（次数 + 1），随次数递增；确认前查看确定继承、各项变异概率、损失和费用。合体与升级使用同一成长规则，同级无变异不会凭空翻倍。</p>
+     <button class="btn full" data-act="mergeopen">开始合体</button>
+   </div>`;
+ }
+ 
++function mapLandmarks(map){
++  const content=map.id==='snow'?`<g class="landmark-back"><path d="M0 180 85 55 175 180 245 70 360 180 430 80 600 190V260H0" fill="#6c9dad"/><path d="m56 98 29-43 34 47-22-8-14 15-12-17m141 27 33-49 35 47-24-10-12 14-13-11" fill="#f5ffff"/></g><g class="landmark-front"><path d="M335 205q20-90 96-85 63 0 81 90" fill="#91b4bc"/><path d="M365 208q17-61 62-61 43 0 57 61Z" fill="#304c64"/><path d="M338 172q25-62 93-52 49 1 70 46l-34-8-11 10-24-16-28 17-18-6Z" fill="#f2ffff"/><path d="m57 210 27-67 27 67Zm57 0 19-48 19 48Z" fill="#719d9a"/><path d="m66 187 18-44 18 44-18-8Z" fill="#e6f9f8"/><path d="M0 215Q170 195 290 216T600 210" fill="none" stroke="#f5ffff" stroke-width="9"/></g>`:map.id==='dusk'?`<g class="landmark-back"><circle cx="445" cy="64" r="36" fill="#ffe3a4"/><path d="M0 176q80-70 160-10t160-15 150 15 130-10v104H0" fill="#7f5960"/></g><g class="landmark-front"><path d="M65 203V111h26v92m62 0V111h27v92M57 108h130v20H57m34-20q31-54 62 0" fill="#6c5262" stroke="#a68479" stroke-width="5"/><path d="M60 204h130v11H60m226-7 14-62 31-7 19 69m-55-40 50-6" fill="#675165" stroke="#a68479" stroke-width="4"/><path d="M485 210V125m0 30-28-25m28 42 31-35" stroke="#6c4250" stroke-width="8" fill="none"/><path d="m243 209 22-13 11 13m105 0 18-19 20 19" fill="#7e5963"/></g>`:`<g class="landmark-back"><path d="M0 160q110-120 230-10t185-13 185 20v103H0" fill="#4f9a87"/><path d="M0 183q140-60 260 0t220-15 120 10v82H0" fill="#78b489"/></g><g class="landmark-front"><path d="M90 210v-80m350 80v-70" stroke="#725943" stroke-width="12"/><path d="M40 137q-9-37 26-43-5-36 28-39 35 0 39 37 37 3 31 40-52 35-124 5" fill="#387e62"/><path d="M393 150q-8-28 20-33 0-31 27-33 30 0 35 31 30 3 23 32-49 27-105 3" fill="#4a9064"/><path d="M230 209v-47m-12 0h38l-8 18h-30Z" fill="#b48d61" stroke="#795c40" stroke-width="4"/><path d="m305 213 18-16 28 16m-202 0 9-10 20 10" fill="#86a682"/></g>`;
++  return `<svg class="scene-landmarks" viewBox="0 0 600 280" preserveAspectRatio="none" aria-hidden="true">${content}</svg>`;
++}
++
+ function renderExploreScene(){
+   const map = MAP_THEMES[S.exploreMapIndex] || MAP_THEMES[0];
+   const dispatched = S.slimes.filter(s => isDispatched(s));
+@@ -2251,13 +2419,16 @@ function renderExploreScene(){
+           <div class="scene-sky"></div>
+           <div class="scene-grass"></div>
+           <div class="scene-soil"></div>
++          ${mapLandmarks(map)}
+         </div>
+         <div class="bg-panel">
+           <div class="scene-sky"></div>
+           <div class="scene-grass"></div>
+           <div class="scene-soil"></div>
++          ${mapLandmarks(map)}
+         </div>
+       </div>
++      <span class="region-label">${map.id==='snow'?'冰洞与雪峰':map.id==='dusk'?'暮色遗迹':'林间小径'}</span>
+       <div class="explore-items-layer"></div>
+       ${slimesHTML}
+     </div>`;
+@@ -2268,7 +2439,7 @@ function renderTravel(){
+     return `<div class="panel center">
+       <p class="muted">还没有史莱姆伙伴，先去召唤一只吧～</p>
+       <button class="btn full" data-act="goto" data-tab="summon">前往召唤</button>
+-    </div>`;
++    </div>${challengeCards()}${progressionGoalCards()}`;
+   }
+   const gp = S.globalPlan;
+   const currentMap = MAP_THEMES[S.exploreMapIndex] || MAP_THEMES[0];
+@@ -2282,23 +2453,29 @@ function renderTravel(){
+       <button class="btn themed explore-btn" data-act="globalplan" data-type="clear" ${gp?'':'disabled'}>↩️ 全部召回</button>
+       <button class="btn themed explore-btn" data-act="setupTeam">👥 设置队伍</button>
+     </div>
+-    <p class="muted small" style="margin-top:8px;">当前状态：${gp==='explore'?'全部探险中':'未规划'}</p>
++    <p class="muted small" style="margin-top:8px;">当前状态：${gp==='explore'?'队伍已派遣 · 休息后自动继续':'未设置全局规划'} · 在陪伴空间和小游戏里也会继续</p>
++    ${dispatchProgressHTML()}
+   </div>
+ 
+   <div class="panel">
+     <h3>◈ 深渊冒险</h3>
+-    <p class="muted small">派遣最多5只史莱姆进入深渊对战。怪物等级越高，奖励越丰厚。</p>
++    <p class="muted small">派遣最多5只伙伴。已解锁 ${getAbyssUnlocked()}/50 层，胜利解锁下一层。失败只获得已击败敌人 25% 的收益；零击败零奖励。</p>
+     <div class="abyss-row">
+       <label>怪物等级</label>
+       <button class="btn sm abyss-step" data-act="abyssLevelMinus">◀</button>
+-      <input type="number" class="abyss-level-input" id="abyssLevelInput" min="1" max="50" value="${S.abyssLevel}">
++      <input type="number" class="abyss-level-input" id="abyssLevelInput" min="1" max="${getAbyssUnlocked()}" value="${getAbyssLevel()}">
+       <button class="btn sm abyss-step" data-act="abyssLevelPlus">▶</button>
+     </div>
+     <button class="btn full gold" data-act="abyssSetup" style="margin-top:10px;">⚔️ 进入深渊冒险</button>
+-  </div>`;
++  </div>
++  ${challengeCards()}
++  ${progressionGoalCards()}`;
+ }
+ 
+ function renderSpace(){
++  const objective=homeObjective();
++  const dispatchedCount=S.slimes.filter(isDispatched).length;
++  const homeHTML=`<div class="companion-head"><div><div class="eyebrow">OUR LITTLE WORLD</div><h2>${esc(S.name||'召唤师')}的陪伴空间</h2></div>${uiIcon('heart')}</div><div class="home-objective"><div style="flex:1"><strong>${objective.title}</strong><p class="muted">${objective.desc}</p></div><button class="btn gold" data-act="goto" data-tab="${objective.tab}">${objective.cta}</button></div><div class="dispatch-summary"><span class="pulse"></span>${dispatchedCount?`${dispatchedCount} 位伙伴正在后台探索`:'留一点时间，和伙伴待在一起'} · 打开小游戏不会暂停派遣</div>`;
+   const isMonster = S.spaceMode === 'monster';
+   const list = isMonster ? S.monsters : S.slimes;
+   const idle = isMonster ? list : list.filter(s=>!isDispatched(s));
+@@ -2343,6 +2520,7 @@ function renderSpace(){
+   }
+ 
+   return `<div class="panel">
++    ${homeHTML}
+     ${switchHTML}
+     <p class="muted small">${isMonster ? '被捕捉的怪物史莱姆会在这里自由活动，可拖动改变位置。' : '未派遣的史莱姆会在空间中自由活动，可拖动它们改变位置，点击它们可以互动。系统史莱姆会一直陪在这里。'}</p>
+     ${feedHTML}
+@@ -2356,6 +2534,7 @@ function renderSpace(){
+           <div class="scale-box sm">${slimeHTML(s,{mood:'idle'})}</div>
+           <div class="mc-name">${esc(s.name)}</div>
+           <div class="mc-tag">Lv.${s.level}</div>
++          <span class="bond-chip">${uiIcon('heart')}${bondMilestone(s).name}</span>
+         </div>`).join('')}
+     </div></div>`;
+ }
+@@ -2472,7 +2651,7 @@ function initPlayground(){
+     el.className = 'pl-slime';
+     el.dataset.id = s.id;
+     el.dataset.mon = isMonster ? 1 : 0;
+-    el.innerHTML = slimeHTML(s,{mood:'idle'});
++    el.innerHTML = slimeHTML(s,{mood:'idle'}) + (!s.isSystem && (s.intimacy||0)>=30 ? `<span class="bond-badge" title="挚友 · 亲密度 ${s.intimacy}">${uiIcon('heart')}</span>` : '');
+     const slInit = el.querySelector('.slime');
+     if(slInit) slInit.style.transform = `scale(${dispScale.toFixed(3)})`;
+     const airWall = document.createElement('div');
+@@ -2485,15 +2664,14 @@ function initPlayground(){
+     pg.appendChild(el);
+     const obj = {el, timer:null, bubbleTimer:null, x:pos.x, y:pos.y, sid:s.id, minX, maxX, minY, maxY, dispScale, airR};
+ 
+-    let bubbleEl = null;
+-    if(s.isSystem){
+-      bubbleEl = document.createElement('div');
+-      bubbleEl.className = 'sys-bubble';
+-      el.appendChild(bubbleEl);
++    let bubbleEl = document.createElement('div');
++    bubbleEl.className = 'sys-bubble';
++    el.appendChild(bubbleEl);
++    if(s.isSystem || (s.intimacy||0)>=30){
+       const showLine = ()=>{
+         if(!bubbleEl.isConnected) return;
+         if(el.classList.contains('dragging')) return;
+-        bubbleEl.textContent = pick(SYS_QUOTES);
++        bubbleEl.textContent = s.isSystem ? pick(SYS_QUOTES) : `${s.name}：${bondMilestone(s).response}`;
+         bubbleEl.classList.add('show');
+         clearTimeout(bubbleEl._t);
+         bubbleEl._t = setTimeout(()=>{ if(bubbleEl.isConnected) bubbleEl.classList.remove('show'); }, 2600);
+@@ -2643,7 +2821,13 @@ function initPlayground(){
+         return;
+       }
+       s.mood = clamp(s.mood + 10, 0, 100);
+-      showFloat(el, '心情+10');
++      const bondGain=gainCompanionIntimacy(s,Date.now());
++      const before=bondGain.before,bond=bondGain.bond,canBond=bondGain.gained;
++      if(slimeEl)slimeEl.dataset.mood=bond.face;
++      if(bubbleEl){bubbleEl.textContent=bond.response;bubbleEl.classList.add('show');clearTimeout(bubbleEl._t);bubbleEl._t=setTimeout(()=>bubbleEl.classList.remove('show'),3000);}
++      showFloat(el,canBond?'心情+10 · 亲密+1':'心情+10');
++      if(bond.need>before.need){toast(`${s.name} 和你成为「${bond.name}」！`, 'good');if(bond.need>=30&&!el.querySelector('.bond-badge'))el.insertAdjacentHTML('beforeend',`<span class="bond-badge" title="挚友">${uiIcon('heart')}</span>`);}
++      if(slimeEl)setTimeout(()=>{if(slimeEl.isConnected)slimeEl.dataset.mood='idle';},2800);
+       save();
+     });
+ 
+@@ -2859,7 +3043,7 @@ function createSlime(forceMonster){
+     personality: pick(PERSONALITIES),
+     mood:70, stamina:initStaminaMax, traits,
+     level:1, exp:0, size:baseSize, resting:false,
+-    intimacy:0,
++    intimacy:0, locked:false, mergeCount:0,
+     strPotential, agiPotential, magPotential, luck, wit,
+     str, agi, mag
+   };
+@@ -2918,23 +3102,39 @@ function doBreakthrough(){
+   toast(`⚡ 突破成功！\n召唤师 Lv.${S.level}，召唤位 ${getSlots()}`, 'good');
+ }
+ 
++/* One growth rule for leveling and merging. Add deltas instead of replacing
++   existing stats, so old saves keep every previously earned point. */
++function growthStat(potential, level){
++  const p = Math.max(0, Number(potential)||0);
++  return p + Math.max(0, (Number(level)||1)-1) * Math.round(p * 0.5);
++}
++function growthStats(s, newLevel, potentials){
++  const out = {};
++  for(const key of ['str','agi','mag']){
++    const potKey = key + 'Potential';
++    const nextPot = potentials && Number.isFinite(potentials[potKey]) ? potentials[potKey] : s[potKey];
++    out[key] = (Number(s[key])||0) + Math.max(0,
++      growthStat(nextPot, newLevel) - growthStat(s[potKey], s.level));
++  }
++  return out;
++}
+ function addExp(s, amount){
+   const rate = expRate(s);
+-  const actual = Math.round(amount * rate);
++  const actual = Math.max(0, Math.round((Number(amount)||0) * rate));
++  if(!Number.isFinite(actual) || actual <= 0) return false;
+   addSummonerExp(Math.max(1, Math.round(actual * 0.1)));
+-  s.exp += actual;
+-  const need = slimeExpNeed(s.level);
+-  if(s.exp >= need){
+-    s.exp -= need;
+-    s.level++;
+-    s.str += Math.round(s.strPotential * 0.5);
+-    s.agi += Math.round(s.agiPotential * 0.5);
+-    s.mag += Math.round(s.magPotential * 0.5);
++  s.exp = (Number(s.exp)||0) + actual;
++  let leveled = false;
++  while(s.exp >= slimeExpNeed(s.level)){
++    s.exp -= slimeExpNeed(s.level);
++    const nextLevel = s.level + 1;
++    Object.assign(s, growthStats(s, nextLevel));
++    s.level = nextLevel;
+     s.size = +(s.size + 0.0016).toFixed(3);
+-    s.hp = hpMax(s);
+-    return true;
++    leveled = true;
+   }
+-  return false;
++  if(leveled) s.hp = hpMax(s);
++  return leveled;
+ }
+ 
+ function buyItem(k, qty){
+@@ -3016,126 +3216,162 @@ function useItem(k,id){
+ }
+ 
+ let mergeSel = [];
++let mergePreviewSignature = '';
++function mergeStateSignature(a, b){
++  const fields = ['id','name','element','level','exp','intimacy','size','str','agi','mag','strPotential','agiPotential','magPotential','luck','wit','traits','locked','mergeCount'];
++  return JSON.stringify([a,b].map(s=>fields.map(k=>s && s[k])));
++}
++function mergeCost(a, b){
++  const count = Math.max(0, Math.floor(Number(a.mergeCount)||0));
++  return 500 + 100 * Math.max(a.level, b.level) + 250 * count * (count + 1);
++}
++function mergePreview(a, b){
++  if(!a || !b || a === b || a.id === b.id) return {valid:false, reason:'请选择两只不同的史莱姆'};
++  if(a.isMonster) return {valid:false, reason:'魔物不能作为主史莱姆'};
++  if(b.locked) return {valid:false, reason:'副宠已珍爱锁定，不能被消耗；请先在详情中解锁'};
++  const level = Math.max(a.level, b.level);
++  const maxPots = {};
++  for(const key of ['strPotential','agiPotential','magPotential']) maxPots[key] = Math.max(a[key], Math.min(40, a[key] + 3));
++  const guaranteedTraits = (a.traits||[]).filter(t=>(b.traits||[]).some(bt=>bt.n===t.n)).map(t=>t.n);
++  const possibleTraits = (b.traits||[]).filter(bt=>!(a.traits||[]).some(t=>t.n===bt.n)).map(t=>t.n);
++  return {valid:true, cost:mergeCost(a,b), level,
++    statsMin:growthStats(a, level), statsMax:growthStats(a, level, maxPots),
++    guaranteedTraits, possibleTraits, fullTraits:(a.traits||[]).length >= 3};
++}
++function renderMergePreview(){
++  const el = document.getElementById('mergePreview');
++  const btn = document.querySelector('[data-act="mergeconfirm"]');
++  if(!el || !btn) return;
++  const a = getSlime(mergeSel[0]), b = getSlime(mergeSel[1]);
++  if(!a || !b){
++    el.innerHTML = '<p class="muted small">先选择保留身份的主宠，再选择会被消耗的副宠。</p>';
++    btn.disabled = true;
++    btn.textContent = '先选择主宠与副宠';
++    return;
++  }
++  const p = mergePreview(a,b);
++  if(!p.valid){ mergePreviewSignature = ''; el.textContent = p.reason; btn.disabled = true; return; }
++  mergePreviewSignature = mergeStateSignature(a,b);
++  const traitText = p.guaranteedTraits.length ? p.guaranteedTraits.map(esc).join('、') + '：确定增强 20%' : '无同名词条增强';
++  const possibleText = p.fullTraits ? '主宠词条已满，不会继承副宠新词条' : (p.possibleTraits.length ? p.possibleTraits.map(esc).join('、') + '：按顺序各 50% 继承，最多 3 条' : '没有不同词条');
++  const attrs = [['str','力'],['agi','敏'],['mag','魔']].map(([k,n])=>`${n} ${a[k]} → ${p.statsMin[k]}${p.statsMax[k]===p.statsMin[k]?'':'–'+p.statsMax[k]}`).join(' · ');
++  el.innerHTML = `
++    <h4 style="margin:4px 0 8px;color:var(--accent2)">合体预览 · ${esc(a.name)} 保留身份</h4>
++    <p class="small"><b>确定继承：</b>主宠名字、ID、性格、善恶、亲密度 ${a.intimacy||0}、经验 ${a.exp||0}、珍爱锁和定制规划。等级 Lv.${a.level} → ${p.level}。心情、体力不刷新。</p>
++    <p class="small"><b>统一成长：</b>${attrs}；现有属性不会下降，同级无潜力变异不加属性。</p>
++    <p class="small"><b>词条：</b>${traitText}；${possibleText}。主宠原词条不会丢失。</p>
++    <p class="small"><b>随机变化：</b>75% 潜力不变；25% 三项潜力同时 +1～3（各等概率，上限 40），并幸运/悟性 +1（上限 20）。体型 90% 不变 / 10% +${(b.size*0.008).toFixed(3)}。</p>
++    <p class="small"><b>元素：</b>${a.element===b.element ? '同元素，100% 保持 '+a.element : '80% 保持 '+a.element+' / 18% 继承 '+b.element+' / 2% 从草、冰、雷、幻、光、暗、空间、时间等概率抽取（可能抽回双方元素）'}。技能随最终元素匹配。</p>
++    <p class="small" style="color:var(--danger,#ff8299)"><b>永久消耗：</b>${esc(b.name)}（Lv.${b.level}）及其未继承的词条、经验 ${b.exp||0}、亲密度 ${b.intimacy||0}与规划；无法撤销。</p>
++    <p class="small"><b>费用 ${p.cost} 晶币</b> · 当前 ${Math.floor(S.coins)} · 主宠第 ${(a.mergeCount||0)+1} 次融合，后续费用递增。${S.coins < p.cost ? '余额不足，请先探索。':''}</p>`;
++  btn.disabled = S.coins < p.cost;
++  btn.textContent = `消耗 ${p.cost} 晶币，确认合体`;
++}
+ function openMerge(){
+   mergeSel = [];
++  mergePreviewSignature = '';
+   const all = [...S.slimes, ...S.monsters];
+   if(all.length < 2){ toast('至少需要2只史莱姆才能合体'); return; }
+   openModal(`
+     <button class="close" data-act="close">✕</button>
+     <h3 style="text-align:center;margin:0 0 6px;color:var(--accent2);">史莱姆合体</h3>
+-    <p class="muted small" style="text-align:center;">先选为主史莱姆（不能是魔物），继承其词条与潜力<br>普通史莱姆与魔物均可参与，但魔物不能作为主史莱姆<br>同名词条升级，加成增加20%<br>合体后新史莱姆等级继承两只中较高者</p>
++    <p class="muted small" style="text-align:center;">先选主宠：保留名字与陪伴关系；再选副宠：永久消耗。<br>魔物不能作为主宠；珍爱锁定的宠物不能作为副宠。<br>费用 = 500 + 100 × 较高等级 + 250 × 主宠融合次数 ×（次数 + 1）。</p>
+     <div class="minigrid merge-list" style="margin-top:14px;">
+       ${all.map(s=>`
+-        <div class="minicard" data-act="mergesel" data-id="${s.id}">
++        <div class="minicard" data-act="mergesel" data-id="${s.id}" role="button" tabindex="0">
+           <div class="scale-box">${slimeHTML(s,{mood:'idle'})}</div>
+-          <div class="mc-name">${esc(s.name)}</div>
+-          <div class="mc-tag">${ELEMENTS[s.element].icon}${s.element} · ${s.isMonster?'魔物':'Lv.'+s.level}</div>
++          <div class="mc-name">${s.locked?'◇ ':''}${esc(s.name)}</div>
++          <div class="mc-tag">${ELEMENTS[s.element].icon}${s.element} · ${s.isMonster?'魔物':'Lv.'+s.level}${s.locked?' · 珍爱锁定':''}</div>
++          <div class="merge-role small" style="min-height:18px;color:var(--accent2)"></div>
+         </div>`).join('')}
+     </div>
+-    <button class="btn gold full" data-act="mergeconfirm" style="margin-top:16px;" disabled>确认合体</button>
++    <div id="mergePreview" style="margin-top:14px;padding:12px;background:rgba(0,0,0,.12);border-radius:12px;line-height:1.6"></div>
++    <button class="btn gold full" data-act="mergeconfirm" style="margin-top:16px;" disabled>先选择主宠与副宠</button>
+   `);
++  renderMergePreview();
+ }
+ function toggleMergeSel(id){
+   const s = getSlime(id);
+   if(!s) return;
+-  if(mergeSel.length === 0 && s.isMonster){
+-    toast('怪物史莱姆不能作为主史莱姆');
+-    return;
+-  }
+   const idx = mergeSel.indexOf(id);
+-  if(idx>=0) mergeSel.splice(idx,1);
+-  else {
+-    if(mergeSel.length >= 2) mergeSel.shift();
++  if(idx >= 0){
++    mergeSel.splice(idx,1);
++    if(mergeSel.length && getSlime(mergeSel[0]).isMonster) mergeSel = [];
++  } else {
++    if(mergeSel.length >= 2){ toast('请先取消一个选择，再替换宠物'); return; }
++    if(!mergeSel.length && s.isMonster){ toast('魔物不能作为主史莱姆'); return; }
++    if(mergeSel.length === 1 && s.locked){ toast('这只宠物已珍爱锁定，不能作为被消耗的副宠'); return; }
+     mergeSel.push(id);
+   }
+   document.querySelectorAll('.merge-list .minicard').forEach(c=>{
+-    c.classList.toggle('on', mergeSel.includes(+c.dataset.id));
++    const at = mergeSel.indexOf(+c.dataset.id);
++    c.classList.toggle('on', at>=0);
++    c.setAttribute('aria-pressed', String(at>=0));
++    const label = c.querySelector('.merge-role');
++    if(label) label.textContent = at===0 ? '主宠 · 身份保留' : at===1 ? '副宠 · 将被消耗' : '';
+   });
+-  const btn = document.querySelector('[data-act="mergeconfirm"]');
+-  if(btn) btn.disabled = mergeSel.length !== 2;
++  renderMergePreview();
+ }
+ function doMerge(){
+   if(mergeSel.length !== 2) return;
+-  const a = getSlime(mergeSel[0]);
+-  const b = getSlime(mergeSel[1]);
+-  if(!a || !b || a===b) return;
+-  if(a.isMonster){ toast('怪物史莱姆不能作为主史莱姆'); return; }
+-
+-  const same = a.element === b.element;
+-  const newLevel = Math.max(a.level, b.level);
+-
+-  const potBonus = Math.random() < 0.25 ? rndInt(1, 3) : 0;
+-  const newStrPot = clamp(a.strPotential + potBonus, 5, 40);
+-  const newAgiPot = clamp(a.agiPotential + potBonus, 5, 40);
+-  const newMagPot = clamp(a.magPotential + potBonus, 5, 40);
+-  const newLuck = clamp((a.luck||0) + (potBonus?1:0), 0, 20);
+-  const newWit = clamp((a.wit||0) + (potBonus?1:0), 0, 20);
+-
+-  const mergedTraits = a.traits.map(t=>({...t}));
+-  b.traits.forEach(bt=>{
+-    const sameIdx = mergedTraits.findIndex(mt=>mt.n===bt.n);
+-    if(sameIdx >= 0){
+-      const mt = mergedTraits[sameIdx];
+-      mt.v = +(mt.v * 1.2).toFixed(4);
+-      refreshTraitDesc(mt);
+-    } else if(mergedTraits.length < 3 && Math.random() < 0.5){
+-      const nt = {...bt};
+-      refreshTraitDesc(nt);
+-      mergedTraits.push(nt);
++  const a = getSlime(mergeSel[0]), b = getSlime(mergeSel[1]);
++  const preview = mergePreview(a,b);
++  if(!preview.valid){ toast(preview.reason); return; }
++  if(mergePreviewSignature && mergePreviewSignature !== mergeStateSignature(a,b)){
++    renderMergePreview();
++    toast('宠物在预览期间获得了成长，已更新预览；请再次确认费用与继承结果');
++    return;
++  }
++  if(S.coins < preview.cost){ toast(`晶币不足，合体需要 ${preview.cost} 晶币`); renderMergePreview(); return; }
++
++  const potBonus = Math.random() < 0.25 ? rndInt(1,3) : 0;
++  const pots = {};
++  for(const key of ['strPotential','agiPotential','magPotential']) pots[key] = Math.max(a[key], Math.min(40, a[key] + potBonus));
++  const stats = growthStats(a, preview.level, pots);
++  const mergedTraits = (a.traits||[]).map(t=>({...t}));
++  (b.traits||[]).forEach(bt=>{
++    const mt = mergedTraits.find(t=>t.n===bt.n);
++    if(mt){ mt.v = +(mt.v * 1.2).toFixed(4); refreshTraitDesc(mt); }
++    else if(mergedTraits.length < 3 && Math.random() < 0.5){
++      const nt = {...bt}; refreshTraitDesc(nt); mergedTraits.push(nt);
+     }
+   });
+-  mergedTraits.forEach(refreshTraitDesc);
+-
+-  const newMorality = Math.round((a.morality + b.morality)/2);
+-  const newSize = (Math.random() < 0.1)
+-    ? +(a.size + b.size * 0.008).toFixed(3)
+-    : a.size;
+-
+-  let newElement;
+-  if(same){
+-    newElement = a.element;
+-  } else {
++  const newSize = Math.random() < 0.1 ? +(a.size + b.size * 0.008).toFixed(3) : a.size;
++  let newElement = a.element;
++  if(a.element !== b.element){
+     const r = Math.random();
+-    if(r < 0.80){
+-      newElement = a.element;
+-    } else if(r < 0.98){
+-      newElement = b.element;
+-    } else {
+-      const rarePool = ['草','冰','雷','幻','光','暗','空间','时间'];
+-      newElement = pick(rarePool);
+-    }
++    if(r >= 0.80 && r < 0.98) newElement = b.element;
++    else if(r >= 0.98) newElement = pick(['草','冰','雷','幻','光','暗','空间','时间']);
+   }
+ 
+-  const newStaminaMax = Math.round(80 + newSize * 40);
+-  const newId = S.seq++;
+-  S.nameSeq = (S.nameSeq || 0) + 1;
+-  if(S.nameSeq >= 99) S.nameSeq = 1;
+-  const newNameNo = S.nameSeq;
+-
+-  const merged = {
+-    id:newId, name:`${newElement}${newNameNo}`, element:newElement,
+-    morality:newMorality,
+-    personality: a.personality,
+-    mood:100, stamina:newStaminaMax, traits:mergedTraits,
+-    level: newLevel,
+-    exp: 0, size: newSize, resting:false,
+-    intimacy: Math.floor(((a.intimacy||0) + (b.intimacy||0))/2),
+-    strPotential:newStrPot, agiPotential:newAgiPot, magPotential:newMagPot,
+-    luck:newLuck, wit:newWit,
+-    str:newStrPot * newLevel, agi:newAgiPot * newLevel, mag:newMagPot * newLevel
+-  };
+-  merged.hp = hpMax(merged);
+-  merged.skill = HEAL_ELEMENTS.includes(newElement) ? '治疗' : '元素弹';
+-
+-  const removedIds = [a.id, b.id];
+-  S.slimes = S.slimes.filter(s=>s!==a && s!==b);
+-  S.monsters = S.monsters.filter(s=>s!==a && s!==b);
+-  removedIds.forEach(id=>{ delete S.customPlans[id]; });
+-
+-  S.slimes.push(merged);
++  /* Mutate the retained primary in place: references, custom name, earned
++     intimacy/experience and all old-save extras survive the operation. */
++  if(typeof ensureProgress === 'function') ensureProgress();
++  S.coins -= preview.cost;
++  Object.assign(a, pots, stats, {
++    element:newElement, level:preview.level, traits:mergedTraits, size:newSize,
++    luck:Math.max(a.luck||0, Math.min(20, (a.luck||0) + (potBonus?1:0))),
++    wit:Math.max(a.wit||0, Math.min(20, (a.wit||0) + (potBonus?1:0))),
++    mergeCount:(Math.max(0, Math.floor(Number(a.mergeCount)||0)))+1
++  });
++  a.skill = HEAL_ELEMENTS.includes(newElement) ? '治疗' : '元素弹';
++  a.hp = Math.min(a.hp, hpMax(a));
++  S.slimes = S.slimes.filter(s=>s!==b);
++  S.monsters = S.monsters.filter(s=>s!==b);
++  delete S.customPlans[b.id];
++  if(Array.isArray(S.exploreTeam)) S.exploreTeam = S.exploreTeam.filter(id=>id!==b.id);
++  if(Array.isArray(S.lastAbyssSel)) S.lastAbyssSel = S.lastAbyssSel.filter(id=>id!==b.id);
++  if(typeof ensureProgress === 'function') ensureProgress();
+   mergeSel = [];
++  mergePreviewSignature = '';
+   save(); renderTop(); renderTab(); closeModal();
+-  toast(`🌀 合体成功！\n${merged.name} 诞生\n天赋 ${calcTalent(merged)} · 技能 ${merged.skill} · 体型 ${merged.size.toFixed(2)}`, 'good');
++  toast(`合体完成：${a.name} 仍是你的老朋友！\n消耗 ${preview.cost} 晶币 · Lv.${a.level} · 天赋 ${calcTalent(a)}\n${b.name} 已被消耗；主宠名字、经验与亲密度保留`, 'good');
++}
++function togglePetLock(id){
++  const s = getSlime(id); if(!s) return;
++  s.locked = !s.locked;
++  save(); renderTab(); openDetail(id);
++  toast(s.locked ? `${s.name} 已珍爱锁定，不会被合体消耗` : `${s.name} 已解除珍爱锁定`, s.locked?'good':undefined);
+ }
+ 
+ function openPlan(id){
+@@ -3155,6 +3391,7 @@ function openPlan(id){
+ function openModal(html){
+   $('#modalBox').innerHTML = html;
+   $('#modalLayer').classList.remove('hidden');
++  refreshUIIcons($('#modalBox'));
+ }
+ function closeModal(){
+   $('#modalLayer').classList.add('hidden');
+@@ -3178,14 +3415,16 @@ function openDetail(id, fromMonster){
+       <h3 style="display:flex;align-items:center;justify-content:center;gap:6px;">
+         <span>${ELEMENTS[s.element].icon} ${esc(s.name)}</span>
+         <button class="rename-btn" data-act="rename" data-id="${s.id}" title="改名">✏️</button>
++        <button class="btn small" data-act="petlock" data-id="${s.id}" aria-pressed="${!!s.locked}" title="珍爱锁：防止作为副宠消耗">${s.locked?'◇ 已珍爱锁定':'◇ 珍爱锁'}</button>
+       </h3>
+ 
+       <div class="info-grid">
+         <div class="info-row"><span>善恶</span><b>${moraleText}</b></div>
+         <div class="info-row"><span>等级</span><b class="lv-exp">Lv.${s.level}（${expPct}%）</b></div>
+         <div class="info-row"><span>性格</span><b>${s.personality}</b></div>
+-        <div class="info-row"><span>亲密度</span><b>${s.intimacy||0}</b></div>
++        <div class="info-row"><span>亲密度</span><b>${s.intimacy||0} · ${bondMilestone(s).name}</b></div>
+       </div>
++      ${bondProgressHTML(s)}
+ 
+       <div class="stat-section-title">◈ 基础属性（天赋：${talent}）</div>
+       <div class="info-grid">
+@@ -3768,10 +4007,105 @@ const FX = {
+   }
+ };
+ 
++/* ==================== 可验证目标与借用伙伴教学 ==================== */
++const TRAINING_CHALLENGES = {
++  shield:{name:'护盾时机', element:'岩', hp:320, str:35, mag:20, enemyHp:220, enemyElement:'火', hint:'首回合重击 320：先用「磐石落」撑起护盾，再反击。通关需实际挡住重击。'},
++  control:{name:'打断重击', element:'幻', hp:300, str:45, mag:20, enemyHp:230, enemyElement:'火', hint:'首回合重击 400：用「魅惑」取消已预告的行动，利用两回合空档反击。'},
++  cleanse:{name:'净化危机', element:'光', hp:300, str:25, mag:40, enemyHp:260, enemyElement:'岩', hint:'已有 3 层烧伤与 3 层中毒：先用「圣光」净化，再进攻。通关需真正移除负面。'}
++};
++function ensureProgress(){
++  if(!S.progress || typeof S.progress !== 'object' || Array.isArray(S.progress)) S.progress = {};
++  const p = S.progress;
++  ['abyssClears','challengeClears','regions','collected','claimed'].forEach(k=>{
++    if(!p[k] || typeof p[k] !== 'object' || Array.isArray(p[k])) p[k] = {};
++  });
++  S.slimes.concat(S.monsters || []).forEach(s=>{ if(ELEMENTS[s.element]) p.collected[s.element] = true; });
++  return p;
++}
++function recordRegionExplore(index){
++  const map = MAP_THEMES[index] || MAP_THEMES[0];
++  const p = ensureProgress();
++  p.regions[map.id] = Math.max(0, Number(p.regions[map.id]) || 0) + 1;
++}
++function progressionGoals(){
++  const p = ensureProgress();
++  const goals = [{id:'abyss-first',name:'第一次深渊胜利',now:Object.keys(p.abyssClears).length ? 1 : 0,need:1,coins:400,points:5}];
++  Object.keys(TRAINING_CHALLENGES).forEach(id=>goals.push({id:'training-'+id,name:'教学 · '+TRAINING_CHALLENGES[id].name,now:p.challengeClears[id] ? 1 : 0,need:1,coins:300,points:5}));
++  goals.push({id:'regions',name:'踏遍三片土地（各完成 3 次派遣）',now:MAP_THEMES.filter(m=>(p.regions[m.id]||0)>=3).length,need:MAP_THEMES.length,coins:600,treasure:2});
++  goals.push({id:'collection-six',name:'结识 6 种元素伙伴',now:Object.keys(p.collected).filter(k=>ELEMENTS[k] && p.collected[k]).length,need:6,coins:800,points:10});
++  return goals.map(g=>Object.assign(g,{claimed:!!p.claimed[g.id],ready:g.now>=g.need}));
++}
++function claimProgressGoal(id){
++  const g = progressionGoals().find(x=>x.id===id);
++  if(!g || !g.ready || g.claimed) return false;
++  ensureProgress().claimed[id] = true;
++  S.coins += g.coins || 0;
++  S.totalEarned += g.coins || 0;
++  S.points += g.points || 0;
++  S.bag.treasure = (S.bag.treasure || 0) + (g.treasure || 0);
++  save(); renderTop(); renderTab();
++  toast('目标奖励已领取：'+g.name, 'good');
++  return true;
++}
++function progressionGoalCards(){
++  const p = ensureProgress();
++  return `<div class="panel"><h3>旅途目标 · 一次性奖励</h3><p class="muted small">${MAP_THEMES.map(m=>`${m.name} ${Math.min(3,p.regions[m.id]||0)}/3`).join(' · ')} · 收集记录不会因融合丢失</p>${progressionGoals().map(g=>`<div class="task-row"><div><div class="task-name">${esc(g.name)}</div><div class="muted small">${Math.min(g.now,g.need)}/${g.need} · ${g.coins} 晶币${g.points?' + '+g.points+' 积分':''}${g.treasure?' + '+g.treasure+' 天材地宝':''}</div></div><button class="btn sm ${g.ready&&!g.claimed?'gold':'themed'}" data-act="claimGoal" data-id="${g.id}" ${!g.ready||g.claimed?'disabled':''}>${g.claimed?'已领取':g.ready?'领取':'进行中'}</button></div>`).join('')}</div>`;
++}
++function challengeCards(){
++  const p = ensureProgress();
++  return `<div class="panel"><h3>战斗课堂 · 固定挑战</h3><p class="muted small">借用伙伴，零消耗。默认逐回合；首次达标后在旅途目标领取奖励，重复训练无收益。</p>${Object.keys(TRAINING_CHALLENGES).map(id=>{const c=TRAINING_CHALLENGES[id];return `<div class="task-row"><div><div class="task-name">${esc(c.name)}${p.challengeClears[id]?' · 已掌握':''}</div><p class="muted small">${esc(c.hint)}</p></div><button class="btn sm themed" data-act="challengeStart" data-id="${id}">练习</button></div>`;}).join('')}</div>`;
++}
++function recordBattleProgress(B, win){
++  const p = ensureProgress();
++  if(B.training){
++    const used = B.practiceUsed && B.practiceUsed[B.challengeId];
++    if(win && used){ p.challengeClears[B.challengeId] = true; B.progressResult = '教学达标！首次奖励可在旅途目标领取。'; }
++    else B.progressResult = win ? '战斗获胜，但尚未完成本课机制；可免费再试。' : '免费练习结束；根据预告调整行动后再试。';
++  } else if(win){
++    p.abyssClears[String(B.mLevel || 1)] = true;
++    B.progressResult = '胜利已记入旅途目标。';
++  } else B.progressResult = '';
++  return B.progressResult;
++}
++function makeTrainingSlime(id, name, element, hp, str, mag, isMonster){
++  return {id,name,element,level:1,size:1,str,agi:10,mag,strPotential:str,agiPotential:10,magPotential:mag,luck:0,wit:0,personality:'平常',traits:[],skill:'元素弹',isMonster:!!isMonster,isTraining:true,trainingHp:hp,hp,stamina:120,mood:100,intimacy:0,exp:0};
++}
++function startTrainingChallenge(id){
++  const c = TRAINING_CHALLENGES[id];
++  if(!c || document.getElementById('gameOverlay')) return;
++  closeModal();
++  startAbyssBattle({challengeId:id});
++}
++function enemyIntentText(unit){
++  if(!unit || unit.hp<=0) return '已倒下';
++  const q = unit.intent;
++  if(!q) return '正在观察';
++  if(q.state==='canceled') return '已取消 · '+q.name;
++  if(q.state==='done') return '已行动 · '+q.name;
++  const controlled = unit.st && (unit.st.frozen>0 || unit.st.paralysis>0 || unit.st.charm>0);
++  const suffix = q.targetName ? ' → '+q.targetName : '';
++  const power = q.power ? ' '+q.power : q.mult>1 ? ' '+q.mult+'×' : '';
++  return (controlled?'受控待取消 · ':'预告 · ')+q.name+power+suffix;
++}
++
++/* Pure reward calculation: snapshot before post-battle healing. */
++function calculateBattleRewards(battle,win,level){
++  const enemies=battle.rewardMonsters || battle.monsters || [], participants=battle.allies || [];
++  const defeated=enemies.filter(m=>m.hp<=0);
++  const survivors=participants.filter(a=>a.hp>0);
++  const recipients=survivors.length ? survivors.slice() : participants.slice();
++  if(battle.training) return {totalExp:0,coinGain:0,defeatedCount:defeated.length,recipients:[],survivorCount:survivors.length};
++  const mLevel=clamp(Math.floor(Number(level || battle.mLevel)||1),1,50);
++  const levelMul=1+(mLevel-1)*0.25;
++  const base=(win ? enemies : defeated).reduce((sum,m)=>sum+Math.round((30+(Number(m.ref.level)||1)*10)*levelMul),0);
++  const totalExp=win ? base : Math.floor(base*0.25);
++  return {totalExp,coinGain:Math.round(totalExp*2.5),defeatedCount:defeated.length,recipients,survivorCount:survivors.length};
++}
+ /* ==================== 深渊对战 ==================== */
+ let abyssSetupSel = [];
+ 
+ function openAbyssSetup(){
++  getAbyssLevel();
+   const available = S.slimes.filter(s => !isDispatched(s));
+   if(!available.length){ toast('所有史莱姆都在野外探险中，请先召回后再进入深渊'); return; }
+   const validIds = new Set(available.map(s=>s.id));
+@@ -3833,14 +4167,17 @@ function renderTeamModal(){
+   `);
+ }
+ 
+-function startAbyssBattle(){
+-  if(!abyssSetupSel.length) return;
+-  const allies = abyssSetupSel.map(id=>getSlime(id)).filter(Boolean).filter(s=>!isDispatched(s));
++function startAbyssBattle(options){
++  options = options || {};
++  if(document.getElementById('gameOverlay')) return;
++  const challenge = TRAINING_CHALLENGES[options.challengeId] || null;
++  if(!challenge && !abyssSetupSel.length) return;
++  const allies = challenge ? [makeTrainingSlime(-1001, '借用·'+challenge.element+'伙伴', challenge.element, challenge.hp, challenge.str, challenge.mag, false)] : abyssSetupSel.map(id=>getSlime(id)).filter(Boolean).filter(s=>!isDispatched(s));
+   if(!allies.length){ toast('出战的史莱姆都在探险中，请先召回'); return; }
+   battleSpeed = clamp(Number(S.battleSpeed)||1, 1, 10);
+-  const monCount = rndInt(2, 4);
+-  const monsters = [];
+-  const mLevel = clamp(Number(S.abyssLevel)||1, 1, 50);
++  const monCount = challenge ? 0 : rndInt(2, 4);
++  const monsters = challenge ? [makeTrainingSlime(-2001, '练习·'+challenge.name, challenge.enemyElement, challenge.enemyHp, 25, 15, true)] : [];
++  const mLevel = challenge ? 1 : getAbyssLevel();
+   for(let i=0;i<monCount;i++){
+     const m = createSlime(true);
+     m.isMonster = true;
+@@ -3886,9 +4223,10 @@ function startAbyssBattle(){
+     </div>
+     <div class="battle-field">
+       ${Array.from({length:30}).map(()=>`<div class="bg-star" style="left:${rnd(2,98)}%;top:${rnd(2,98)}%;"></div>`).join('')}
+-      <div class="battle-row enemy">${enemyHTML}</div>
++      <div class="battle-row enemy" style="--unit-scale:${monsters.length<=2?.62:monsters.length===3?.5:.41};--unit-font:${monsters.length<=2?13:11}px">${enemyHTML}</div>
+       <div class="battle-log" id="battleLog">战斗开始！</div>
+-      <div class="battle-row ally">${allyHTML}</div>
++      <div class="battle-row ally" style="--unit-scale:${allies.length<=2?.62:allies.length===3?.5:allies.length===4?.41:.34};--unit-font:${allies.length<=2?13:11}px">${allyHTML}</div>
++      <div class="battle-key">金色：行动中 · 蓝色：已选伙伴 · 红色：攻击目标</div>
+       <div class="skill-bar hide" id="skillBar"></div>
+     </div>
+   `;
+@@ -3905,10 +4243,10 @@ function startAbyssBattle(){
+       rockArmor:0, iceArmor:0, timeRevive:false, reviveUsed:false,
+       immuneDebuff:false, miniSlime:null
+     };
+-    if(ref.element === '岩'){ st.immuneDebuff = true; st.rockArmor = Math.round(hpMax(ref)*0.5); }
++    if(ref.element === '岩' && !ref.isTraining){ st.immuneDebuff = true; st.rockArmor = Math.round(hpMax(ref)*0.5); }
+     if(ref.element === '冰'){ st.iceArmor = Math.round(hpMax(ref)*0.5); }
+     if(ref.element === '时间'){ st.timeRevive = true; }
+-    return {ref, hp:ref.hp, maxHp:hpMax(ref), st, minis:[], cd:{}, acted:false};
++    return {ref, hp:ref.hp, maxHp:ref.trainingHp || hpMax(ref), st, minis:[], cd:{}, acted:false, intent:null};
+   }
+ 
+   const B = {
+@@ -3917,15 +4255,22 @@ function startAbyssBattle(){
+     monsters: monsters.map(initBattleUnit),
+     turn:0, timer:null, pendingTimers:[],
+     paused:false, pauseTimer:null, _pauseResume:null,
+-    atkBuff: 1
++    atkBuff: 1, mLevel, training:!!challenge, trainingMode:'step', challengeId:options.challengeId || null, practiceUsed:{}, resolving:false
+   };
++  B.rewardMonsters = B.monsters.slice();
++  function currentBattleMode(){ return B.training ? B.trainingMode : S.battleMode; }
++  if(challenge && options.challengeId==='cleanse'){ B.allies[0].st.burn=3; B.allies[0].st.poison=3; }
++  if(challenge){
++    const title = overlay.querySelector('.hud-title');
++    if(title) title.textContent = '战斗课堂 · '+challenge.name;
++  }
+ 
+   /* 自检钩子：?selftest=1 时把本局战斗暴露给 __TEST__，正常游玩不会触发 */
+   if(window.__TEST__) window.__TEST__._battle = {
+     B, overlay, fieldEl, logEl, later, performAction, performMiniAction,
+     getUnitEl, refreshBars, dealDamage, handleUnitDeath, nextTurn,
+     playerCast, playerBasic, renderSkillBar, castStrike,
+-    waitForPlayer, closeBattle, enemyPhase, endBattle,
++    waitForPlayer, closeBattle, enemyPhase, endBattle, queueEnemyIntents, refreshIntentPanel, turnControl,
+     setDodgeRate: fn => { dodgeRate = fn; },
+     setCritRate: fn => { critRate = fn; },
+     restoreRates: () => { dodgeRate = _rateOrig.dodgeRate; critRate = _rateOrig.critRate; }
+@@ -3944,7 +4289,7 @@ function startAbyssBattle(){
+     return B.monsters.indexOf(u) >= 0 ? 'enemy' : 'ally';
+   }
+   function manualMode(){
+-    return S.battleMode === 'interject' || S.battleMode === 'step';
++    return currentBattleMode() === 'interject' || currentBattleMode() === 'step';
+   }
+   function lowestAllyUnit(){
+     const alive = getAllAliveUnits('ally').filter(u=>u.hp > 0);
+@@ -3959,16 +4304,16 @@ function startAbyssBattle(){
+     const atkEl = getUnitEl(attackerUnit, sideOfUnit(attackerUnit));
+     const tSide = sideOfUnit(target);
+     const tgtEl = getUnitEl(target, tSide);
+-    if(tgtEl && atkEl) doElementBallEffect(ref, atkEl, tgtEl);
++    if(tgtEl && atkEl) doElementBallEffect(ref, atkEl, tgtEl, opt.name && opt.name!=='普攻');
+ 
+-    const dodge = target.isMini ? 0 : dodgeRate(target.ref);
++    const dodge = B.training || target.isMini ? 0 : dodgeRate(target.ref);
+     if(Math.random()*100 < dodge){
+       FX.float(tgtEl, 'MISS', { cls:'miss' });
+       log(`${target.ref.name} 闪避了 ${ref.name} 的${opt.name || '攻击'}`);
+       return 0;
+     }
+ 
+-    let baseDmg = physAtk(ref) + rndInt(-3,3);
++    let baseDmg = physAtk(ref) + (B.training ? 0 : rndInt(-3,3));
+     baseDmg = Math.round(baseDmg * (B.atkBuff||1));
+     if(attackerUnit.st.weakness > 0) baseDmg = Math.round(baseDmg * (1 - attackerUnit.st.weakness*0.05));
+ 
+@@ -3980,11 +4325,11 @@ function startAbyssBattle(){
+     if(ref.element === '光' && target.ref.isMonster) dmg *= 2;
+ 
+     const critBonus = target.st.frostbite * 5;
+-    const crit = Math.random() < (critRate(ref)+critBonus)/100;
++    const crit = !B.training && Math.random() < (critRate(ref)+critBonus)/100;
+     if(crit) dmg = Math.round(dmg * 1.8);
+     dmg = Math.max(1, dmg);
+ 
+-    if(!opt.noElement) applyAttackerElement(attackerUnit, target);
++    if(!opt.noElement && !B.training) applyAttackerElement(attackerUnit, target);
+ 
+     /* 冰甲反伤：与自动路径一致，攻击带冰甲的冰属性目标会被冻伤 */
+     if(target.ref.element === '冰' && target.st.iceArmor > 0){
+@@ -3996,7 +4341,7 @@ function startAbyssBattle(){
+     const actual = dealDamage(target, dmg);
+     if(tgtEl){
+       FX.flash(tgtEl, crit);
+-      FX.shake(crit ? 'crit' : 'light');
++      if(crit) FX.shake('crit');
+       if(actual === 0){
+         FX.float(tgtEl, '护盾', { cls:'small' });
+       } else {
+@@ -4145,6 +4490,7 @@ function startAbyssBattle(){
+       /* 溅射已由 castStrike 统一处理（任意雷命中水史莱姆都会触发） */
+       castStrike(attackerUnit, target, 1.5, { name: sk.name, noElement:true });
+     } else if(el === '光'){
++      if(B.training && getAllAliveUnits('ally').some(u=>['burn','poison','frostbite','frozen','paralysis','charm','weakness'].some(k=>u.st[k]>0))) B.practiceUsed.cleanse=true;
+       const heal = Math.max(1, Math.round(magAtk(ref) * 0.6));
+       getAllAliveUnits('ally').forEach(u=>{
+         if(u.hp <= 0) return;
+@@ -4191,6 +4537,7 @@ function startAbyssBattle(){
+ 
+     attackerUnit.acted = true;
+     attackerUnit.cd[el] = sk.cd;
++    refreshIntentPanel();
+     refreshBars();
+     renderSkillBar();
+     return true;
+@@ -4198,11 +4545,13 @@ function startAbyssBattle(){
+ 
+   function markTargetable(on){
+     overlay.querySelectorAll('.battle-row.enemy .battle-unit').forEach(el=>{
+-      el.classList.toggle('targetable', !!on);
++      const u=B.monsters.find(b=>String(b.ref.id)===String(el.dataset.monId));
++      el.classList.toggle('targetable', !!on && !!u && u.hp>0 && !isUntargetable(u,getAllAliveMain('enemy')));
+     });
+   }
+ 
+   function renderSkillBar(){
++    overlay.querySelectorAll('[data-ally-id]').forEach(el=>el.classList.toggle('selected-unit', !!skSel && manualMode() && String(el.dataset.allyId)===String(skSel.ref.id)));
+     const bar = overlay.querySelector('#skillBar');
+     if(!bar) return;
+     if(!manualMode()){
+@@ -4277,7 +4626,8 @@ function startAbyssBattle(){
+     const ok = (kind === 'basic') ? playerBasic(u, target) : playerCast(u, target);
+     if(ok) skSel = null;
+     renderSkillBar();
+-    if(ok && typeof afterPlayerAction === 'function') afterPlayerAction(u);
++    if((ok || u.acted) && typeof afterPlayerAction === 'function') afterPlayerAction(u);
++    refreshIntentPanel();
+   }
+ 
+   overlay.addEventListener('click', (ev)=>{
+@@ -4291,11 +4641,12 @@ function startAbyssBattle(){
+   });
+ 
+   overlay.querySelector('#bMode').addEventListener('click', ()=>{
+-    const i = MODES.indexOf(S.battleMode);
+-    S.battleMode = MODES[(i + 1) % MODES.length];
+-    overlay.querySelector('#bMode').textContent = MODE_LABEL[S.battleMode];
++    const i = MODES.indexOf(currentBattleMode());
++    const nextMode = MODES[(i + 1) % MODES.length];
++    if(B.training) B.trainingMode = nextMode; else S.battleMode = nextMode;
++    overlay.querySelector('#bMode').textContent = MODE_LABEL[currentBattleMode()];
+     renderSkillBar();
+-    log(`战斗玩法切换为「${MODE_LABEL[S.battleMode]}」`);
++    log(`战斗玩法切换为「${MODE_LABEL[currentBattleMode()]}」`);
+     /* 从逐回合切走时，立刻交回这条待行动的单位，不用等 8s 兜底 */
+     if(B.paused && typeof B._pauseResume === 'function'){
+       const resume = B._pauseResume;
+@@ -4304,7 +4655,7 @@ function startAbyssBattle(){
+     }
+     save();
+   });
+-  overlay.querySelector('#bMode').textContent = MODE_LABEL[S.battleMode] || '自动';
++  overlay.querySelector('#bMode').textContent = MODE_LABEL[currentBattleMode()] || '自动';
+   renderSkillBar();
+ 
+   let battleClosed = false;
+@@ -4313,6 +4664,7 @@ function startAbyssBattle(){
+   function closeBattle(){
+     if(battleClosed) return;
+     battleClosed = true;
++    B.running = false;
+     B.paused = false;
+     afterPlayerAction = null;
+     if(B.pauseTimer){ clearTimeout(B.pauseTimer); B.pauseTimer = null; }
+@@ -4335,12 +4687,12 @@ function startAbyssBattle(){
+     return id;
+   }
+ 
+-  overlay.querySelectorAll('.speed-btn').forEach(btn=>{
++  overlay.querySelectorAll('.speed-btn[data-speed]').forEach(btn=>{
+     btn.addEventListener('click', ()=>{
+       battleSpeed = +btn.dataset.speed;
+       S.battleSpeed = battleSpeed;
+       save();
+-      overlay.querySelectorAll('.speed-btn').forEach(b=>b.classList.toggle('on', b===btn));
++      overlay.querySelectorAll('.speed-btn[data-speed]').forEach(b=>b.classList.toggle('on', b===btn));
+       restartTimer();
+     });
+   });
+@@ -4495,15 +4847,26 @@ function startAbyssBattle(){
+     }
+   }
+ 
+-  function doElementBallEffect(attacker, atkUnit, tgtUnit){
++  function markBattleAction(atkUnit,tgtUnit){
++    overlay.querySelectorAll('.is-acting,.is-targeted').forEach(e=>e.classList.remove('is-acting','is-targeted'));
++    if(atkUnit)atkUnit.classList.add('is-acting');if(tgtUnit)tgtUnit.classList.add('is-targeted');
++    later(()=>{if(atkUnit)atkUnit.classList.remove('is-acting');if(tgtUnit)tgtUnit.classList.remove('is-targeted');},Math.max(400,1100/battleSpeed));
++  }
++  function doElementBallEffect(attacker, atkUnit, tgtUnit, important){
+     if(!atkUnit || !tgtUnit) return;
++    markBattleAction(atkUnit,tgtUnit);
+     const from = getCoords(atkUnit), to = getCoords(tgtUnit);
+     const c = slimeColor(attacker);
+     const h = c.h, s = Math.max(c.s,40), l = Math.max(c.l,55);
+     const col = `hsl(${h} ${s.toFixed(1)}% ${l.toFixed(1)}%)`;
+     const miniScale = attacker.miniScale || 1;
++    if(!important){
++      const orb=document.createElement('div');orb.className='skill-orb';orb.style.cssText=`left:${from.x}px;top:${from.y}px;width:7px;height:7px;background:${col};box-shadow:0 0 5px ${col};opacity:.8`;fieldEl.appendChild(orb);
++      const start=performance.now(),duration=Math.max(120,320/battleSpeed);
++      const fly=now=>{if(!orb.isConnected)return;const p=Math.min(1,(now-start)/duration);orb.style.left=from.x+(to.x-from.x)*p+'px';orb.style.top=from.y+(to.y-from.y)*p+'px';if(p<1)requestAnimationFrame(fly);else orb.remove();};requestAnimationFrame(fly);return;
++    }
+     const ring = document.createElement('div');
+-    ring.className = 'skill-ring';
++    ring.className = 'skill-ring important';
+     ring.style.left = from.x+'px';
+     ring.style.top = from.y+'px';
+     ring.style.setProperty('--h', h);
+@@ -4778,6 +5141,7 @@ function startAbyssBattle(){
+ 
+   function doHealEffect(healer, healUnit, tgtUnit){
+     if(!healUnit || !tgtUnit) return;
++    markBattleAction(healUnit,tgtUnit);
+     const from = getCoords(healUnit), to = getCoords(tgtUnit);
+     const c = slimeColor(healer);
+     const h = c.h, s = Math.max(c.s,40), l = Math.max(c.l,60);
+@@ -4960,7 +5324,7 @@ function startAbyssBattle(){
+     }
+     removeMinisOf(unit);
+     /* 手动模式下阵亡后技能条要立刻少一个可用单位 */
+-    if(S.battleMode !== 'auto') renderSkillBar();
++    if(currentBattleMode() !== 'auto') renderSkillBar();
+   }
+ 
+   function spawnMiniSlime(ownerUnit, side){
+@@ -4988,6 +5352,7 @@ function startAbyssBattle(){
+       st: {burn:0, poison:0, frostbite:0, frozen:0, freezeVisual:false, paralysis:0, charm:0, weakness:0, rockArmor:0, iceArmor:0, timeRevive:false, reviveUsed:false, immuneDebuff:false},
+       ref: { name: `${ownerUnit.ref.name}的迷你水史莱姆`, element:'水', isMonster: ownerUnit.ref.isMonster, level: ownerUnit.ref.level }
+     };
++    mini.ref.id = mini.id;
+     const el = document.createElement('div');
+     el.className = 'mini-slime pos-'+slot;
+     el.dataset.miniId = mini.id;
+@@ -4996,6 +5361,7 @@ function startAbyssBattle(){
+     mini.el = el;
+     mini.hpBarEl = el.querySelector('.mini-hpbar i');
+     ownerUnit.minis.push(mini);
++    if(side==='enemy' && B.turn>0){ queueOneEnemy(mini); refreshIntentPanel(); }
+     setTimeout(()=>{
+       const sl = el.querySelector('.slime');
+       if(sl && el.isConnected) sl.dataset.mood = 'idle';
+@@ -5024,6 +5390,11 @@ function startAbyssBattle(){
+ 
+   function performMiniAction(mini, side){
+     if(!mini || mini.hp <= 0) return;
++    if(mini.acted) return;
++    const q = side==='enemy' ? (mini.intent && mini.intent.round===B.turn ? mini.intent : queueOneEnemy(mini)) : null;
++    if(turnControl(mini,side)){ mini.acted=true; if(q)q.state='canceled'; refreshIntentPanel(); return; }
++    mini.acted=true;
++    if(q)q.state='done';
+     const el = mini.el;
+     if(!el || !el.isConnected) return;
+     const inner = el.querySelector('.slime');
+@@ -5034,7 +5405,8 @@ function startAbyssBattle(){
+     const enemiesSide = side==='ally' ? 'enemy' : 'ally';
+     const all = getAllAliveUnits(enemiesSide);
+     if(!all.length) return;
+-    const target = pick(all);
++    const target = q ? resolveIntentTarget(mini,side,false) : pick(all);
++    if(!target) return;
+     const tgtEl = getUnitEl(target, target.isMini ? target.side : enemiesSide);
+     const attackerForFx = {element:'水', colorOverride:{h:205, s:80, l:60}, miniScale: 0.55};
+     if(tgtEl) doElementBallEffect(attackerForFx, el, tgtEl);
+@@ -5047,6 +5419,7 @@ function startAbyssBattle(){
+     }
+     log(damageLogText(target, shield0, actual, `💧 ${mini.ref.name} 攻击 ${target.ref.name}`));
+     refreshBars();
++    refreshIntentPanel();
+     if(target.hp <= 0) handleUnitDeath(target, enemiesSide);
+   }
+ 
+@@ -5126,7 +5499,7 @@ function startAbyssBattle(){
+         const target = pick(alive);
+         const tgtEl = getUnitEl(target, side);
+         if(tgtEl) doElementBallEffect(ref, unitEl, tgtEl);
+-        const dmg = Math.max(1, Math.round(physAtk(ref) * (B.atkBuff||1)));
++        const dmg = Math.max(1, Math.round((unitWrapper.isMini ? unitWrapper.atk : physAtk(ref)) * (B.atkBuff||1)));
+         const actual = dealDamage(target, dmg);
+         FX.flash(tgtEl, false);
+         FX.float(tgtEl, '-' + actual, {});
+@@ -5141,6 +5514,82 @@ function startAbyssBattle(){
+     return false;
+   }
+ 
++  /* 意图只计划一次；执行使用同一个动作和目标，而非根据文案重新掷骰。 */
++  function chooseIntentTarget(unit, side, healing){
++    const targetSide = healing ? side : (side==='enemy'?'ally':'enemy');
++    const mains = getAllAliveMain(targetSide);
++    const all = getAllAliveUnits(targetSide);
++    let pool = all.filter(t=>healing || !isUntargetable(t,mains));
++    if(!pool.length) pool = all;
++    if(!pool.length) return null;
++    if(healing) return pool.reduce((a,b)=>b.hp/b.maxHp<a.hp/a.maxHp?b:a);
++    let bestScore=-Infinity, best=[];
++    pool.forEach(t=>{
++      const mult = ((ELEMENT_CHART[unit.ref.element]||{})[t.ref.element]||1) * (unit.ref.element==='光'&&t.ref.isMonster?2:1);
++      const score = mult>1?2:mult===1?1:0;
++      if(score>bestScore){bestScore=score;best=[t];} else if(score===bestScore) best.push(t);
++    });
++    return B.training ? best[0] : pick(best);
++  }
++  function queueOneEnemy(unit){
++    if(unit.hp<=0) return null;
++    let kind='attack', name='攻击', mult=1, power=0;
++    if(unit.isMini){name='水弹';}
++    else if(B.training){
++      if(B.challengeId==='shield'){power=B.turn<=1?320:60;kind=B.turn<=1?'heavy':'attack';}
++      else if(B.challengeId==='control'){kind=(B.turn-1)%3===0?'heavy':'attack';power=kind==='heavy'?400:60;}
++      else power=35;
++      name=kind==='heavy'?'重击':'攻击';
++    } else if(unit.ref.skill==='治疗') {kind='heal';name=unit.ref.element==='光'?'治疗并净化':'治疗';}
++    else if(unit.hp/unit.maxHp<0.4 && B.turn%3===2){kind='guard';name='防御 · 25%护盾';}
++    else if(B.turn%3===0){kind='heavy';name='蓄力重击';mult=1.65;}
++    const target=kind==='guard'?unit:chooseIntentTarget(unit,'enemy',kind==='heal');
++    unit.intent={kind,name,mult,power,round:B.turn,state:'pending',targetId:target?target.ref.id:null,targetName:target?target.ref.name:'无目标'};
++    return unit.intent;
++  }
++  function queueEnemyIntents(){
++    getAllAliveUnits('enemy').forEach(queueOneEnemy);
++    refreshIntentPanel();
++    refreshBars();
++  }
++  function refreshIntentPanel(){
++    let panel=overlay.querySelector('.battle-intents');
++    if(!panel){panel=document.createElement('div');panel.className='battle-intents';panel.setAttribute('aria-live','polite');fieldEl.appendChild(panel);}
++    panel.innerHTML = !B.running ? '' : `${challenge?`<div class="training-hint">${esc(challenge.hint)} · ${B.practiceUsed[B.challengeId]?'机制已达成，请赢下本场':'等待完成本课机制'}</div>`:''}<div>${getAllAliveUnits('enemy').map(u=>`<span class="intent-chip">${esc(u.ref.name)}：${esc(enemyIntentText(u))}</span>`).join('')}</div>`;
++  }
++  function resolveIntentTarget(unit, side, healing){
++    const q=unit.intent;
++    if(!q) return chooseIntentTarget(unit,side,healing);
++    const targetSide=healing?side:(side==='enemy'?'ally':'enemy');
++    const mains=getAllAliveMain(targetSide);
++    const all=getAllAliveUnits(targetSide);
++    let target=all.find(t=>String(t.ref.id)===String(q.targetId));
++    if(target && (healing || !isUntargetable(target,mains))) return target;
++    target=chooseIntentTarget(unit,side,healing);
++    q.targetId=target?target.ref.id:null;
++    q.targetName=target?target.ref.name:'无目标';
++    log(`${unit.ref.name} 的预告目标已失效，${target?'重新锁定 '+target.ref.name:'取消行动'}`);
++    refreshIntentPanel();
++    return target;
++  }
++  function resolveTrainingAttack(unit, target){
++    const q=unit.intent;
++    if(!target) return;
++    const shield0=shieldOf(target);
++    const actual=dealDamage(target,q.power);
++    if(B.challengeId==='shield' && q.kind==='heavy' && shield0>shieldOf(target)) B.practiceUsed.shield=true;
++    const targetEl=getUnitEl(target,'ally');
++    const attackerEl=getUnitEl(unit,'enemy');
++    if(targetEl && attackerEl) doElementBallEffect(unit.ref,attackerEl,targetEl,q.kind==='heavy');
++    FX.flash(targetEl,q.kind==='heavy');
++    if(q.kind==='heavy') FX.shake('crit');
++    FX.float(targetEl,actual?'-'+actual:'护盾',{cls:q.kind==='heavy'?'crit':''});
++    log(damageLogText(target,shield0,actual,`${unit.ref.name} 执行预告${q.name}，命中 ${target.ref.name}`,''));
++    if(target.hp<=0) handleUnitDeath(target,'ally');
++    refreshBars();
++    refreshIntentPanel();
++  }
++
+   function performAction(unitWrapper, side){
+     const ref = unitWrapper.ref;
+     const st = unitWrapper.st;
+@@ -5151,8 +5600,29 @@ function startAbyssBattle(){
+     const unitEl = getUnitEl(unitWrapper, side);
+     if(!unitEl) return;
+ 
+-    /* 冻结/麻痹/持续伤害/魅惑：与手动路径共用同一套结算 */
+-    if(turnControl(unitWrapper, side)) return;
++    /* 控制会取消同一条预告，绝不会在控制后偷偷执行原动作。 */
++    const queued = side==='enemy' ? (unitWrapper.intent && unitWrapper.intent.round===B.turn ? unitWrapper.intent : queueOneEnemy(unitWrapper)) : null;
++    const wasControlled = st.frozen>0 || st.paralysis>0 || st.charm>0;
++    if(turnControl(unitWrapper, side)){
++      unitWrapper.acted = true;
++      if(queued){
++        queued.state='canceled';
++        if(B.training && B.challengeId==='control' && wasControlled && queued.kind==='heavy') B.practiceUsed.control=true;
++      }
++      refreshBars(); refreshIntentPanel();
++      return;
++    }
++    unitWrapper.acted = true;
++    if(queued){
++      queued.state='done';
++      if(queued.kind==='guard'){
++        st.rockArmor=(st.rockArmor||0)+Math.round(unitWrapper.maxHp*0.25);
++        log(`${ref.name} 执行防御，获得 25% 最大生命护盾`);
++        refreshBars(); refreshIntentPanel(); return;
++      }
++      if(B.training){ resolveTrainingAttack(unitWrapper,resolveIntentTarget(unitWrapper,side,false)); return; }
++      refreshIntentPanel();
++    }
+ 
+     const wrap = unitEl.querySelector('.slime-wrap');
+     if(wrap){ wrap.classList.add('attack-jump'); setTimeout(()=>wrap.classList.remove('attack-jump'), 700); }
+@@ -5168,9 +5638,12 @@ function startAbyssBattle(){
+         }
+       });
+       if(!candidates.length) return;
+-      let target = candidates[0];
+-      let lowest = target.hp/target.maxHp;
+-      for(const a of candidates){ const r = a.hp/a.maxHp; if(r < lowest){ lowest = r; target = a; } }
++      let target = queued ? resolveIntentTarget(unitWrapper,side,true) : candidates[0];
++      if(!target) return;
++      if(!queued){
++        let lowest = target.hp/target.maxHp;
++        for(const a of candidates){ const r = a.hp/a.maxHp; if(r < lowest){ lowest = r; target = a; } }
++      }
+       const tgtEl = getUnitEl(target, target.isMini ? target.side : side);
+       if(tgtEl) doHealEffect(ref, unitEl, tgtEl);
+       const heal = Math.max(1, Math.round(magAtk(ref)*0.8 + ref.level*5));
+@@ -5206,18 +5679,19 @@ function startAbyssBattle(){
+       if(score > bestScore){ bestScore = score; best = [e]; }
+       else if(score === bestScore) best.push(e);
+     });
+-    const target = pick(best.length ? best : pool);
++    const target = queued ? resolveIntentTarget(unitWrapper,side,false) : pick(best.length ? best : pool);
++    if(!target) return;
+     const tgtEl = getUnitEl(target, target.isMini ? target.side : enemiesSide);
+-    if(tgtEl) doElementBallEffect(ref, unitEl, tgtEl);
++    if(tgtEl) doElementBallEffect(ref, unitEl, tgtEl, !!queued && queued.kind==='heavy');
+ 
+-    const dodge = target.isMini ? 0 : dodgeRate(target.ref);
++    const dodge = B.training || target.isMini ? 0 : dodgeRate(target.ref);
+     if(Math.random()*100 < dodge){
+       FX.float(tgtEl, 'MISS', { cls:'miss' });
+       log(`${target.ref.name} 闪避了 ${ref.name} 的攻击`);
+       return;
+     }
+ 
+-    let baseDmg = physAtk(ref) + rndInt(-3,3);
++    let baseDmg = physAtk(ref) + (B.training ? 0 : rndInt(-3,3));
+     baseDmg = Math.round(baseDmg * (B.atkBuff||1));
+     if(st.weakness > 0) baseDmg = Math.round(baseDmg * (1 - st.weakness*0.05));
+ 
+@@ -5225,12 +5699,12 @@ function startAbyssBattle(){
+     if (ELEMENT_CHART[ref.element] && ELEMENT_CHART[ref.element][target.ref.element]) {
+         elemMult = ELEMENT_CHART[ref.element][target.ref.element];
+     }
+-    let dmg = Math.round(baseDmg * elemMult);
++    let dmg = Math.round(baseDmg * elemMult * (queued ? queued.mult : 1));
+ 
+     if(ref.element === '光' && target.ref.isMonster) dmg *= 2;
+ 
+     const critBonus = target.st.frostbite * 5;
+-    const crit = Math.random() < (critRate(ref)+critBonus)/100;
++    const crit = !B.training && Math.random() < (critRate(ref)+critBonus)/100;
+     if(crit) dmg = Math.round(dmg * 1.8);
+     dmg = Math.max(1, dmg);
+ 
+@@ -5238,7 +5712,7 @@ function startAbyssBattle(){
+     if(elemMult > 1) elemMsg = '（克制！）';
+     else if(elemMult < 1) elemMsg = '（微弱）';
+ 
+-    applyAttackerElement(unitWrapper, target);
++    if(!B.training) applyAttackerElement(unitWrapper, target);
+ 
+     if(target.ref.element === '冰' && target.st.iceArmor > 0){
+       if(applyStatus(unitWrapper, 'frostbite', 1))
+@@ -5249,7 +5723,7 @@ function startAbyssBattle(){
+     const actual = dealDamage(target, dmg);
+     if(tgtEl){
+       FX.flash(tgtEl, crit);
+-      FX.shake(crit ? 'crit' : 'light');
++      if(crit) FX.shake('crit');
+       if(actual === 0){
+         FX.float(tgtEl, '护盾', { cls:'small' });
+       } else {
+@@ -5259,7 +5733,7 @@ function startAbyssBattle(){
+       }
+     }
+     log(damageLogText(target, shield0, actual,
+-      `${ref.name} 攻击 ${target.ref.name}`, `${crit?'（暴击！）':''}${elemMsg}`));
++      `${ref.name} ${queued?queued.name:'攻击'} ${target.ref.name}`, `${crit?'（暴击！）':''}${elemMsg}`));
+     refreshBars();
+ 
+     if(ref.element === '雷' && target.ref.element === '水' && actual > 0){
+@@ -5308,19 +5782,17 @@ function startAbyssBattle(){
+   }
+ 
+   function updateUnitLabel(el, b){
+-    const uname = el.querySelector('.uname');
+-    if(!uname) return;
+-    const st = b.st;
+-    const icons = [];
+-    if(st.burn > 0) icons.push(`🔥${st.burn}`);
+-    if(st.poison > 0) icons.push(`☠${st.poison}`);
+-    if(st.frostbite > 0) icons.push(`❄${st.frostbite}`);
+-    if(st.frozen > 0) icons.push('🧊');
+-    if(st.paralysis > 0) icons.push('⚡');
+-    if(st.charm > 0) icons.push('💗');
+-    if(st.weakness > 0) icons.push(`⬇${st.weakness}`);
+-    const label = b.ref.isMonster ? `${b.ref.name} Lv.${b.ref.level}` : b.ref.name;
+-    uname.textContent = label + (icons.length ? ' ' + icons.join(' ') : '');
++    const uname=el.querySelector('.uname');if(!uname)return;
++    uname.textContent=b.ref.name;uname.title=`${b.ref.name} · Lv.${b.ref.level}`;
++    el.dataset.fallen=b.hp<=0?'1':'0';
++    let hp=el.querySelector('.hp-value');if(!hp){hp=document.createElement('div');hp.className='hp-value';el.appendChild(hp);}hp.textContent=`${Math.max(0,Math.ceil(b.hp))}/${b.maxHp}`;hp.title=`生命 ${Math.max(0,Math.ceil(b.hp))}/${b.maxHp}`;
++    let statuses=el.querySelector('.battle-statuses');if(!statuses){statuses=document.createElement('div');statuses.className='battle-statuses';el.appendChild(statuses);}
++    const defs=[['burn','flame','烧伤'],['poison','leaf','中毒'],['frostbite','snow','冻伤'],['frozen','snow','冻结'],['paralysis','bolt','麻痹'],['charm','heart','魅惑'],['weakness','down','削弱'],['intangible','eye','虚化'],['rockArmor','shield','岩甲'],['iceArmor','shield','冰甲']];
++    statuses.innerHTML=defs.filter(d=>(b.st[d[0]]||0)>0&&b.hp>0).map(d=>`<span class="status-chip ${['intangible','rockArmor','iceArmor'].includes(d[0])?'positive':'negative'}" title="${d[2]} ${b.st[d[0]]}" aria-label="${d[2]} ${b.st[d[0]]}">${uiIcon(d[1])}<b>${Math.ceil(b.st[d[0]])}</b></span>`).join('');
++    if(el.dataset.side==='enemy'){
++      let intent=el.querySelector('.intent-label');if(!intent){intent=document.createElement('div');intent.className='intent-label';el.appendChild(intent);}
++      intent.textContent=b.hp>0&&typeof enemyIntentText==='function'?enemyIntentText(b):'';intent.title=intent.textContent;
++    }
+   }
+ 
+   function updateShieldBar(el, b){
+@@ -5394,7 +5866,7 @@ function startAbyssBattle(){
+           }
+       }
+ 
+-      if(b.hp <= 0 && !el.querySelector('.capture-btn')){
++      if(!B.training && b.hp <= 0 && !el.querySelector('.capture-btn')){
+         const btn = document.createElement('button');
+         btn.className = 'capture-btn';
+         btn.textContent = `捕捉 (${S.bag.net||0})`;
+@@ -5448,6 +5920,7 @@ function startAbyssBattle(){
+   }
+ 
+   function captureMonster(mon, btn){
++    if(B.training){ toast('借用训练不能捕捉，也不消耗捕捉网'); return; }
+     if(!S.bag.net || S.bag.net <= 0){ toast('没有捕捉网了，请先去背包购买'); return; }
+     S.bag.net--;
+     mon.hp = hpMax(mon);
+@@ -5467,13 +5940,14 @@ function startAbyssBattle(){
+   function aliveMonsters(){ return B.monsters.filter(m=>m.hp > 0); }
+ 
+   function nextTurn(){
+-    if(!B.running) return;
++    if(!B.running || B.resolving) return;
+     /* 暂停中（逐回合等待玩家操作）不推进回合：否则 9s 轮询会把玩家还没行动的回合吃掉 */
+     if(B.paused) return;
+     B.turn++;
++    B.resolving = true;
+ 
+     /* 每回合：清掉上一轮的手动行动标记，并递减主动技 CD */
+-    B.allies.concat(B.monsters).forEach(u=>{
++    B.allies.concat(B.monsters, getAllAliveUnits('ally').filter(u=>u.isMini), getAllAliveUnits('enemy').filter(u=>u.isMini)).forEach(u=>{
+       u.acted = false;
+       if(u.st && u.st.intangible > 0) u.st.intangible = 0;
+       if(u.cd) Object.keys(u.cd).forEach(k=>{ u.cd[k] = Math.max(0, u.cd[k] - 1); });
+@@ -5491,13 +5965,14 @@ function startAbyssBattle(){
+     if(!aliveAllies().length){ log('出战史莱姆全部倒下……'); endBattle(false); return; }
+     if(!aliveMonsters().length){ log('怪物全部倒下！胜利！'); endBattle(true); return; }
+ 
++    queueEnemyIntents();
+     const stepDelay = Math.round(1400 / battleSpeed);
+     const as = aliveAllies();
+     const allyMinis = [];
+     as.forEach(a=>{ (a.minis||[]).forEach(m=>{ if(m.hp>0) allyMinis.push(m); }); });
+     const allyActors = as.concat(allyMinis);
+ 
+-    if(S.battleMode === 'step'){
++    if(currentBattleMode() === 'step'){
+       runStepActors(allyActors, 0);
+       return;
+     }
+@@ -5561,7 +6036,7 @@ function startAbyssBattle(){
+         if(t) playerBasic(unit, t);
+       }
+       finish();
+-    }, timeoutMs || 8000);
++    }, timeoutMs || (B.training ? 60000 : 8000));
+     afterPlayerAction = () => finish();
+   }
+ 
+@@ -5594,6 +6069,8 @@ function startAbyssBattle(){
+         checkRevive('enemy');
+         if(!aliveAllies().length){ log('出战史莱姆全部倒下……'); endBattle(false); return; }
+         if(!aliveMonsters().length){ log('怪物全部倒下！胜利！'); endBattle(true); return; }
++        B.resolving = false;
++        refreshIntentPanel();
+       }, enemyActors.length * stepDelay + 300);
+   }
+ 
+@@ -5608,23 +6085,23 @@ function startAbyssBattle(){
+ 
+     [...B.allies, ...B.monsters].forEach(u=>removeMinisOf(u));
+ 
++    const rewards=calculateBattleRewards(B,win,B.mLevel);
++    const {totalExp,coinGain}=rewards;
++    B.result={win,totalExp,coinGain,defeatedCount:rewards.defeatedCount,survivorCount:rewards.survivorCount,recipientIds:rewards.recipients.map(a=>a.ref.id)};
++    const progressLine=typeof recordBattleProgress==='function' ? recordBattleProgress(B,win) : '';
++    if(!B.training){
++      S.coins += coinGain;
++      S.totalEarned += coinGain;
++      if(totalExp>0) rewards.recipients.forEach(a=>{
++        addExp(a.ref, Math.floor(totalExp/Math.max(1,rewards.recipients.length)));
++        a.ref.mood=clamp(a.ref.mood+(win?10:3),0,100);
++      });
++      if(win) S.abyssUnlocked=Math.max(getAbyssUnlocked(),Math.min(50,(B.mLevel||1)+1));
++    }
+     B.allies.forEach(a=>{
+-      a.hp = hpMax(a.ref);
+-      a.ref.hp = a.hp;
+-      a.st.burn = a.st.poison = a.st.frostbite = a.st.frozen = a.st.freezeVisual = a.st.paralysis = a.st.charm = a.st.weakness = 0;
+-    });
+-
+-    const mLevel = clamp(Number(S.abyssLevel)||1, 1, 50);
+-    const levelMul = 1 + (mLevel - 1) * 0.25;
+-    const totalExp = B.monsters.reduce((a,m)=>a + Math.round((30 + m.ref.level*10) * levelMul), 0);
+-    const coinGain = Math.round(totalExp * 2.5);
+-
+-    S.coins += coinGain;
+-    S.totalEarned += coinGain;
+-    const alive = aliveAllies();
+-    alive.forEach(a=>{
+-      addExp(a.ref, Math.round(totalExp / Math.max(1, alive.length)));
+-      a.ref.mood = clamp(a.ref.mood + 10, 0, 100);
++      a.hp=hpMax(a.ref);
++      if(!B.training) a.ref.hp=a.hp;
++      a.st.burn=a.st.poison=a.st.frostbite=a.st.frozen=a.st.freezeVisual=a.st.paralysis=a.st.charm=a.st.weakness=0;
+     });
+     save(); renderTop(); renderTab();
+ 
+@@ -5690,9 +6167,9 @@ function startAbyssBattle(){
+     }
+ 
+     const head = win ? '🎉 战斗胜利！' : '⚔️ 战斗结束……';
+-    const rewardLine = `获得 ${coinGain} 晶币，出战史莱姆获得经验`;
+-    const catchLine = win ? '<br>点击倒下的怪物可捕捉' : '';
+-    log(head + '<br>' + rewardLine + catchLine);
++    const rewardLine = B.training ? '教学练习不消耗伙伴，也不产生普通战利品。' : `击败 ${rewards.defeatedCount}/${(B.rewardMonsters||B.monsters).length} · ${win?'全额奖励':'已击败敌人 25% 奖励'}：${coinGain} 晶币 / ${totalExp} 总经验。伙伴已恢复。`;
++    const catchLine = win && !B.training ? '<br>点击倒下的怪物可捕捉' : '';
++    log(head + '<br>' + rewardLine + (progressLine ? '<br>'+progressLine : '') + catchLine);
+ 
+     const cb = overlay.querySelector('#bClose');
+     if(cb) cb.textContent = '关 闭';
+@@ -5786,7 +6263,9 @@ document.addEventListener('click', e=>{
+     case 'trait': useItem('ticket', +ds.id); break;
+     case 'drinkPotion': useItem('expPotion', +ds.id); break;
+     case 'rename': renameSlime(+ds.id); break;
+-    case 'theme': S.theme = ds.theme; applyTheme(); save(); break;
++    case 'petlock': togglePetLock(+ds.id); break;
++    case 'settings': openSettings(); break;
++    case 'theme': S.theme = ds.theme; applyTheme(); save(); openSettings(); break;
+     case 'plan': openPlan(+ds.id); break;
+     case 'setplan': S.customPlans[+ds.id] = {type:ds.type}; save(); renderTab(); closeModal(); toast('定制规划已设置', 'good'); break;
+     case 'clearplan': delete S.customPlans[+ds.id]; save(); renderTab(); closeModal(); toast('定制规划已清除'); break;
+@@ -5862,6 +6341,8 @@ document.addEventListener('click', e=>{
+       }
+       save(); renderTab(); closeModal();
+       break;
++    case 'exportSave': exportSave(ds.kind || 'current'); break;
++    case 'importSave': importSave(); break;
+     case 'abyssSetup': openAbyssSetup(); break;
+     case 'abyssSel': toggleAbyssSel(+ds.id); break;
+     case 'abyssStart': {
+@@ -5872,15 +6353,17 @@ document.addEventListener('click', e=>{
+       startAbyssBattle();
+       break;
+     }
++    case 'challengeStart': startTrainingChallenge(ds.id); break;
++    case 'claimGoal': claimProgressGoal(ds.id); break;
+     case 'abyssLevelMinus': {
+-      S.abyssLevel = clamp((S.abyssLevel||1) - 1, 1, 50);
++      S.abyssLevel = clamp((S.abyssLevel||1) - 1, 1, getAbyssUnlocked());
+       const inp = document.getElementById('abyssLevelInput');
+       if(inp) inp.value = S.abyssLevel;
+       save();
+       break;
+     }
+     case 'abyssLevelPlus': {
+-      S.abyssLevel = clamp((S.abyssLevel||1) + 1, 1, 50);
++      S.abyssLevel = clamp((S.abyssLevel||1) + 1, 1, getAbyssUnlocked());
+       const inp = document.getElementById('abyssLevelInput');
+       if(inp) inp.value = S.abyssLevel;
+       save();
+@@ -5927,7 +6410,8 @@ document.addEventListener('input', e=>{
+   if(e.target && e.target.id === 'abyssLevelInput'){
+     let v = Number(e.target.value);
+     if(isNaN(v) || v < 1) v = 1;
+-    if(v > 50) v = 50;
++    v=clamp(Math.floor(v),1,getAbyssUnlocked());
++    e.target.value=v;
+     S.abyssLevel = v;
+     save();
+   }
+@@ -5990,7 +6474,17 @@ setInterval(()=>{
+ 
+ function updateLive(){
+   renderTop();
++  if(activeTab==='space' && !(ballGame&&ballGame.running) && !(stackGame&&stackGame.running)){
++    const ids=(S.spaceMode==='monster'?S.monsters:S.slimes.filter(s=>!isDispatched(s))).map(s=>s.id).join(',');
++    if($('#content').dataset.spaceIdle!==ids)renderTab();
++    const summary=document.querySelector('.dispatch-summary');
++    if(summary){const n=S.slimes.filter(isDispatched).length;summary.innerHTML=`<span class="pulse"></span>${n?`${n} 位伙伴正在后台探索`:'留一点时间，和伙伴待在一起'} · 打开小游戏不会暂停派遣`;}
++  }
+   for(const s of S.slimes){
++    const rlabel=document.querySelector(`[data-rest-label="${s.id}"]`),rbar=document.querySelector(`[data-rest-bar="${s.id}"]`),rtext=document.querySelector(`[data-rest-text="${s.id}"]`);
++    if(rlabel)rlabel.textContent=s.resting?'恢复中':'探索中';
++    if(rbar)rbar.style.width=(s.resting&&typeof planRestProgress==='function'?planRestProgress(s):Math.min(100,s.stamina/staminaMax(s)*100))+'%';
++    if(rtext)rtext.textContent=s.resting&&typeof planRestText==='function'?planRestText(s):`体力 ${Math.floor(s.stamina)}/${staminaMax(s)} · 每次探索消耗 20`;
+     const stMax = staminaMax(s);
+     const b1 = document.getElementById('stam-'+s.id);
+     if(b1) b1.style.width = Math.min(100, (s.stamina / stMax) * 100) + '%';
+@@ -6003,23 +6497,51 @@ function updateLive(){
+   }
+ }
+ 
++function planActionCost(s){ return 20; }
++function planResumeThreshold(s){ return Math.max(planActionCost(s),Math.ceil(staminaMax(s)*0.5)); }
++function hasExplorePlan(s){
++  const plan=getPlan(s.id);
++  return !!(plan && plan.type==='explore' && (!plan.global || S.exploreTeam===null || S.exploreTeam.includes(s.id)));
++}
++function planRestProgress(s){
++  return Math.round(100*Math.min(1,Math.max(0,s.stamina)/planResumeThreshold(s),Math.max(0,s.mood)/50));
++}
++function planRestText(s){
++  if(!s.resting) return hasExplorePlan(s) ? '探险中 · 每次消耗 20 体力' : '在家陪伴';
++  return `休息 ${planRestProgress(s)}% · 体力 ${Math.floor(s.stamina)}/${planResumeThreshold(s)} · 心情 ${Math.floor(s.mood)}/50 后续行`;
++}
++function recoverPlanTick(s){
++  let changed=false;
++  if(hasExplorePlan(s) && !s.resting && (s.stamina<planActionCost(s) || s.mood<=0)){ s.resting=true; changed=true; }
++  if(s.resting && s.stamina>=planResumeThreshold(s) && s.mood>=50){ s.resting=false; changed=true; }
++  const dispatched=isDispatched(s);
++  if(!dispatched){
++    const stMax=staminaMax(s);
++    const st=Math.min(stMax,s.stamina+0.4*(1+traitBonus(s,'stam')));
++    if(Math.abs(st-s.stamina)>0.01){s.stamina=st;changed=true;}
++    if(s.mood<100){s.mood=Math.min(100,s.mood+0.1);changed=true;}
++    if(S.feedTrough>0 && s.stamina<stMax-5 && Math.random()<0.14){
++      S.feedTrough--;s.stamina=clamp(s.stamina+30,0,stMax);s.mood=clamp(s.mood+3,0,100);changed=true;
++    }
++  }
++  return changed;
++}
++
+ function runPlans(){
+   if(!S.started) return;
+-  if(activeTab === 'space') return;
+-  if((ballGame && ballGame.running) || (stackGame && stackGame.running)) return;
+   let changed = false;
+   for(const s of S.slimes){
+     const plan = getPlan(s.id);
+     if(!plan || plan.type !== 'explore') continue;
+     if(plan.global && S.exploreTeam !== null && !S.exploreTeam.includes(s.id)) continue;
+     if(s.resting) continue;
+-    if(s.stamina <= 0 || s.mood <= 0){
++    if(s.stamina < planActionCost(s) || s.mood <= 0){
+       s.resting = true;
++      changed = true;
+       continue;
+     }
+-    if(s.stamina < 20) continue;
+ 
+-    s.stamina -= 20;
++    s.stamina -= planActionCost(s);
+     const mult = 1 + traitBonus(s,'all') + traitBonus(s,'explore');
+     const pwMult = 1 + slimePower(s) / 300;
+ 
+@@ -6053,46 +6575,22 @@ function runPlans(){
+     S.coins += gain; S.totalEarned += gain;
+     addExp(s, expGain);
+     addTaskProgress('rent', 1);
++    if(typeof recordRegionExplore==='function') recordRegionExplore(S.exploreMapIndex);
+     changed = true;
+   }
+   if(changed){ save(); renderTop(); if(activeTab==='travel') renderTab(); }
+ }
+ 
++let lastRecoverySave=0;
+ setInterval(()=>{
+   if(!S.started) return;
+   let changed = false;
+ 
+-  for(const s of S.slimes){
+-    const plan = getPlan(s.id);
+-
+-    if(plan && !s.resting && (s.stamina <= 0 || s.mood <= 0)){
+-      s.resting = true;
+-      changed = true;
+-    }
+-    if(s.resting && s.stamina >= staminaMax(s) * 0.5 && s.mood >= 50){
+-      s.resting = false;
+-      changed = true;
+-    }
+-
+-    const dispatched = isDispatched(s);
+-    if(!dispatched){
+-      const stMax = staminaMax(s);
+-      const st = Math.min(stMax, s.stamina + 0.4 * (1 + traitBonus(s,'stam')));
+-      if(Math.abs(st - s.stamina) > 0.01){ s.stamina = st; changed = true; }
+-      if(s.mood < 100){
+-        const md = Math.min(100, s.mood + 0.1);
+-        if(Math.abs(md - s.mood) > 0.001){ s.mood = md; changed = true; }
+-      }
+-    }
+-
+-    if(!dispatched && S.feedTrough > 0 && s.stamina < staminaMax(s) - 5 && Math.random() < 0.14){
+-      S.feedTrough--;
+-      s.stamina = clamp(s.stamina + 30, 0, staminaMax(s));
+-      s.mood = clamp(s.mood + 3, 0, 100);
+-      changed = true;
+-    }
++  for(const s of S.slimes){ if(recoverPlanTick(s)) changed=true; }
++  if(changed){
++    updateLive();
++    if(Date.now()-lastRecoverySave>=10000){save();lastRecoverySave=Date.now();}
+   }
+-  if(changed) updateLive();
+ }, 1000);
+ 
+ setInterval(runPlans, 12000);
+@@ -6119,6 +6617,7 @@ setInterval(runPlans, 12000);
+     renderTab();
+   } else {
+     renderStory();
++    if(persistenceBlocked) openModal(`<h3>存档保护</h3><p>${esc(persistenceWarning)}</p><button class="btn full" data-act="exportSave" data-kind="raw">导出原始存档</button><button class="btn gold full" data-act="importSave">导入有效备份</button>`);
+   }
+ })();
+ 
+@@ -6148,6 +6647,7 @@ setInterval(runPlans, 12000);
+   /* 造一场可控战斗：重建双方并直接进深渊 */
+   function startBattle(opts){
+     opts = opts || {};
++    if(window.__TEST__ && window.__TEST__._battle) window.__TEST__._battle.closeBattle();
+     if(opts.seed !== undefined){
+       let sd = (opts.seed >>> 0) || 1;
+       Math.random = () => { sd = (sd * 1664525 + 1013904223) >>> 0; return sd / 4294967296; };
+@@ -6155,6 +6655,7 @@ setInterval(runPlans, 12000);
+     S.slimes = [];
+     S.monsters = [];
+     S.abyssLevel = opts.monsterLevel || 1;
++    S.abyssUnlocked=Math.max(getAbyssUnlocked(),S.abyssLevel); // Diagnostic fixture only.
+     S.battleSpeed = opts.speed || 10;
+     battleSpeed = clamp(S.battleSpeed, 1, 10);
+     (opts.elements || ['火','冰']).forEach((el, i)=>{
+@@ -6260,7 +6761,7 @@ setInterval(runPlans, 12000);
+     const n = FX.log.length;
+     b.performAction(u, 'ally');
+     if(!b.fieldEl.querySelector('.breath.hit-flash')) throw new Error('命中没有闪白');
+-    if(FX._shakeKind !== 'light') throw new Error('命中震屏档位应为 light，实际 ' + FX._shakeKind);
++    if(FX._shakeKind) throw new Error('普通命中应克制，不震屏，实际 ' + FX._shakeKind);
+     if(!since(n).some(e => e.type === 'float' && /^-\d+/.test(e.text))) throw new Error('没有伤害飘字');
+     return true;
+   });
