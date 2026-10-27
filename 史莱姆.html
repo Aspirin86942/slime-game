@@ -778,13 +778,10 @@ body{background:#05060c;color:#e8e9f3;}
 }
 .sk-act.ghost{background:rgba(255,255,255,.1);color:#cfd3e6;font-weight:400;border:1px solid rgba(255,255,255,.16);}
 .sk-act:disabled{background:rgba(255,255,255,.09);color:#8b93a7;font-weight:400;border:1px solid rgba(255,255,255,.12);cursor:not-allowed;}
-.battle-unit.targetable .slime-wrap{
-  outline:2px solid var(--gold);outline-offset:2px;border-radius:10px;
-  animation:targetPulse 1s ease-in-out infinite;
-}
+.battle-unit.targetable .slime-wrap{ animation:targetPulse 1s ease-in-out infinite; }
 @keyframes targetPulse{
-  0%,100%{outline-color:rgba(255,209,102,.95);}
-  50%{outline-color:rgba(255,209,102,.3);}
+  0%,100%{ filter:drop-shadow(0 0 6px rgba(255,209,102,.95)); }
+  50%{ filter:drop-shadow(0 0 2px rgba(255,209,102,.3)); }
 }
 .abyss-row{display:flex;align-items:center;gap:8px;margin-top:8px;}
 .abyss-row label{font-size:12px;color:var(--muted);flex:none;}
@@ -1108,19 +1105,32 @@ body{background:#05060c;color:#e8e9f3;}
 .bond-chip{display:inline-flex;align-items:center;gap:3px;font-size:10px;border:1px solid var(--border);color:var(--accent2);border-radius:20px;padding:3px 7px;margin-top:4px}.bond-chip .ui-icon{width:12px;height:12px}.bond-badge{position:absolute;right:16%;bottom:7%;z-index:9;background:var(--bgMid);border:1px solid var(--gold);color:var(--gold);border-radius:50%;width:19px;height:19px;display:flex;align-items:center;justify-content:center;pointer-events:none}.bond-badge .ui-icon{width:13px;height:13px}.bond-progress{border:1px solid var(--border);border-radius:12px;padding:10px;margin:8px 0 12px;font-size:11px;line-height:1.7}.bond-progress b{color:var(--accent2)}.bond-progress .bar{margin-top:5px;height:4px}.settings-themes .theme-btn{font-size:10px;gap:5px;color:var(--text)}
 .dispatch-list{display:grid;gap:7px;margin-top:10px}.dispatch-row{border:1px solid var(--border);border-radius:10px;padding:8px 10px;font-size:11px}.dispatch-row header{display:flex;justify-content:space-between;gap:8px;margin-bottom:4px}.dispatch-row .bar{height:4px}.dispatch-row .bar i{background:var(--accent2)}.dispatch-row small{display:block;color:var(--muted);margin-top:4px}
 .scene-landmarks{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}.scene-landmarks .landmark-back{opacity:.54}.scene-landmarks .landmark-front{opacity:.96}.region-label{position:absolute;top:9px;left:10px;z-index:3;font-size:10px;padding:4px 7px;border-radius:20px;background:rgba(12,30,34,.42);color:#fff;letter-spacing:1px}
-.battle-row{gap:5px;padding:0 10px;align-items:flex-start!important}.battle-row.enemy{top:21%;height:auto}.battle-row.ally{bottom:16%;height:auto}.battle-unit{flex:1;min-width:0;max-width:140px;width:auto;gap:4px;padding:5px 2px;border:1px solid transparent;border-radius:12px;transition:border-color .2s,background .2s}
-.battle-row .slime-wrap{width:100%;height:calc(118px * var(--unit-scale,.42));margin-top:16px}.battle-row .slime-wrap>.slime{transform:translateX(-50%) scale(var(--unit-scale,.42))}.battle-unit .uname{font-size:var(--unit-font,11px);font-weight:650;max-width:100%;width:100%;line-height:1.35;white-space:normal;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;min-height:1.35em;color:#f4f1fa}
-.battle-unit .hpbar{width:90%;height:6px;bottom:calc(100% + 3px);box-shadow:0 0 0 1px rgba(255,255,255,.16)}.battle-row.ally .hpbar i:not(.ghost){background:linear-gradient(90deg,#3fb28c,#9ee6ac)}.battle-unit .shieldbar{width:90%;height:3px;bottom:calc(100% + 12px)}.hp-value{font-size:10px;color:#d9e3ed;font-variant-numeric:tabular-nums;line-height:1.2}.battle-statuses{display:flex;justify-content:center;gap:2px;flex-wrap:wrap;min-height:15px}.status-chip{display:inline-flex;align-items:center;gap:2px;padding:2px 3px;border-radius:5px;background:rgba(255,255,255,.1);font-size:9px;color:#e4d6ff;border:1px solid rgba(255,255,255,.1);line-height:1}.status-chip .ui-icon{width:11px;height:11px}.status-chip.negative{color:#ffbdc2}.status-chip.positive{color:#a7e1ff}
-.battle-unit.selected-unit{border-color:#74c9ff;background:rgba(80,170,240,.09)}.battle-unit.is-acting{border-color:#ffe19b;background:rgba(255,209,102,.1)}.battle-unit.is-targeted{border-color:#ff8996;background:rgba(255,90,110,.08)}.battle-unit.selected-unit::before,.battle-unit.is-acting::before,.battle-unit.is-targeted::before{position:absolute;top:-15px;left:50%;transform:translateX(-50%);font-size:9px;white-space:nowrap;border-radius:5px;padding:1px 5px;color:#082138;background:#8ed7ff;content:'已选'}.battle-unit.is-acting::before{content:'行动';color:#322100;background:#ffe19b}.battle-unit.is-targeted::before{content:'目标';color:#400b12;background:#ff9aa5}.battle-unit.targetable{outline:1px dashed #ff93a2;outline-offset:2px;cursor:crosshair}.battle-unit.targetable::after{content:'点选';position:absolute;right:0;bottom:-10px;font-size:9px;color:#ffb1bc}.battle-unit[data-fallen="1"]{opacity:.65}.intent-label{max-width:100%;font-size:9px;color:#eacb9a;line-height:1.35;text-align:center;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.battle-log{top:52%;font-size:12px;max-height:16%;overflow:hidden;padding:0 14px;color:#f5d797}.battle-intents{position:absolute;left:9px;right:9px;top:9px;max-height:16%;overflow:auto;z-index:3;display:flex;gap:4px;flex-wrap:wrap;font-size:10px;color:#f9e2b9}.intent-chip{padding:4px 7px;background:rgba(24,13,26,.75);border:1px solid rgba(233,185,115,.25);border-radius:7px;line-height:1.4}.skill-bar{bottom:7px;padding:7px;min-height:43px}.battle-key{position:absolute;left:8px;right:8px;bottom:11%;font-size:9px;color:#b9afc8;text-align:center}.capture-btn{top:-28px;font-size:9px;padding:2px 4px}.battle-row .shield-orb,.battle-row .frozen-orb{max-width:105%;max-height:110%}
-.hit-flash:not(.crit){animation:fxSoftHit .14s ease-out 1}@keyframes fxSoftHit{0%{filter:brightness(1.25)}100%{filter:none}}.field-shake[data-k="light"]{animation:none}.skill-ring.important{border-width:2px}.battle-row .slime-wrap.attack-jump{animation-duration:.42s}
-@media(max-height:700px){.battle-row.enemy{top:22%}.battle-row.ally{bottom:18%}.battle-unit{gap:2px}.battle-unit .uname{font-size:10px}.battle-statuses{min-height:12px}.battle-key{bottom:14%}.battle-log{font-size:10px;max-height:13%;top:54%}.battle-row .slime-wrap{height:calc(102px * var(--unit-scale,.42))}}
+/* 战斗画面：几何尺寸沿用打击版（小体积、无边框），这里只补新版功能必需的排版 */
+.battle-unit .uname{font-size:9px;font-weight:600;line-height:1.3;color:#f4f1fa;max-width:100%;white-space:normal;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.battle-row.ally .hpbar i:not(.ghost){background:linear-gradient(90deg,#3fb28c,#9ee6ac)}
+.hp-value{font-size:9px;color:#c3ccd8;line-height:1.2;font-variant-numeric:tabular-nums}
+.battle-statuses{display:flex;justify-content:center;gap:4px;flex-wrap:wrap;min-height:12px}
+.status-chip{display:inline-flex;align-items:center;gap:1px;padding:0;border:0;background:none;font-size:9px;color:#e4d6ff;line-height:1.2}
+.status-chip .ui-icon{width:10px;height:10px}
+.status-chip.negative{color:#ffb3ba}.status-chip.positive{color:#a7e1ff}
+.battle-unit.selected-unit .slime-wrap{filter:drop-shadow(0 0 4px rgba(116,201,255,.9))}
+.battle-unit.is-acting .slime-wrap{filter:drop-shadow(0 0 4px rgba(255,225,155,.9))}
+.battle-unit.is-targeted .slime-wrap{filter:drop-shadow(0 0 5px rgba(255,137,150,.95))}
+.battle-unit.targetable{cursor:crosshair}
+.battle-unit.selected-unit .slime-wrap::before,.battle-unit.is-acting .slime-wrap::before,.battle-unit.is-targeted .slime-wrap::before{position:absolute;bottom:calc(100% + 16px);left:50%;transform:translateX(-50%);font-size:9px;line-height:1;white-space:nowrap;color:#8ed7ff;content:'已选';z-index:30}
+.battle-unit.is-acting .slime-wrap::before{content:'行动中';color:#ffe19b}
+.battle-unit.is-targeted .slime-wrap::before{content:'目标';color:#ff9aa5}
+.battle-unit[data-fallen="1"]{opacity:.62}
+.intent-label{max-width:100%;font-size:9px;color:#e7c795;line-height:1.3;text-align:center;white-space:normal;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.training-hint{position:absolute;left:12px;right:12px;top:8px;z-index:3;font-size:9.5px;line-height:1.5;color:#cfe0ef;text-align:center}
+.capture-btn{top:-26px;font-size:9px;padding:2px 4px}
+.battle-row .shield-orb,.battle-row .frozen-orb{max-width:105%;max-height:110%}
+.hit-flash:not(.crit){animation:fxSoftHit .14s ease-out 1}@keyframes fxSoftHit{0%{filter:brightness(1.25)}100%{filter:none}}
+.field-shake[data-k="light"]{animation:none}
+.skill-ring.important{border-width:2px}
+.battle-row .slime-wrap.attack-jump{animation-duration:.42s}
+@media(max-height:700px){.battle-unit .uname{font-size:8.5px}.battle-log{font-size:10px}}
 @media(prefers-reduced-motion:reduce){.hit-flash,.hit-flash.crit,.battle-row .slime-wrap.attack-jump{animation:none!important}}
-
-
-
-.battle-statuses{flex-wrap:nowrap;justify-content:flex-start;max-width:100%;overflow-x:auto;overflow-y:hidden;padding-bottom:2px;scrollbar-width:thin}.status-chip{flex:none}.intent-label{-webkit-line-clamp:1;font-size:9px;min-height:12px}.battle-intents>div:not(.training-hint){display:flex;flex-wrap:wrap;gap:4px;width:100%}.training-hint{width:100%;line-height:1.5;color:#d9edff;background:rgba(91,135,187,.17);padding:5px 7px;border-radius:7px;font-size:10px}.battle-unit{gap:3px}.battle-unit .uname{-webkit-line-clamp:2}.battle-log{top:53%}
-@media(max-height:700px){.battle-row.enemy{top:22%;--unit-scale:.35!important}.battle-row.ally{bottom:20%;--unit-scale:.35!important}.battle-row .slime-wrap{height:42px;margin-top:12px}.battle-unit{gap:2px;padding-top:2px}.battle-unit .uname{line-height:1.2}.battle-log{top:54%;font-size:10px;max-height:9%;line-height:1.3}.battle-key{bottom:16%}.battle-intents{max-height:17%}.skill-bar{bottom:5px}.intent-label{font-size:8px}}
-
 </style>
 </head>
 <body>
@@ -4193,10 +4203,9 @@ function startAbyssBattle(options){
     </div>
     <div class="battle-field">
       ${Array.from({length:30}).map(()=>`<div class="bg-star" style="left:${rnd(2,98)}%;top:${rnd(2,98)}%;"></div>`).join('')}
-      <div class="battle-row enemy" style="--unit-scale:${monsters.length<=2?.62:monsters.length===3?.5:.41};--unit-font:${monsters.length<=2?13:11}px">${enemyHTML}</div>
+      <div class="battle-row enemy">${enemyHTML}</div>
       <div class="battle-log" id="battleLog">战斗开始！</div>
-      <div class="battle-row ally" style="--unit-scale:${allies.length<=2?.62:allies.length===3?.5:allies.length===4?.41:.34};--unit-font:${allies.length<=2?13:11}px">${allyHTML}</div>
-      <div class="battle-key">金色：行动中 · 蓝色：已选伙伴 · 红色：攻击目标</div>
+      <div class="battle-row ally">${allyHTML}</div>
       <div class="skill-bar hide" id="skillBar"></div>
     </div>
   `;
@@ -5523,9 +5532,15 @@ function startAbyssBattle(options){
     refreshBars();
   }
   function refreshIntentPanel(){
-    let panel=overlay.querySelector('.battle-intents');
-    if(!panel){panel=document.createElement('div');panel.className='battle-intents';panel.setAttribute('aria-live','polite');fieldEl.appendChild(panel);}
-    panel.innerHTML = !B.running ? '' : `${challenge?`<div class="training-hint">${esc(challenge.hint)} · ${B.practiceUsed[B.challengeId]?'机制已达成，请赢下本场':'等待完成本课机制'}</div>`:''}<div>${getAllAliveUnits('enemy').map(u=>`<span class="intent-chip">${esc(u.ref.name)}：${esc(enemyIntentText(u))}</span>`).join('')}</div>`;
+    let hint = overlay.querySelector('.training-hint');
+    if(!B.running || !challenge){ if(hint) hint.remove(); return; }
+    if(!hint){
+      hint = document.createElement('div');
+      hint.className = 'training-hint';
+      hint.setAttribute('aria-live', 'polite');
+      fieldEl.appendChild(hint);
+    }
+    hint.textContent = `${challenge.hint} · ${B.practiceUsed[B.challengeId] ? '机制已达成，请赢下本场' : '等待完成本课机制'}`;
   }
   function resolveIntentTarget(unit, side, healing){
     const q=unit.intent;
