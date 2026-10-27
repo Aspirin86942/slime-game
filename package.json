@@ -1,0 +1,14 @@
+{
+  "name": "slime-living-world",
+  "version": "3.0.0",
+  "private": true,
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "docs:content": "node --experimental-strip-types scripts/catalog.mjs",
+    "typecheck": "tsc --noEmit",
+    "test:world": "node --experimental-strip-types tests/world.test.mjs",
+    "test": "npm run typecheck && npm run build && npm run test:world && node tests/review-tests.cjs && node tests/merge-growth.cjs && node tests/world-integration.cjs",
+    "test:browser": "node tests/world-browser.cjs"
+  },
+  "devDependencies": { "esbuild": "0.25.12", "typescript": "5.9.3" }
+}

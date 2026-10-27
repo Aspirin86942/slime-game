@@ -1,0 +1,44 @@
+{
+  "product": "史莱姆.html",
+  "sha256": "74321074a957cc7691b547bf654957f4c4019d0d5db9abcb62ced9367bbd7671",
+  "baseline_sha256": "60a7b01f21ac6707a399bcb461b233016e9cbae5bfedff20aa36352bf864d6f4",
+  "checks": {
+    "typescript": "PASS",
+    "world_rules": "31/31",
+    "legacy_rules": "68/68",
+    "integration": "7/7",
+    "growth": "PASS",
+    "balance_battles": 26400,
+    "balance": "PASS",
+    "world_browser": "21/21",
+    "legacy_browser": "17/17",
+    "art": "39/39",
+    "touch": "25/25",
+    "migration": "16/16",
+    "browser_selftest": "42/42"
+  },
+  "performance": {
+    "combat_fx_on_fps": 58.5,
+    "combat_fx_off_fps": 60.1,
+    "combat_stress_fps": 41.8,
+    "garden_fps": 60,
+    "full_garden_fps": 60,
+    "full_garden_plants": 138,
+    "full_garden_companions": 12,
+    "renderer": "software; garden uses ANGLE SwiftShader",
+    "real_mobile_tested": false
+  },
+  "content": {
+    "districts": 6,
+    "facilities": 24,
+    "decorations": 48,
+    "plants": 54,
+    "visitors": 18,
+    "routes": 18,
+    "exploration_events": 72,
+    "fixed_chapters": 48,
+    "personality_chains": 42,
+    "relationship_events": 24,
+    "new_minigames": 3
+  }
+}

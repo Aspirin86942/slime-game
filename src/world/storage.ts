@@ -1,0 +1,41 @@
+import type {World} from './types.ts';
+import {BUILDINGS,DECORATIONS,PLANTS,RECIPES,PERSONALITIES,ELEMENTS,VISITORS} from './content.ts';
+import {EVENTS,CHARACTERS} from './narratives.ts';
+const obj=(v:unknown):v is Record<string,unknown>=>!!v&&typeof v==='object'&&!Array.isArray(v);
+const num=(v:unknown,min=0,max=1e12):v is number=>typeof v==='number'&&Number.isFinite(v)&&v>=min&&v<=max;
+const str=(v:unknown,max=4000):v is string=>typeof v==='string'&&v.length<=max;
+const arr=(v:unknown,max=10000):v is unknown[]=>Array.isArray(v)&&v.length<=max;
+const id=(v:unknown):v is number=>num(v,1,1e9)&&Number.isInteger(v);
+const stock=(v:unknown)=>obj(v)&&Object.entries(v).every(([k,n])=>str(k,80)&&num(n));
+const safe=(v:unknown,depth=0):boolean=>depth<35&&(v===null||typeof v==='boolean'||str(v)||num(v,-1e12)|| (Array.isArray(v)?v.length<30000&&v.every(x=>safe(x,depth+1)):obj(v)&&Object.entries(v).every(([k,x])=>!['constructor','prototype','__proto__'].includes(k)&&safe(x,depth+1))));
+/** Validate before hydration. Never silently discard damaged gameplay fields. */
+export function validWorld(value:unknown,slimeIds:number[]=[]):value is World {
+ if(!obj(value)||!safe(value))return false;const w=value;
+ if(w.version!==3||!num(w.clock)||!num(w.rng,1,4294967295)||!id(w.seq)||!stock(w.stock)||!stock(w.pending)||!num(w.lastGather,-300)||!num(w.lastResonance,-1800)||!num(w.weather,0,3)||!num(w.weatherAt)||typeof w.reducedMotion!=='boolean'||typeof w.autoReplant!=='boolean')return false;
+ const lists=['unlocked','placements','cultivars','crops','juveniles','workers','crafts','discoveries','trips','journals','flags','camps','notices'] as const;
+ if(lists.some(k=>!arr(w[k])))return false;
+ for(const k of ['paths','companions','visitors','chapters','recruited','regionStory','miniRewards'])if(!obj(w[k]))return false;
+ const typed=value as unknown as World;
+ try{
+  const unique=(ns:number[])=>new Set(ns).size===ns.length;
+  const allIds=[...typed.placements,...typed.cultivars,...typed.crops,...typed.juveniles,...typed.trips,...typed.crafts].map(p=>p.id);
+  if(!allIds.every(id)||!unique(allIds)||typed.seq<=Math.max(0,...allIds))return false;
+  if(!typed.unlocked.includes(0)||!unique(typed.unlocked)||!typed.unlocked.every(z=>Number.isInteger(z)&&z>=0&&z<6))return false;
+  if(!typed.placements.every(p=>[...BUILDINGS,...DECORATIONS].some(d=>d.id===p.def)&&num(p.zone,0,5)&&num(p.x,0,11)&&num(p.y,0,11)&&num(p.rotation,0,3)&&num(p.level,1,3)&&typeof p.stored==='boolean'))return false;
+  if(!typed.cultivars.every(c=>PLANTS.some(p=>p.id===c.species)&&str(c.name,80)&&num(c.seeds,0,9999)&&typeof c.protected==='boolean'&&arr(c.parents)&&c.parents.every(p=>str(p,80))&&obj(c.genes)&&num(c.genes.color,0,360)&&['form','yield','speed','adapt'].every(k=>num((c.genes as unknown as Record<string,unknown>)[k],1,5))))return false;
+  if(!typed.crops.every(c=>typed.cultivars.some(v=>v.id===c.cultivar)&&num(c.zone,0,5)&&num(c.x,0,11)&&num(c.y,0,11)&&num(c.progress,0,1)&&num(c.water,0,180)&&num(c.care,0,.21)&&num(c.harvests)&&num(c.lastSim)))return false;
+  if(!typed.juveniles.every(j=>str(j.name,80)&&ELEMENTS.includes(j.element)&&PERSONALITIES.includes(j.personality)&&num(j.born)&&num(j.stage,0,1)&&arr(j.care)&&arr(j.traits)&&arr(j.choices)&&typeof j.active==='boolean'&&(j.mentor===null||slimeIds.includes(j.mentor))))return false;
+  if(!typed.workers.every(j=>slimeIds.includes(j.slimeId)&&typed.placements.some(p=>p.id===j.building)))return false;
+  if(!typed.crafts.every(c=>RECIPES.some(r=>r.id===c.recipe)&&typed.placements.some(p=>p.id===c.building)&&num(c.remaining)&&typeof c.ready==='boolean'))return false;
+  if(!typed.trips.every(t=>num(t.region,0,5)&&num(t.route,0,2)&&['active','offline'].includes(t.mode)&&[300,1200,3600,10800].includes(t.duration)&&num(t.node,0,4)&&num(t.nextAt)&&arr(t.team,3)&&t.team.length>0&&unique(t.team)&&t.team.every(s=>slimeIds.includes(s))&&arr(t.events,4)&&t.events.length===4&&t.events.every(e=>EVENTS.some(ev=>ev.id===e))&&(t.pending===null||t.events.includes(t.pending))&&stock(t.bag)&&arr(t.log)&&typeof t.ready==='boolean'))return false;
+  if(!unique([...typed.workers.map(w=>w.slimeId),...typed.trips.flatMap(t=>t.team)]))return false;
+  if(!Object.entries(typed.chapters).every(([k,v])=>CHARACTERS.some(c=>c.id===k)&&num(v,0,6)))return false;
+  if(!Object.entries(typed.companions).every(([k,c])=>slimeIds.includes(Number(k))&&obj(c)&&num(c.slimeId,1)&&str(c.role)&&str(c.interest)&&arr(c.memories,120)&&c.memories.every(m=>obj(m)&&str(m.id)&&str(m.title)&&str(m.text)&&num(m.at))&&obj(c.friends)&&Object.entries(c.friends).every(([k,v])=>slimeIds.includes(Number(k))&&num(v,0,100))&&stock(c.story)&&num(c.day)&&num(c.daily)&& (c.mentor===null||slimeIds.includes(c.mentor))))return false;
+  if(!Object.entries(typed.visitors).every(([k,v])=>VISITORS.some(d=>d.id===k)&&typeof v==='boolean')||!Object.entries(typed.recruited).every(([k,v])=>CHARACTERS.some(d=>d.id===k)&&slimeIds.includes(v))||!Object.entries(typed.paths).every(([k,v])=>num(Number(k),0,5)&&arr(v)&&v.every(n=>num(n,0,143)&&Number.isInteger(n))))return false;
+  if(!typed.camps.every(n=>Number.isInteger(n)&&n>=0&&n<6)||!Object.entries(typed.regionStory).every(([k,v])=>num(Number(k),0,5)&&Number.isInteger(v)&&num(v,0,3))||!stock(typed.miniRewards))return false;
+  if(!typed.flags.every(v=>str(v,180))||!typed.discoveries.every(v=>str(v,180))||!typed.notices.every(v=>str(v)))return false;
+  if(!typed.journals.every(j=>id(j.id)&&str(j.title)&&arr(j.lines)&&j.lines.every(x=>str(x))&&num(j.at)))return false;
+  if(typed.mini!==null){const m=typed.mini;if(!obj(m)||!['match','pollination','observation'].includes(m.kind)||!arr(m.board,36)||m.board.length!==({match:36,pollination:12,observation:5}[m.kind])||!m.board.every(n=>Number.isInteger(n)&&num(n,0,m.kind==='match'?4:m.kind==='pollination'?5:17))||!arr(m.matches,12)||!m.matches.every(n=>num(n,0,11))||!num(m.selected,-1,35)||!num(m.steps,0,20)||!num(m.score)||!num(m.hp,0,10)||!num(m.round,0,5)||typeof m.done!=='boolean'||typeof m.claimed!=='boolean')return false;}
+  return true;
+ }catch{return false;}
+}

@@ -77,9 +77,9 @@ function makeClient(wsUrl) {
   };
 }
 
-async function launch({ url, width = 390, height = 844, dpr = 3, touchEnabled = false, downloadDir = null, downloadEvents = false }) {
+async function launch({ url, width = 390, height = 844, dpr = 3, touchEnabled = false, downloadDir = null, downloadEvents = false, gpu = false }) {
   const userDir = fs.mkdtempSync(path.join(os.tmpdir(), 'slime-cdp-'));
-  const proc = spawn(CHROME, ['--headless=new', '--disable-gpu', '--no-sandbox', '--no-first-run', '--no-default-browser-check',
+  const proc = spawn(CHROME, ['--headless=new', ...(gpu ? [] : ['--disable-gpu']), '--no-sandbox', '--no-first-run', '--no-default-browser-check',
     '--remote-debugging-port=0', '--user-data-dir=' + userDir, `--window-size=${width},${height}`, 'about:blank'], { stdio: 'ignore' });
   const portFile = path.join(userDir, 'DevToolsActivePort');
   const port = await waitFor(() => fs.existsSync(portFile) ? fs.readFileSync(portFile, 'utf8').split('\n')[0].trim() : null, 20000);

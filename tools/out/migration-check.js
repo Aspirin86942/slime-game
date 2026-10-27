@@ -83,7 +83,7 @@ function check(name, ok, detail) {
     check('页面正常加载（无诊断参数）', !!pageReady);
     await sleep(800);
 
-    /* ① 正常开局 → 产生真实 v2 存档（走 finishStory → save 的真实路径，再召唤 3 只伙伴） */
+    /* ① 正常开局 → 产生真实 v3 存档（走 finishStory → save 的真实路径，再召唤 3 只伙伴） */
     await ev('finishStory()');  /* 等价于走完开场剧本：同一 finishStory→save 路径 */
     await sleep(600);
     await ev('(() => { for(let i=0;i<3;i++){ doSummon(); closeModal(); } save(); return true; })()');
@@ -93,12 +93,13 @@ function check(name, ok, detail) {
     check('开局后浏览器写入存档', !!fresh, fresh ? fresh.length + ' 字节' : '空');
     const save1 = JSON.parse(fresh);
     const petCount = (save1.slimes || []).length;
-    check('新档带 saveVersion=2、abyssUnlocked 且含已召唤伙伴', Number(save1.saveVersion) === 2 && save1.abyssUnlocked !== undefined && petCount >= 1,
+    check('新档带 saveVersion=3、abyssUnlocked 且含已召唤伙伴', Number(save1.saveVersion) === 3 && save1.abyssUnlocked !== undefined && petCount >= 1,
       { saveVersion: save1.saveVersion, abyssUnlocked: save1.abyssUnlocked, slimes: petCount, coins: save1.coins });
 
     /* ② 手工降级为旧版存档：去掉 saveVersion / progress / abyssUnlocked，并打上标记金币 */
     const legacy = JSON.parse(fresh);
     delete legacy.saveVersion;
+    delete legacy.world;
     delete legacy.progress;
     delete legacy.abyssUnlocked;
     for(const key of ['lastActive','planClock','summonPity','sweepUsed']) delete legacy[key];
@@ -113,7 +114,7 @@ function check(name, ok, detail) {
     await ev('save()');
     const after = JSON.parse(await ev(`localStorage.getItem('slimeSummonerSave')`));
 
-    check('旧档被识别并迁移到 saveVersion=2', Number(after.saveVersion) === 2, { saveVersion: after.saveVersion });
+    check('旧档被识别并迁移到 saveVersion=3', Number(after.saveVersion) === 3, { saveVersion: after.saveVersion });
     check('迁移补上 abyssUnlocked（深渊从第 1 层解锁）', after.abyssUnlocked === 1, { abyssUnlocked: after.abyssUnlocked });
     check('旧档原有金币/积分原样保留', after.coins === 77777 && after.points === 4321, { coins: after.coins, points: after.points });
     check('宠物数量未被迁移清空', (after.slimes || []).length === (legacy.slimes || []).length && (after.slimes || []).length === petCount, { before: (legacy.slimes || []).length, after: (after.slimes || []).length });
@@ -143,11 +144,11 @@ function check(name, ok, detail) {
     const afterReset = await waitFor(() => ev(`localStorage.getItem('slimeSummonerSave') === null && !!(document.querySelector('#storyScreen') && !document.querySelector('#storyScreen').classList.contains('hidden'))`), 10000);
     check('点「清除损坏存档并重新开始」会清掉坏档并回到开场', !!afterReset, await ev(`({ key: localStorage.getItem('slimeSummonerSave'), storyShown: !!(document.querySelector('#storyScreen') && !document.querySelector('#storyScreen').classList.contains('hidden')) })`));
 
-    /* ⑤ 清掉之后真实玩法可用：走完开场 → 重新写入 v2 存档 */
+    /* ⑤ 清掉之后真实玩法可用：走完开场 → 重新写入 v3 存档 */
     await ev('finishStory()');  /* 等价于走完开场剧本：同一 finishStory→save 路径 */
     await sleep(1200);
     const recovered = await ev(`localStorage.getItem('slimeSummonerSave')`);
-    check('清除坏档后可重新开局并恢复写入', !!recovered && Number(JSON.parse(recovered).saveVersion) === 2);
+    check('清除坏档后可重新开局并恢复写入', !!recovered && Number(JSON.parse(recovered).saveVersion) === 3);
   } finally {
     if (client) client.close();
     try { proc.kill(); } catch {}

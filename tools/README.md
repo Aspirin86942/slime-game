@@ -6,6 +6,8 @@ Windows、macOS、Linux 都可以运行。浏览器路径由 `tools/out/lib/cdp.
 
 ## 当前验收入口
 
+生活世界新增验收：`npm test`、`npm run test:browser`、`node tests/world-performance.cjs`。报告分别位于 `tools/out/world-browser.json`、`tools/out/world-performance.json`；截图前缀为 `world-`。`npm run build` 从 `src/` 重建产品 HTML。旧玩法测试继续保留。
+
 | 用途 | 命令 |
 |---|---|
 | 游戏规则回归 | `node tests/review-tests.cjs` |

@@ -1,5 +1,17 @@
 # CLAUDE.md
 
+## 当前开发入口（生活世界扩展）
+
+2026-10-27 已按负责人要求采用模块化源码和 TypeScript。`史莱姆.html` 是生成的单文件产品，修改源码后运行 `npm run build`；下文关于“没有构建”和“全部顶层脚本”的描述仅适用于旧版。
+
+- 新系统：`src/world/`，strict TypeScript，规则/内容/存档/生态/绘制/界面分离；`src/legacy/` 保留旧玩法 JavaScript 兼容分区，按编号合并；`src/shell.html` 保留基础页面。
+- 当前存档版本 3，旧数据额外备份到 `slimeSummonerSave_v2_backup`。保存前比较原始快照；其他标签页变更会停止本页推进。未知高版本与坏档禁止覆盖。
+- 阅读 `docs/living-world/SPEC.md`、`PLAN.md`、`QA.md`。先 SPEC 后 PLAN 的顺序已经完成。
+- `npm test`：类型检查、单文件构建、新规则与内容、原 68 项、合体成长、原生接口集成。
+- `npm run test:browser`：新系统正常模式、触屏拖放、刷新、断网、迁移、失败保护。`node tests/world-performance.cjs`：家园密集场景帧率，报告会记录实际渲染器。
+- 原始基线仍禁止修改。负责人已经授权果冻质感与攻击表现升级，新增材质层在 `src/world/style.css`；旧造型函数和基础 CSS 块保留。
+- 本次详情见根目录 README；不自动提交、推送或发布。
+
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## 项目概况
