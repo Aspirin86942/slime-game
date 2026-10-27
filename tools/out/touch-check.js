@@ -6,11 +6,11 @@
    用法：node tools/out/touch-check.js
    报告：tools/out/touch-report.json，截图：tools/out/shots/touch-*.png */
 const path = require('node:path');
-const { launch, sleep, waitFor, center, report, makeChecker } = require('./lib/cdp.js');
+const { launch, sleep, waitFor, center, report, makeChecker, fileUrl } = require('./lib/cdp.js');
 
 const ROOT = path.resolve(__dirname, '..', '..');
 const GAME = path.join(ROOT, '史莱姆.html');
-const URL = 'file:///' + GAME.replace(/\\/g, '/');
+const URL = fileUrl(GAME);
 const OUT = path.join(__dirname, 'shots');
 const results = [];
 const check = makeChecker(results);

@@ -4,7 +4,7 @@
 'use strict';
 const path = require('node:path');
 const fs = require('node:fs');
-const { launch, sleep, waitFor } = require('./lib/cdp.js');
+const { launch, sleep, waitFor, fileUrl } = require('./lib/cdp.js');
 
 const ROOT = path.resolve(__dirname, '..', '..');
 const OUT = path.join(__dirname, 'look');
@@ -14,7 +14,7 @@ const NAMES = ['小石头', '赤焰', '涌泉', '疾风', '青藤'];
 
 const which = process.argv[2] || 'new';
 const tag = process.argv[3] || which;
-const url = 'file:///' + path.join(ROOT, FILES[which]).replace(/\\/g, '/') + (which === 'new' ? '?battle=ui' : '');
+const url = fileUrl(path.join(ROOT, FILES[which])) + (which === 'new' ? '?battle=ui' : '');
 
 /* 打击版：脚本是全局函数，直接用它的内部函数造一场 5v4 */
 const FIX_OLD = `(()=>{

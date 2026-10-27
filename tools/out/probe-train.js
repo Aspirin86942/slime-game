@@ -1,9 +1,9 @@
 /* 战斗课堂（固定挑战）截图：确认提示文字不再是方框 */
 'use strict';
 const path = require('node:path');
-const { launch, sleep, waitFor } = require('./lib/cdp.js');
+const { launch, sleep, waitFor, fileUrl } = require('./lib/cdp.js');
 const ROOT = path.resolve(__dirname, '..', '..');
-const url = 'file:///' + path.join(ROOT, '史莱姆.html').replace(/\\/g, '/') + '?battle=ui';
+const url = fileUrl(path.join(ROOT, '史莱姆.html')) + '?battle=ui';
 
 (async () => {
   const c = await launch({ url, width: 390, height: 844, dpr: 3 });

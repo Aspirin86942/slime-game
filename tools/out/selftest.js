@@ -1,10 +1,10 @@
 /* 跑内建自检：史莱姆.html?selftest，等 document.title 出 PASS/FAIL 结果后输出全文 */
 'use strict';
 const path = require('node:path');
-const { launch, sleep, waitFor } = require('./lib/cdp.js');
+const { launch, sleep, waitFor, fileUrl } = require('./lib/cdp.js');
 const ROOT = path.resolve(__dirname, '..', '..');
 const file = process.argv[2] || '史莱姆.html';
-const url = 'file:///' + path.join(ROOT, file).replace(/\\/g, '/') + '?selftest';
+const url = fileUrl(path.join(ROOT, file)) + '?selftest';
 
 (async () => {
   const c = await launch({ url, width: 390, height: 844, dpr: 2 });

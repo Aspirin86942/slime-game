@@ -8,7 +8,7 @@ const os = require('node:os');
 
 const ROOT = path.resolve(__dirname, '..', '..');
 const GAME = path.join(ROOT, '史莱姆.html');
-const CHROME = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
+const { CHROME, fileUrl } = require('./lib/cdp.js');
 const REPEAT = Math.max(1, parseInt(process.argv[2] || '3', 10));
 
 const CONFIGS = [
@@ -79,7 +79,7 @@ async function measure(qs) {
     const port = await waitFor(() => fs.existsSync(portFile) ? fs.readFileSync(portFile, 'utf8').split('\n')[0].trim() : null, 20000, 100);
     if (!port) throw new Error('没有拿到 DevToolsActivePort');
 
-    const url = 'file:///' + GAME.replace(/\\/g, '/') + '?' + qs;
+    const url = fileUrl(GAME) + '?' + qs;
     const res = await fetch('http://127.0.0.1:' + port + '/json/new?' + encodeURIComponent(url), { method: 'PUT' });
     const target = await res.json();
     if (!target.webSocketDebuggerUrl) throw new Error('新标签没有 ws 地址');

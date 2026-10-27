@@ -8,7 +8,7 @@ const os = require('node:os');
 
 const ROOT = path.resolve(__dirname, '..', '..');
 const GAME = path.join(ROOT, '史莱姆.html');
-const CHROME = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
+const { CHROME, fileUrl } = require('./lib/cdp.js');
 const TAG = process.argv[2] || 'shot';
 const OUT_DIR = path.join(__dirname, 'shots');
 const VW = 390, VH = 844, DPR = 3;
@@ -231,7 +231,7 @@ const METRICS_JS = `(() => {
     const port = await waitFor(() => fs.existsSync(portFile) ? fs.readFileSync(portFile, 'utf8').split('\n')[0].trim() : null, 20000, 100);
     if (!port) throw new Error('没有拿到 DevToolsActivePort');
 
-    const url = 'file:///' + GAME.replace(/\\/g, '/') + '?battle=ui';
+    const url = fileUrl(GAME) + '?battle=ui';
     const res = await fetch('http://127.0.0.1:' + port + '/json/new?' + encodeURIComponent(url), { method: 'PUT' });
     const target = await res.json();
     client = cdpClient(target.webSocketDebuggerUrl);

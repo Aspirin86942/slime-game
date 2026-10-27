@@ -1,9 +1,9 @@
 /* 量 T0 标记文字与血条/护盾条的几何关系 */
 'use strict';
 const path = require('node:path');
-const { launch, sleep, waitFor } = require('./lib/cdp.js');
+const { launch, sleep, waitFor, fileUrl } = require('./lib/cdp.js');
 const ROOT = path.resolve(__dirname, '..', '..');
-const url = 'file:///' + path.join(ROOT, '史莱姆.html').replace(/\\/g, '/') + '?battle=ui';
+const url = fileUrl(path.join(ROOT, '史莱姆.html')) + '?battle=ui';
 const r2 = n => Math.round(n * 10) / 10;
 
 (async () => {

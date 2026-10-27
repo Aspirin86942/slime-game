@@ -11,8 +11,8 @@ const os = require('node:os');
 
 const ROOT = path.resolve(__dirname, '..', '..');
 const GAME = path.join(ROOT, '史莱姆.html');
-const CHROME = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
-const URL = 'file:///' + GAME.replace(/\\/g, '/');
+const { CHROME, fileUrl } = require('./lib/cdp.js');
+const URL = fileUrl(GAME);
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 async function waitFor(fn, timeoutMs, stepMs) {

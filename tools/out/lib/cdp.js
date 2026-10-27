@@ -3,8 +3,39 @@ const { spawn } = require('node:child_process');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
+const { pathToFileURL } = require('node:url');
 
-const CHROME = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
+/* 浏览器路径：环境变量 CHROME_PATH 优先；否则按系统查常见安装位置，Linux/macOS 再到 PATH 里找 */
+function findChrome() {
+  if (process.env.CHROME_PATH) return process.env.CHROME_PATH;
+  const winRoots = [process.env.ProgramFiles, process.env['ProgramFiles(x86)'], process.env.LOCALAPPDATA].filter(Boolean);
+  const fixed = {
+    win32: [
+      ...winRoots.map(d => path.join(d, 'Google', 'Chrome', 'Application', 'chrome.exe')),
+      ...winRoots.map(d => path.join(d, 'Microsoft', 'Edge', 'Application', 'msedge.exe'))
+    ],
+    darwin: [
+      '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+      '/Applications/Chromium.app/Contents/MacOS/Chromium',
+      '/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge'
+    ]
+  }[process.platform] || [];
+  const hit = fixed.find(p => fs.existsSync(p));
+  if (hit) return hit;
+  if (process.platform !== 'win32') {
+    const dirs = (process.env.PATH || '').split(path.delimiter).filter(Boolean);
+    for (const name of ['google-chrome', 'google-chrome-stable', 'chromium', 'chromium-browser', 'microsoft-edge']) {
+      const found = dirs.map(d => path.join(d, name)).find(p => fs.existsSync(p));
+      if (found) return found;
+    }
+  }
+  throw new Error('找不到 Chrome / Edge / Chromium，请安装浏览器或用环境变量 CHROME_PATH 指定可执行文件路径');
+}
+const CHROME = findChrome();
+
+/* 本地文件 → file:// 地址。pathToFileURL 在 Windows 和 Linux 上都给出合法地址（盘符、斜杠、中文都会正确转写） */
+const fileUrl = (file, query = '') => pathToFileURL(file).href + query;
+
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 async function waitFor(fn, timeoutMs, stepMs) {
@@ -127,4 +158,4 @@ function makeChecker(list) {
   };
 }
 
-module.exports = { launch, sleep, waitFor, center, report, makeChecker, CHROME };
+module.exports = { launch, sleep, waitFor, center, report, makeChecker, CHROME, fileUrl };

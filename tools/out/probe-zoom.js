@@ -2,10 +2,10 @@
 'use strict';
 const path = require('node:path');
 const fs = require('node:fs');
-const { launch, sleep, waitFor } = require('./lib/cdp.js');
+const { launch, sleep, waitFor, fileUrl } = require('./lib/cdp.js');
 const ROOT = path.resolve(__dirname, '..', '..');
 const OUT = path.join(__dirname, 'look');
-const url = 'file:///' + path.join(ROOT, '史莱姆.html').replace(/\\/g, '/') + '?battle=ui';
+const url = fileUrl(path.join(ROOT, '史莱姆.html')) + '?battle=ui';
 
 (async () => {
   fs.mkdirSync(OUT, { recursive: true });

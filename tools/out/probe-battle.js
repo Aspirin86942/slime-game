@@ -1,10 +1,10 @@
 /* 验证战斗标记：真实点选流程 + 强制加类看光效/标注 */
 'use strict';
 const path = require('node:path');
-const { launch, sleep, waitFor } = require('./lib/cdp.js');
+const { launch, sleep, waitFor, fileUrl } = require('./lib/cdp.js');
 const ROOT = path.resolve(__dirname, '..', '..');
 const OUT = path.join(__dirname, 'look');
-const url = 'file:///' + path.join(ROOT, '史莱姆.html').replace(/\\/g, '/') + '?battle=ui';
+const url = fileUrl(path.join(ROOT, '史莱姆.html')) + '?battle=ui';
 
 (async () => {
   const c = await launch({ url, width: 390, height: 844, dpr: 3, touchEnabled: true });

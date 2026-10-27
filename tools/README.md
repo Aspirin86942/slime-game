@@ -2,6 +2,8 @@
 
 在项目根目录执行下列命令。浏览器脚本使用本机 Chrome 和独立的临时浏览器配置，不读取玩家日常浏览器的存档；Node.js 需要提供全局 `WebSocket`。
 
+Windows、macOS、Linux 都可以运行。浏览器路径由 `tools/out/lib/cdp.js` 自动查找：Windows 查 Chrome / Edge 的安装目录，macOS 查 `/Applications`，Linux 在 `PATH` 中查 `google-chrome`、`chromium` 等。装在其他位置时，用环境变量指定，例如 `CHROME_PATH=/opt/chrome/chrome node tools/out/selftest.js`。
+
 ## 当前验收入口
 
 | 用途 | 命令 |
@@ -14,7 +16,7 @@
 | 存档迁移与坏档保护 | `node tools/out/migration-check.js` |
 | 伙伴详情、合体、教学等界面截图 | `node tools/out/upgrade-shots.js final` |
 | 战斗特效开关的帧率对照 | `node tools/out/fps.js 3` |
-| 角色画廊截图 | `pwsh -File tools/selftest.ps1 -Mode gallery` |
+| 角色画廊截图 | `node tools/out/gallery.js [tag]` |
 
 `selftest.js` 在出现失败、超时或没有完整结果时返回非零退出码。截图和帧率脚本还需要查看生成的图片、报告，不能只凭程序正常退出判定效果正确。
 
@@ -39,6 +41,6 @@
 - `tools/out/*-report*.json`、`fps-result.json`、`selftest.txt`：本地验收结果。
 - `tools/out/cleanup-report.json`：本次清理清单，包含原路径、大小和 SHA-256 校验值。清走的文件可从 Windows 回收站恢复。
 
-`auto-harness.js`、`bisect.ps1`、`r-auto.ps1`、`review-run.ps1` 和 `shots.js` 保留作历史排障参考。它们依赖旧快照或旧页面行为，当前版本验收使用上面的入口。
+`tools/selftest.ps1` 是 Windows 专用的旧入口，功能已由 `selftest.js` 和 `gallery.js` 覆盖。`auto-harness.js`、`bisect.ps1`、`r-auto.ps1`、`review-run.ps1` 和 `shots.js` 保留作历史排障参考。它们依赖旧快照或旧页面行为，当前版本验收使用上面的入口。
 
 脚本源码继续保留在现有路径。生成的截图、报告和临时页面由 `.gitignore` 排除，不随代码提交。
