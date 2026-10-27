@@ -10,6 +10,8 @@ Windows、macOS、Linux 都可以运行。浏览器路径由 `tools/out/lib/cdp.
 |---|---|
 | 游戏规则回归 | `node tests/review-tests.cjs` |
 | 合体与成长 | `node tests/merge-growth.cjs` |
+| 战斗与经济平衡（每格 200 场） | `node tests/balance-sim.cjs --check` |
+| 游戏性完整浏览器流程 | `node tests/gameplay-browser.cjs` |
 | 浏览器原生自检 | `node tools/out/selftest.js` |
 | 美术布局、主题与召唤流程 | `node tests/art-direction.cjs` |
 | 抚摸、拖动、玩具等触控行为 | `node tools/out/touch-check.js` |
@@ -44,3 +46,5 @@ Windows、macOS、Linux 都可以运行。浏览器路径由 `tools/out/lib/cdp.
 `tools/selftest.ps1` 是 Windows 专用的旧入口，功能已由 `selftest.js` 和 `gallery.js` 覆盖。`auto-harness.js`、`bisect.ps1`、`r-auto.ps1`、`review-run.ps1` 和 `shots.js` 保留作历史排障参考。它们依赖旧快照或旧页面行为，当前版本验收使用上面的入口。
 
 脚本源码继续保留在现有路径。生成的截图、报告和临时页面由 `.gitignore` 排除，不随代码提交。
+
+游戏性数值、全部模拟结果与旧档行为见 [数值设计](../docs/gameplay-2026-10-27/数值设计.md)。`balance-sim.cjs` 支持 `--n=200`、`--floors=5,25,50`、`--deltas=-3,2,10` 和 `--json=tools/out/balance.json`。比较版本时使用相同参数；CPU 密集模拟和整套浏览器验收依次运行，避免负载导致计时器检查超时。

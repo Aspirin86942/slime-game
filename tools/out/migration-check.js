@@ -66,11 +66,17 @@ function check(name, ok, detail) {
       return r.result.value;
     };
     const reload = async () => {
+      const previousOrigin=await ev('performance.timeOrigin');
       await client.send('Page.reload', { ignoreCache: true });
       await waitFor(async () => {
-        try { return await ev('document.readyState === "complete" && !!document.querySelector("#app")'); } catch { return false; }
+        try { return await ev(`performance.timeOrigin!==${previousOrigin} && document.readyState === "complete" && !!document.querySelector("#app")`); } catch { return false; }
       }, 20000);
       await sleep(700);
+    };
+    // 在新文档的游戏脚本执行前注入，避免离页保存覆盖待迁移/损坏夹具。
+    const reloadWithStorage=async raw=>{
+      const fixture=await client.send('Page.addScriptToEvaluateOnNewDocument',{source:`localStorage.setItem('slimeSummonerSave',${JSON.stringify(raw)});localStorage.removeItem('slimeSummonerSave_v1_backup');`});
+      try{await reload();}finally{await client.send('Page.removeScriptToEvaluateOnNewDocument',{identifier:fixture.identifier});}
     };
 
     const pageReady = await waitFor(async () => ev('document.readyState === "complete" && !!document.querySelector("#storyScreen")').catch(() => false), 20000);
@@ -95,10 +101,10 @@ function check(name, ok, detail) {
     delete legacy.saveVersion;
     delete legacy.progress;
     delete legacy.abyssUnlocked;
+    for(const key of ['lastActive','planClock','summonPity','sweepUsed']) delete legacy[key];
     legacy.coins = 77777;
     legacy.points = 4321;
-    await ev(`localStorage.setItem('slimeSummonerSave', ${JSON.stringify(JSON.stringify(legacy))}); localStorage.removeItem('slimeSummonerSave_v1_backup'); true`);
-    await reload();
+    await reloadWithStorage(JSON.stringify(legacy));
 
     /* 载入内存后不一定立刻回写：先看界面，再触发一次真实 save() 看落盘结果 */
     const hud = await ev(`document.querySelector('#cCrystal').textContent`);
@@ -123,8 +129,7 @@ function check(name, ok, detail) {
     check('顶栏显示迁移后的金币（界面已生效）', /77[\s,]?777/.test(hud || ''), hud);
 
     /* ③ 坏档：必须停写并提示，且不能覆盖原始字节 */
-    await ev(`localStorage.setItem('slimeSummonerSave', '{broken json'); localStorage.removeItem('slimeSummonerSave_v1_backup'); true`);
-    await reload();
+    await reloadWithStorage('{broken json');
     const protectText = await ev(`(() => { const b = document.body.innerText || ''; const i = b.indexOf('存档保护'); return i >= 0 ? b.slice(i, i + 120) : ''; })()`);
     const stillBroken = await ev(`localStorage.getItem('slimeSummonerSave')`);
     check('坏档触发「存档保护」弹窗并停写', protectText.includes('无法安全读取'), protectText);

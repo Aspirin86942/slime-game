@@ -42,7 +42,7 @@ const sleepMs = ms => new Promise(r => setTimeout(r, ms));
     const env = await p.ev(`({ w: window.innerWidth, h: window.innerHeight, touchPoints: navigator.maxTouchPoints })`);
     check('移动端视口 + 触摸模拟开启（390×844，maxTouchPoints=5）', env.w === 390 && env.h === 844 && env.touchPoints === 5, env);
 
-    /* 夹具：正常开局 + 2 只伙伴；直接把改好的存档写回 localStorage 再重载，省掉 5 次抚摸的 30 秒等待 */
+    /* 夹具：正常开局 + 2 只伙伴；在新文档启动前载入，避开旧页面离页保存。 */
     await p.ev('finishStory()');
     await sleep(400);
     await p.ev('(() => { for(let i=0;i<2;i++){ doSummon(); closeModal(); } save(); return true; })()');
@@ -51,9 +51,10 @@ const sleepMs = ms => new Promise(r => setTimeout(r, ms));
     const idA = String(base.slimes[0].id), idB = String(base.slimes[1].id);
     base.slimes[0].name = '甲'; base.slimes[0].intimacy = 34; delete base.slimes[0].lastPetAt;
     base.slimes[1].name = '乙'; base.slimes[1].intimacy = 1; delete base.slimes[1].lastPetAt;
-    await p.ev(`localStorage.setItem('slimeSummonerSave', ${JSON.stringify(JSON.stringify(base))})`);
+    const fixture=await p.client.send('Page.addScriptToEvaluateOnNewDocument',{source:`localStorage.setItem('slimeSummonerSave',${JSON.stringify(JSON.stringify(base))});window.__touchFixture=true;`});
     await p.client.send('Page.reload', { ignoreCache: true });
-    const rendered = await waitFor(() => p.ev(`document.querySelectorAll('.pl-slime[data-mon="0"]').length >= 2 && !!document.querySelector(${q(`.pl-slime[data-id="${idA}"]`)})`), 20000);
+    const rendered = await waitFor(() => p.ev(`window.__touchFixture && typeof S!=='undefined' && S.slimes[0].name==='甲' && S.slimes[0].intimacy===34 && S.slimes[1].intimacy===1 && document.querySelectorAll('.pl-slime[data-mon="0"]').length >= 2 && !!document.querySelector(${q(`.pl-slime[data-id="${idA}"]`)})`).catch(()=>false), 20000);
+    await p.client.send('Page.removeScriptToEvaluateOnNewDocument',{identifier:fixture.identifier});
     check('夹具载入：陪伴页渲染出伙伴（甲/乙都在）', !!rendered);
     await sleep(900);
     const frozen = await freezeWander();

@@ -93,7 +93,7 @@ const buttonContrast = `(() => {
     // Normal mode in this temporary browser profile verifies persistence too.
     await p.client.send('Page.navigate',{url:URL});
     if(!await waitFor(()=>p.ev('location.search===""&&document.readyState==="complete"&&typeof doSummon==="function"'),15000))throw new Error('Normal game did not load');
-    await p.ev(`finishStory();S.level=30;S.slimes=[];switchTab('summon');true`);
+    await p.ev(`finishStory();S.level=30;S.coins=20000;S.slimes=[];switchTab('summon');true`);
     const duplicate=await p.ev(`(() => {doSummon();doSummon();return {count:S.slimes.length,saved:JSON.parse(localStorage.getItem('slimeSummonerSave')).slimes.length,animating:document.querySelector('.summon-result').classList.contains('summoning')};})()`);
     check('Repeated summon creates and saves exactly one companion',duplicate.count===1&&duplicate.saved===1&&duplicate.animating,duplicate);
     const noticeClear=await p.ev(`(() => {const t=document.querySelector('.toast'),b=document.querySelector('.summon-result>.btn');if(!t)return true;const a=t.getBoundingClientRect(),r=b.getBoundingClientRect();return a.bottom<=r.top||a.top>=r.bottom;})()`);

@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 手机端单文件网页游戏「最强召唤师系统」（史莱姆牧场）。零外部资源：没有构建、依赖、图片、音频或服务器，浏览器直接打开 `史莱姆.html` 即可玩。仓库目录名带 `python`，但项目里没有 Python 代码。
 
-- `史莱姆.html` —— **唯一的产品文件**。约 7900 行，`<style>`（约 7–1259 行）与一个 `<script>`（约 1291–7858 行）都在里面。
+- `史莱姆.html` —— **唯一的产品文件**。约 8200 行，样式与脚本都内置在文件中。
 - `史莱姆（打击版）.html` —— 旧的「打击版」变体，作为战斗观感的参照保留，不再维护。
 - `backup/史莱姆-<时间戳>-<块名>.html` —— 历次改动前的快照，回退就是把快照覆盖回 `史莱姆.html`。
 - `tests/baseline-original.html` —— 升级前的原稿，测试用它做「造型未改动」比对，并校验它自身的 SHA-256。**禁止修改**（`.gitattributes` 已对它和 `backup/*.html` 设置 `-text`，保留原始字节）。
@@ -18,14 +18,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ```sh
 # 游戏逻辑回归（Node VM 执行真实游戏 JS，DOM/计时器是模拟的，不算浏览器验收）
-node tests/review-tests.cjs            # 48 项，末行 RESULT 48/48
+node tests/review-tests.cjs            # 68 项，末行 RESULT 68/68
 node tests/merge-growth.cjs            # 合体/成长专项，全部 assert 通过则打印一行 PASS
+node tests/balance-sim.cjs --check      # 200 个种子/格，26,400 场战斗 + 经济/成长检查
+node tests/gameplay-browser.cjs        # 独立 Chrome：召唤、离线重载、首领、扫荡与截图
 
 # 浏览器内自检（页面自带 42 项检查，经 CDP 驱动 headless Chrome）
 node tools/out/selftest.js             # 末行 TITLE: PASS 42/42；有失败或超时时退出码非零
 ```
 
-`review-tests.cjs` 没有单项过滤参数；只想跑一项时，临时在脚本里注释掉其他 `check(...)`，或者直接读输出里对应的 `PASS`/`FAIL` 行。它可以传入别的 HTML 路径：`node tests/review-tests.cjs <file.html>`。
+`review-tests.cjs` 没有单项过滤参数；只想跑一项时，临时在脚本里注释掉其他 `check(...)`，或者直接读输出里对应的 `PASS`/`FAIL` 行。共享夹具在 `tests/lib/vm-harness.cjs`，一次编译、每场使用独立状态与可推进时钟。它可以传入别的 HTML 路径：`node tests/review-tests.cjs <file.html>`。
 
 全部验收入口（美术布局、触控、存档迁移、截图、帧率）和战斗画面诊断脚本见 `tools/README.md`。其中 `auto-harness.js`、`bisect.ps1`、`r-auto.ps1`、`review-run.ps1`、`shots.js` 只作历史参考，不用于验收当前版本。截图和帧率脚本即使正常退出，也要查看生成的图片或报告，才能判定效果正确。
 
@@ -47,7 +49,9 @@ node tools/out/selftest.js             # 末行 TITLE: PASS 42/42；有失败或
 全部是顶层脚本，没有模块。用 `/* ==== 标题 ==== */` 注释分区，按标题搜索比按行号定位可靠。
 
 - **全局状态 `S`**（`const S = {...}`）：整个游戏状态都在这一个对象里，存档就是 `JSON.stringify(S)`。`SAVE_DEFAULTS` 在载入前对 `S` 做深拷贝。
-- **存档**：键 `slimeSummonerSave`，当前 `saveVersion:2`。`load()` 先用 `validSaveData()` 校验（拒绝越界数字、重复 ID、`__proto__` 等键），校验失败就设置 `persistenceBlocked`，停止所有写入，并弹出「存档保护」弹窗（唯一出路是 `resetSave`）。首次从 v1 迁移时，把原始字节写进 `slimeSummonerSave_v1_backup`。**新增 `S` 字段时**，要同时考虑 `SAVE_DEFAULTS` 的补齐和 `validSaveData` 的校验，避免旧档被判为坏档。存档导出/导入功能已按负责人要求删除，不要加回来。
+- **游戏数值与闭环**：当前规则和模拟验收见 `docs/gameplay-2026-10-27/数值设计.md`。敌人使用 `makeAbyssMonster` 和共同成长公式；攻击用 `attackPower`，伤害经 `mitigation`，不再有魔物属性 ×2。首通/重复结算共用 `calculateBattleRewards`，扫荡单独限制每日 3 次。
+- **派遣时间**：`advanceWorld` 统一在线恢复、派遣与离线补算；`settleOffline` 最多结算 12 小时。`planClock` 保存 12 秒行动周期的进度，`lastActive` 记录保存时间。静默补算不进行中途保存；场景拾取动画不再额外发奖。
+- **存档**：键 `slimeSummonerSave`，当前 `saveVersion:2`。`load()` 先用 `validSaveData()` 校验（拒绝越界数字、重复 ID、`__proto__` 等键），校验失败就设置 `persistenceBlocked`，停止所有写入，并弹出「存档保护」弹窗（唯一出路是 `resetSave`）。首次从 v1 迁移时，把原始字节写进 `slimeSummonerSave_v1_backup`。游戏性字段 `summonPity`、`sweepUsed`、`lastActive`、`planClock` 均有默认值与校验。**新增 `S` 字段时**，要同时考虑 `SAVE_DEFAULTS` 的补齐和 `validSaveData` 的校验，避免旧档被判为坏档。存档导出/导入功能已按负责人要求删除，不要加回来。
 - **界面**：`switchTab(t)` → `renderTab()` 按标签页重绘 `#content`。所有点击都走一个委托监听器：`document.addEventListener('click', ...)` 里按 `data-act` 分派的 `switch`（「事件委托」分区）。新按钮写 `data-act="xxx"` 并在这里加 `case`，不要单独绑监听器。
 - **战斗**：`startAbyssBattle(options)` 是一个很大的闭包。战斗状态 `B`，以及 `nextTurn`、`playerCast`、`performAction`、`dealDamage`、`handleUnitDeath` 等函数都是它的局部变量，外部取不到。自检通过 `window.__TEST__._battle`（只在诊断模式下赋值）拿到这些内部函数。新增需要测试的战斗内部函数时，把它加进这个钩子对象。
 - **FX 门面**（`const FX = {...}`）：震屏、闪白、飘字、死亡、粒子爆散。闪白作用在 `.breath` 上，因为战斗中的 `.slime` 已经被 `scale(.36)` 缩小过。
