@@ -58,7 +58,7 @@ function renderSummon(){
       ${full?'召唤空间已满':`迎接新伙伴 · ${summonCost()?summonCost()+' 晶币':'免费'}`}
     </button>
     ${full?'<p class="muted small">提升召唤师等级，可以解锁更多伙伴席位。</p>':''}
-    <p class="muted small summon-pity">再召唤 ${summonPityLeft()} 次内必得稀有元素（光/暗/空间/时间）</p>
+    <div class="summon-pity"><div class="pity-track" aria-hidden="true">${Array.from({length:SUMMON_PITY},(_,i)=>`<i class="${i<SUMMON_PITY-summonPityLeft()?'on':''}"></i>`).join('')}</div><p class="muted small">再召唤 ${summonPityLeft()} 次内必得稀有元素（光/暗/空间/时间）</p></div>
     <details class="rules-details"><summary>了解属性与召唤概率</summary><p>岩、火、水、风较常见；草、冰、雷、幻较稀有；光、暗稀有；空间、时间极为罕见。</p></details>
   </div>
 
@@ -66,7 +66,7 @@ function renderSummon(){
     <h3>${uiIcon('gem')} 献祭天材地宝</h3>
     <p class="muted small">消耗1个天材地宝，小幅提升对应属性史莱姆的召唤概率（仅对下一次召唤有效）。</p>
     <div class="boost-grid">
-      ${ELEMENT_KEYS.map(el=>`<button class="boost-btn" data-act="boost" data-element="${el}" aria-pressed="${!!summonBoost[el]}">
+      ${ELEMENT_KEYS.map(el=>`<button class="boost-btn" data-act="boost" data-element="${el}" aria-pressed="${!!summonBoost[el]}" style="--el-h:${ELEMENTS[el].h}">
         ${elementIcon(el)}${el}${summonBoost[el]?`+${summonBoost[el]}`:''}
       </button>`).join('')}
     </div>
@@ -83,9 +83,13 @@ function renderSummon(){
 
 function mapLandmarks(map){
   const id='landscape-'+(++sceneArtId),snow=map.id==='snow',dusk=map.id==='dusk';
-  const c=snow?['#e6eff0','#afc9d0','#8ba9b5','#c4d8d8','#a5bfc7','#eef3e7']:
-    dusk?['#e8c2aa','#ad9ca7','#8a7e94','#8d8c83','#555f68','#edc6a5']:
-    ['#d3e0d1','#99b9b1','#6b9790','#8eac8a','#426e66','#e0dfb5'];
+  /* 色板：天顶、地平线、远山、地面亮部、地面暗部、光源。草原是白天的淡紫晴空，黄昏由紫转桃，雪原偏冷蓝 */
+  const c=snow?['#9fb3df','#e4edf2','#8fa9bf','#e6eff1','#8fa8bb','#f7f1df']:
+    dusk?['#6c639f','#f2b996','#7a6688','#a88a72','#4a4358','#ffd49c']:
+    ['#a9b8e6','#e2e8d4','#7ea69a','#9cc69c','#4a7b68','#f6e9c2'];
+  /* 画布按容器拉伸，圆会被纵向拉长；月亮用纵向压扁的椭圆抵消手机上的典型比例 */
+  const moons=`<ellipse cx="${dusk?262:470}" cy="${dusk?46:40}" rx="15" ry="13" fill="#f6ead0" opacity="${dusk?.85:.6}"/><ellipse cx="${dusk?230:432}" cy="${dusk?30:24}" rx="6" ry="5.3" fill="#e4ebfb" opacity="${dusk?.8:.5}"/>`;
+  const islets=[[60,70,.42],[214,40,.26]].map(([x,y,k])=>`<g transform="translate(${x} ${y}) scale(${k})" opacity=".5"><path d="M0 14C20 4 80 2 100 14C86 30 62 46 50 70C38 46 14 30 0 14Z" fill="${c[2]}"/><path d="M0 14C20 4 80 2 100 14C70 20 30 20 0 14Z" fill="${c[3]}"/></g>`).join('');
   const landmark=snow?`<path d="M337 222q15-104 112-96 80 5 91 101" fill="#829fa9"/><path d="M377 224q9-69 64-67 57 2 63 70" fill="#3f6274"/><path d="M340 171q29-63 100-55 66 4 89 56l-31-3-15 12-25-14-27 11-28-12-30 14Z" fill="#e9f2ed"/><path d="m61 222 29-103 30 103m18 0 23-81 26 81" fill="#759891"/><path d="m72 181 18-62 18 62-18-9Z" fill="#e9f1e7"/>`:
     dusk?`<g stroke="#b4a395" stroke-width="3"><path d="M65 222V119h25v103m68 0V119h25v103M57 113h134v19H57m33-19q34-54 68 0" fill="#7a7786"/><path d="M58 220h135v11H58m239-2 11-70 31-5 17 75m-49-39 40-5" fill="#727382"/></g><path d="M496 227V118m0 30-30-24m30 42 33-33" stroke="#6a6875" stroke-width="8" fill="none"/><path d="m237 228 22-18 17 18m100 0 21-23 22 23" fill="#8b8b88"/>`:
     `<g stroke="#776e59" stroke-width="8" stroke-linecap="round"><path d="M94 221V102m0 50-30-23m30 41 27-28M455 221V117m0 52-26-24m26 38 24-25"/></g><g fill="url(#${id}-leaves)"><path d="M24 130q-10-38 27-49-4-41 41-45 39-2 49 42 43 5 38 46-63 39-155 6Z"/><path d="M390 150q-7-31 25-40-3-36 33-39 38-1 44 34 39 8 31 40-54 33-133 5Z"/></g><path d="M46 105q17-30 48-23m-31-19q22-17 43-5m312 63q19-21 44-17" fill="none" stroke="#c8d3a6" stroke-opacity=".4" stroke-width="8" stroke-linecap="round"/><path d="M263 225v-44m-17-1h43l-9 18h-34Z" fill="#b6a581" stroke="#7e8268" stroke-width="3"/>`;
@@ -96,7 +100,7 @@ function mapLandmarks(map){
     <radialGradient id="${id}-sun"><stop stop-color="${c[5]}" stop-opacity=".9"/><stop offset=".25" stop-color="${c[5]}" stop-opacity=".65"/><stop offset="1" stop-color="${c[5]}" stop-opacity="0"/></radialGradient>
     <pattern id="${id}-grain" width="23" height="19" patternUnits="userSpaceOnUse"><circle cx="4" cy="4" r=".7" fill="#fff" opacity=".23"/><circle cx="16" cy="13" r=".6" fill="#152f39" opacity=".15"/></pattern></defs>
     <path d="M0 0h600v280H0Z" fill="url(#${id}-sky)"/>
-    <circle cx="430" cy="58" r="91" fill="url(#${id}-sun)"/><circle cx="430" cy="58" r="${dusk?24:17}" fill="${c[5]}" opacity=".85"/>
+    ${dusk?`<circle cx="430" cy="150" r="120" fill="url(#${id}-sun)"/><ellipse cx="430" cy="150" rx="30" ry="26" fill="${c[5]}" opacity=".9"/>`:''}${moons}${islets}
     <g class="landmark-back" fill="${c[2]}"><path d="M0 164 84 88 170 169 281 69 397 166 500 93 600 164V280H0Z" opacity=".32"/><path d="M0 192q102-76 220-18t213-13 167 31v88H0Z" opacity=".5"/>${snow?'<path d="m237 109 44-40 40 38-23-7-13 13-16-12Z" fill="#f4f6eb" opacity=".7"/>':''}</g>
     <path d="M0 213q93-24 185 2t192-3 223 1v67H0Z" fill="url(#${id}-ground)"/>
     <path d="M0 244q130 20 268-1t332 1" fill="none" stroke="${c[5]}" stroke-width="23" opacity=".22"/>
@@ -104,7 +108,9 @@ function mapLandmarks(map){
     <g fill="${c[4]}" opacity=".3"><ellipse cx="96" cy="225" rx="61" ry="7"/><ellipse cx="455" cy="225" rx="52" ry="7"/></g>
     <g fill="${c[5]}" opacity=".75"><circle cx="211" cy="225" r="2"/><circle cx="219" cy="229" r="2"/><circle cx="384" cy="243" r="2"/><circle cx="389" cy="238" r="2"/></g>
     <g fill="none" stroke="${c[4]}" stroke-width="2" opacity=".5"><path d="m21 257 3-10m-3 10-5-5m174 3 4-11m-4 11-6-6m366 4 3-11m-3 11 6-5"/></g>
-    <path d="M0 274q150-8 300 0t300 0v6H0Z" fill="${c[4]}" opacity=".5"/><path d="M0 0h600v280H0Z" fill="url(#${id}-grain)"/>
+    <path d="M0 274q150-8 300 0t300 0v6H0Z" fill="${c[4]}" opacity=".5"/>
+    <g fill="${c[4]}" opacity=".75"><path d="M0 280V238q24 4 34 22 4-30 26-36-2 32-14 56Z"/><path d="M600 280V232q-28 6-36 26-6-28-28-30 4 30 18 52Z"/></g>
+    <path d="M0 0h600v280H0Z" fill="url(#${id}-grain)"/>
   </svg>`;
 }
 
@@ -205,6 +211,29 @@ function renderExploreScene(){
     </div>`;
 }
 
+/* 深渊入口：浮石一圈圈沉向深处的光点，当前层数写在左侧；首领层换成暖红色的光 */
+function abyssPortalInfo(level){return isBossFloor(level)?'首领层 · 首通掉落额外宝物':`${abyssEnemyCount(level)} 名敌人等在下面`;}
+function abyssPortalHTML(){
+  const level=getAbyssLevel(),id='portal-'+(++sceneArtId);
+  const rocks=[[196,30,22,.9],[276,26,16,.75],[300,78,18,.7],[178,86,14,.6],[238,16,10,.6],[256,96,9,.5]].map(([x,y,w,o])=>`<path d="M${x-w} ${y}q${w} -${w*.35} ${w*2} 0q-${w*.5} ${w*.9}-${w} ${w*1.1}q-${w*.5}-${w*.2}-${w}-${w*1.1}Z" fill="#3b3462" opacity="${o}"/><path d="M${x-w} ${y}q${w} -${w*.35} ${w*2} 0q-${w} ${w*.25}-${w*2} 0Z" fill="#6b6396" opacity="${o}"/>`).join('');
+  return `<div class="abyss-portal ${isBossFloor(level)?'boss':''}" id="abyssPortal">
+    <svg class="abyss-art" viewBox="0 0 320 120" preserveAspectRatio="xMaxYMid slice" aria-hidden="true">
+      <defs><radialGradient id="${id}-core" cx=".5" cy=".5" r=".5"><stop class="portal-core" offset="0"/><stop class="portal-mid" offset=".35"/><stop offset="1" stop-color="#120f24" stop-opacity="0"/></radialGradient></defs>
+      <ellipse cx="240" cy="62" rx="110" ry="58" fill="url(#${id}-core)"/>
+      <g fill="none" stroke="#b9acf0"><ellipse cx="240" cy="62" rx="92" ry="34" stroke-opacity=".18"/><ellipse cx="240" cy="64" rx="64" ry="23" stroke-opacity=".26"/><ellipse cx="240" cy="66" rx="38" ry="13" stroke-opacity=".38"/><ellipse cx="240" cy="67" rx="16" ry="5" stroke-opacity=".6"/></g>
+      ${rocks}
+      <circle cx="240" cy="67" r="3" fill="#fff4dc"/>
+    </svg>
+    <div class="abyss-floor"><b id="abyssPortalFloor">第 ${level} 层</b><span id="abyssPortalInfo">${abyssPortalInfo(level)}</span></div>
+  </div>`;
+}
+function syncAbyssPortal(){
+  const el=document.getElementById('abyssPortal');if(!el)return;
+  const level=getAbyssLevel();
+  el.classList.toggle('boss',isBossFloor(level));
+  el.querySelector('#abyssPortalFloor').textContent=`第 ${level} 层`;
+  el.querySelector('#abyssPortalInfo').textContent=abyssPortalInfo(level);
+}
 function renderTravel(){
   if(!S.slimes.length){
     return `<div class="panel center">
@@ -231,6 +260,7 @@ function renderTravel(){
 
   <div class="panel">
     <h3>${uiIcon('sword')} 深渊冒险</h3>
+    ${abyssPortalHTML()}
     <p class="muted small">最多 5 只伙伴，已解锁 ${getAbyssUnlocked()}/50 层。每 5 层挑战首领，首通领取全额奖励与额外宝物；重复挑战收益 20%。失败只结算已击败敌人的 25%。</p>
     <div class="abyss-row">
       <label>怪物等级</label>

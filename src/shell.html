@@ -1331,6 +1331,60 @@ body{background:#05060c;color:#e8e9f3;}
 .item-row .item-buy-col .btn{font-size:12px;padding:8px 8px;min-height:38px;letter-spacing:0;white-space:nowrap}
 .item-row .item-buy-col .btn:not(.gold){background:transparent;border:1px solid var(--border);color:var(--text);box-shadow:inset 0 1px 0 var(--panel-edge)}
 @media(max-width:350px){.item-row{grid-template-columns:40px minmax(0,1fr);column-gap:10px;padding:12px}.item-row .item-icon{width:40px;height:40px}.item-row .item-buy-col .btn{font-size:11px}}
+
+/* 召唤：祭坛加高放下浮岛，蛋与台面之间一道属性色的光柱；符文环平时慢转，召唤时加速 */
+.summon-panel{background:radial-gradient(120% 60% at 50% 0%,rgba(203,186,255,.1),transparent 62%),var(--panel)}
+.summon-altar{height:196px}
+.altar-art{width:264px;height:134px;bottom:0}
+.altar-core{top:44px;background:radial-gradient(circle at 34% 25%,#fffaf0 0 6%,#fff2d6 14%,hsl(var(--summon-hue) 62% 82%) 44%,hsl(var(--summon-hue) 42% 50%));box-shadow:0 0 30px hsl(var(--summon-hue) 70% 75% / .45),inset 0 -5px 8px hsl(var(--summon-hue) 40% 35% / .45)}
+.altar-core::after{content:'';position:absolute;left:24%;top:16%;width:26%;height:18%;border-radius:50%;background:rgba(255,255,255,.8);transform:rotate(-28deg)}
+.altar-beam{position:absolute;left:calc(50% - 24px);top:66px;width:48px;height:58px;border-radius:50% 50% 45% 45%/18% 18% 82% 82%;background:linear-gradient(180deg,transparent,hsl(var(--summon-hue) 75% 82% / .32));filter:blur(3px)}
+.altar-runes{transform-origin:0 0;animation:altarSpin 48s linear infinite}
+.summoning .altar-runes{animation-duration:2.6s}
+@keyframes altarSpin{to{transform:rotate(360deg)}}
+.summon-reveal-stage{height:206px}
+.summon-reveal-stage .altar-art{bottom:-6px}
+.summon-reveal-stage .altar-beam,.summon-reveal-stage .altar-isle{display:none}
+.summon-pity{margin-top:10px}.summon-pity p{margin:0}
+.pity-track{display:grid;grid-template-columns:repeat(10,1fr);gap:4px;max-width:200px;margin:0 auto 7px}
+.pity-track i{height:5px;border-radius:999px;background:var(--border)}
+.pity-track i.on{background:var(--gold)}
+.boost-btn{--el:hsl(var(--el-h,260) 72% 76%);background:hsl(var(--el-h,260) 45% 60% / .08);border:1px solid hsl(var(--el-h,260) 45% 62% / .16);color:var(--text)}
+.boost-btn .ui-icon{color:var(--el)}
+.boost-btn[aria-pressed="true"]{background:hsl(var(--el-h,260) 55% 60% / .22);border-color:var(--el);font-weight:600}
+#app[data-theme="light"] .boost-btn,#app[data-theme="peach"] .boost-btn,#app[data-theme="mint"] .boost-btn,#app[data-theme="lavender"] .boost-btn,#app[data-theme="sky"] .boost-btn{--el:hsl(var(--el-h,260) 55% 40%)}
+@media(max-width:360px){.summon-altar{height:184px}.altar-core{top:36px}.altar-beam{top:58px}}
+@media(max-height:700px){.summon-reveal-stage{height:160px}.summon-reveal-stage .altar-art{bottom:-24px}}
+@media(prefers-reduced-motion:reduce){.altar-runes{animation:none}}
+
+/* 探索：插画外框加深底边；深渊入口是一块向下看的夜色画面，层数用宋体写在左边 */
+.explore-scene{box-shadow:inset 0 0 0 1px rgba(255,255,255,.08),0 16px 30px -18px rgba(6,4,20,.7)}
+.abyss-portal{position:relative;height:118px;margin:10px 0 12px;border-radius:16px;overflow:hidden;background:linear-gradient(180deg,#2a2350,#120f24);box-shadow:inset 0 0 0 1px rgba(255,255,255,.07)}
+.abyss-art{position:absolute;inset:0;width:100%;height:100%}
+.portal-core{stop-color:#cbbaff;stop-opacity:.5}.portal-mid{stop-color:#5b4a9c;stop-opacity:.35}
+.abyss-portal.boss .portal-core{stop-color:#ffb08a;stop-opacity:.6}.abyss-portal.boss .portal-mid{stop-color:#8a3f52;stop-opacity:.4}
+.abyss-floor{position:absolute;left:16px;top:50%;transform:translateY(-50%);display:grid;gap:4px;color:#f3efff}
+.abyss-floor b{font-family:var(--font-display);font-size:26px;font-weight:700;letter-spacing:.04em;line-height:1.2;font-variant-numeric:tabular-nums}
+.abyss-floor span{font-size:12px;color:#c9c0e6}
+.abyss-portal.boss .abyss-floor span{color:#ffc9a8}
+.abyss-row{gap:10px;margin-top:12px}
+.abyss-row .abyss-step{width:42px;height:42px;padding:0;border-radius:50%;background:transparent;border:1px solid var(--border);color:var(--text);font-size:14px}
+.abyss-level-input{height:42px;text-align:center;font-size:17px;font-weight:700;font-variant-numeric:tabular-nums;border-radius:12px}
+
+/* 战斗：标题写出当前层数；速度是一条分段轨道，当前倍速用月金；播报是浮在双月前的一条半透明丝带 */
+.game-hud{border-radius:18px;box-shadow:inset 0 1px 0 var(--panel-edge);padding:10px 12px}
+.game-hud .hud-title{font-size:15px;display:flex;align-items:center;gap:6px}
+.hud-boss{font-family:inherit;font-size:11px;font-weight:700;padding:2px 9px;border-radius:999px;background:rgba(255,140,110,.16);color:#ffb59a!important;letter-spacing:.06em}
+.game-hud .hud-speeds{justify-content:space-between;gap:2px;padding:3px;border-radius:999px;background:rgba(255,255,255,.045)}
+.game-hud .speed-btn{flex:1;border:0;background:none;border-radius:999px;padding:6px 0;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.game-hud .speed-btn.on{background:color-mix(in srgb,var(--gold) 18%,transparent);color:var(--gold);font-weight:700}
+.game-hud #bMode{flex:1.4;color:var(--text);box-shadow:inset 0 0 0 1px var(--border)}
+.game-hud .hud-close{border-radius:999px;padding:6px 14px}
+.battle-log{left:50%;right:auto;width:max-content;max-width:86%;transform:translate(-50%,-50%);padding:6px 14px;border-radius:999px;background:rgba(18,14,40,.5);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);box-shadow:inset 0 1px 0 rgba(255,255,255,.08)}
+.battle-log:empty{display:none}
+.intent-label{margin-top:2px;color:#f0d39a;text-shadow:0 1px 4px rgba(10,8,24,.9)}
+.intent-label:empty{display:none}
+#app[data-theme="light"] .battle-log,#app[data-theme="peach"] .battle-log,#app[data-theme="mint"] .battle-log,#app[data-theme="lavender"] .battle-log,#app[data-theme="sky"] .battle-log{background:rgba(18,14,40,.62)}
 </style>
 </head>
 <body>

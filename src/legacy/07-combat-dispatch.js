@@ -35,7 +35,7 @@ function startAbyssBattle(options){
   const speeds = [1,2,3,5,10];
   overlay.innerHTML = `
     <div class="game-hud">
-      <span class="hud-title">${uiIcon('sword')} 深渊对战</span>
+      <span class="hud-title">${uiIcon('sword')} ${challenge?'协作练习':`深渊 第 ${mLevel} 层`}${bossFloor?'<b class="hud-boss">首领</b>':''}</span>
       <div class="hud-speeds">
         ${speeds.map(sp=>`<button class="speed-btn ${battleSpeed===sp?'on':''}" data-speed="${sp}">${sp}x</button>`).join('')}
         <button class="speed-btn" id="bMode">自动</button>
@@ -2306,6 +2306,7 @@ document.addEventListener('click', e=>{
       S.abyssLevel = clamp((S.abyssLevel||1) - 1, 1, getAbyssUnlocked());
       const inp = document.getElementById('abyssLevelInput');
       if(inp) inp.value = S.abyssLevel;
+      syncAbyssPortal();
       save();
       break;
     }
@@ -2313,6 +2314,7 @@ document.addEventListener('click', e=>{
       S.abyssLevel = clamp((S.abyssLevel||1) + 1, 1, getAbyssUnlocked());
       const inp = document.getElementById('abyssLevelInput');
       if(inp) inp.value = S.abyssLevel;
+      syncAbyssPortal();
       save();
       break;
     }
@@ -2360,6 +2362,7 @@ document.addEventListener('input', e=>{
     v=clamp(Math.floor(v),1,getAbyssUnlocked());
     e.target.value=v;
     S.abyssLevel = v;
+    syncAbyssPortal();
     save();
   }
 });

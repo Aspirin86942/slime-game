@@ -784,16 +784,40 @@ function gardenScene(isMonster){
     <path d="M0 395Q170 371 300 391t300-1v10H0Z" fill="${c.bot}" opacity=".6"/>
   </svg>`;
 }
+/* 召唤祭坛：月石台座托在一块小浮岛上。台面的金色符文环在压扁的坐标里旋转，看起来像平放着转动；召唤时转速加快。 */
 function summonAltar(){
-  return `<div class="summon-altar" aria-hidden="true"><div class="altar-halo"></div>
-    <svg class="altar-art" viewBox="0 0 300 130"><ellipse cx="150" cy="103" rx="119" ry="20" fill="#101522" opacity=".3"/>
-      <path d="M39 76v15c0 36 222 36 222 0V76" fill="#625c78"/><ellipse cx="150" cy="76" rx="111" ry="31" fill="#888298"/>
-      <ellipse cx="150" cy="73" rx="99" ry="26" fill="#a39aa9"/><ellipse cx="150" cy="73" rx="86" ry="21" fill="#77758b" stroke="#dfcba3" stroke-width="1.4"/>
-      <ellipse cx="150" cy="73" rx="64" ry="15" fill="none" stroke="#e3d4ba" stroke-opacity=".5"/>
-      <path d="m150 54 8 8-8 7-8-7Zm-74 15 10 4-10 4-9-4m157-4 9 4-9 4-10-4m-74 7 8 7-8 8-8-8" fill="#e6d5b4" opacity=".8"/>
-      <path d="m56 94 17 6m35 10 15 2m52 0 15-2m36-10 17-6" stroke="#c8bdc4" opacity=".35" stroke-width="2"/>
+  const id='altar-'+(++sceneArtId);
+  const runes=Array.from({length:8},(_,i)=>{const a=i*Math.PI/4,x=(Math.cos(a)*77).toFixed(1),y=(Math.sin(a)*77-7).toFixed(1);return `<path d="M${x} ${y}l5 7-5 7-5-7Z" fill="#f0d9a2"/>`;}).join('');
+  return `<div class="summon-altar" aria-hidden="true"><div class="altar-halo"></div><div class="altar-beam"></div>
+    <svg class="altar-art" viewBox="0 0 300 152">
+      <defs>
+        <linearGradient id="${id}-top" x2="0" y2="1"><stop stop-color="#cbc1df"/><stop offset="1" stop-color="#8d84a8"/></linearGradient>
+        <linearGradient id="${id}-side" x2="0" y2="1"><stop stop-color="#6c6489"/><stop offset="1" stop-color="#3f3a5c"/></linearGradient>
+        <linearGradient id="${id}-rock" x2="0" y2="1"><stop stop-color="#3a3354"/><stop offset=".6" stop-color="#262140"/><stop offset="1" stop-color="#1a172c" stop-opacity="0"/></linearGradient>
+        <radialGradient id="${id}-glow"><stop stop-color="#cbbaff" stop-opacity=".65"/><stop offset="1" stop-color="#cbbaff" stop-opacity="0"/></radialGradient>
+        <radialGradient id="${id}-pool"><stop style="stop-color:hsl(var(--summon-hue) 70% 80%);stop-opacity:.55"/><stop offset="1" style="stop-color:hsl(var(--summon-hue) 70% 80%);stop-opacity:0"/></radialGradient>
+      </defs>
+      <g class="altar-isle">
+        <path d="M30 80C60 76 100 86 150 86C200 86 240 76 270 80C258 96 236 104 214 112C190 122 168 136 150 150C134 134 112 122 88 112C64 104 42 96 30 80Z" fill="url(#${id}-rock)"/>
+        <path d="M30 80C60 76 100 86 150 86C200 86 240 76 270 80C250 88 210 92 150 93C90 92 50 88 30 80Z" fill="#4f6f66"/>
+        <path d="M96 112q-3 12 2 22M204 112q3 10 0 20" stroke="#2a2442" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+        <circle cx="150" cy="146" r="12" fill="url(#${id}-glow)"/><path d="M150 139l3 7-3 7-3-7Z" fill="#ddd1ff"/>
+      </g>
+      <path d="M38 64v14c0 32 224 32 224 0V64" fill="url(#${id}-side)"/>
+      <path d="M38 78c0 32 224 32 224 0" fill="none" stroke="#a99fc6" stroke-opacity=".35"/>
+      <ellipse cx="150" cy="64" rx="112" ry="30" fill="url(#${id}-top)"/>
+      <ellipse cx="150" cy="64" rx="112" ry="30" fill="none" stroke="#f0d9a2" stroke-opacity=".55" stroke-width="1.4"/>
+      <ellipse cx="150" cy="64" rx="96" ry="24" fill="#5d5679"/>
+      <ellipse cx="150" cy="64" rx="70" ry="17" fill="url(#${id}-pool)"/>
+      <g transform="translate(150 64) scale(1 .27)"><g class="altar-runes">
+        <circle r="88" fill="none" stroke="#f0d9a2" stroke-opacity=".8" stroke-width="1.6" vector-effect="non-scaling-stroke"/>
+        <circle r="66" fill="none" stroke="#f0d9a2" stroke-opacity=".45" stroke-width="1.2" stroke-dasharray="5 9" vector-effect="non-scaling-stroke"/>
+        ${runes}
+      </g></g>
+      <g fill="#ddd1ff"><path d="M40 52l6-20 6 20-6 8Z" opacity=".8"/><path d="M248 52l6-20 6 20-6 8Z" opacity=".8"/></g>
+      <circle cx="46" cy="44" r="14" fill="url(#${id}-glow)"/><circle cx="254" cy="44" r="14" fill="url(#${id}-glow)"/>
     </svg><div class="altar-core"></div>
-    <span class="altar-star" style="--x:29%;--y:29%">${uiIcon('spark')}</span><span class="altar-star" style="--x:70%;--y:39%">${uiIcon('spark')}</span><span class="altar-star" style="--x:59%;--y:14%">${uiIcon('spark')}</span></div>`;
+    <span class="altar-star" style="--x:29%;--y:22%">${uiIcon('spark')}</span><span class="altar-star" style="--x:70%;--y:30%">${uiIcon('spark')}</span><span class="altar-star" style="--x:59%;--y:10%">${uiIcon('spark')}</span></div>`;
 }
 function dispatchSummaryHTML(){
   const n=S.slimes.filter(isDispatched).length;

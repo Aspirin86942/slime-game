@@ -1331,6 +1331,60 @@ body{background:#05060c;color:#e8e9f3;}
 .item-row .item-buy-col .btn{font-size:12px;padding:8px 8px;min-height:38px;letter-spacing:0;white-space:nowrap}
 .item-row .item-buy-col .btn:not(.gold){background:transparent;border:1px solid var(--border);color:var(--text);box-shadow:inset 0 1px 0 var(--panel-edge)}
 @media(max-width:350px){.item-row{grid-template-columns:40px minmax(0,1fr);column-gap:10px;padding:12px}.item-row .item-icon{width:40px;height:40px}.item-row .item-buy-col .btn{font-size:11px}}
+
+/* 召唤：祭坛加高放下浮岛，蛋与台面之间一道属性色的光柱；符文环平时慢转，召唤时加速 */
+.summon-panel{background:radial-gradient(120% 60% at 50% 0%,rgba(203,186,255,.1),transparent 62%),var(--panel)}
+.summon-altar{height:196px}
+.altar-art{width:264px;height:134px;bottom:0}
+.altar-core{top:44px;background:radial-gradient(circle at 34% 25%,#fffaf0 0 6%,#fff2d6 14%,hsl(var(--summon-hue) 62% 82%) 44%,hsl(var(--summon-hue) 42% 50%));box-shadow:0 0 30px hsl(var(--summon-hue) 70% 75% / .45),inset 0 -5px 8px hsl(var(--summon-hue) 40% 35% / .45)}
+.altar-core::after{content:'';position:absolute;left:24%;top:16%;width:26%;height:18%;border-radius:50%;background:rgba(255,255,255,.8);transform:rotate(-28deg)}
+.altar-beam{position:absolute;left:calc(50% - 24px);top:66px;width:48px;height:58px;border-radius:50% 50% 45% 45%/18% 18% 82% 82%;background:linear-gradient(180deg,transparent,hsl(var(--summon-hue) 75% 82% / .32));filter:blur(3px)}
+.altar-runes{transform-origin:0 0;animation:altarSpin 48s linear infinite}
+.summoning .altar-runes{animation-duration:2.6s}
+@keyframes altarSpin{to{transform:rotate(360deg)}}
+.summon-reveal-stage{height:206px}
+.summon-reveal-stage .altar-art{bottom:-6px}
+.summon-reveal-stage .altar-beam,.summon-reveal-stage .altar-isle{display:none}
+.summon-pity{margin-top:10px}.summon-pity p{margin:0}
+.pity-track{display:grid;grid-template-columns:repeat(10,1fr);gap:4px;max-width:200px;margin:0 auto 7px}
+.pity-track i{height:5px;border-radius:999px;background:var(--border)}
+.pity-track i.on{background:var(--gold)}
+.boost-btn{--el:hsl(var(--el-h,260) 72% 76%);background:hsl(var(--el-h,260) 45% 60% / .08);border:1px solid hsl(var(--el-h,260) 45% 62% / .16);color:var(--text)}
+.boost-btn .ui-icon{color:var(--el)}
+.boost-btn[aria-pressed="true"]{background:hsl(var(--el-h,260) 55% 60% / .22);border-color:var(--el);font-weight:600}
+#app[data-theme="light"] .boost-btn,#app[data-theme="peach"] .boost-btn,#app[data-theme="mint"] .boost-btn,#app[data-theme="lavender"] .boost-btn,#app[data-theme="sky"] .boost-btn{--el:hsl(var(--el-h,260) 55% 40%)}
+@media(max-width:360px){.summon-altar{height:184px}.altar-core{top:36px}.altar-beam{top:58px}}
+@media(max-height:700px){.summon-reveal-stage{height:160px}.summon-reveal-stage .altar-art{bottom:-24px}}
+@media(prefers-reduced-motion:reduce){.altar-runes{animation:none}}
+
+/* 探索：插画外框加深底边；深渊入口是一块向下看的夜色画面，层数用宋体写在左边 */
+.explore-scene{box-shadow:inset 0 0 0 1px rgba(255,255,255,.08),0 16px 30px -18px rgba(6,4,20,.7)}
+.abyss-portal{position:relative;height:118px;margin:10px 0 12px;border-radius:16px;overflow:hidden;background:linear-gradient(180deg,#2a2350,#120f24);box-shadow:inset 0 0 0 1px rgba(255,255,255,.07)}
+.abyss-art{position:absolute;inset:0;width:100%;height:100%}
+.portal-core{stop-color:#cbbaff;stop-opacity:.5}.portal-mid{stop-color:#5b4a9c;stop-opacity:.35}
+.abyss-portal.boss .portal-core{stop-color:#ffb08a;stop-opacity:.6}.abyss-portal.boss .portal-mid{stop-color:#8a3f52;stop-opacity:.4}
+.abyss-floor{position:absolute;left:16px;top:50%;transform:translateY(-50%);display:grid;gap:4px;color:#f3efff}
+.abyss-floor b{font-family:var(--font-display);font-size:26px;font-weight:700;letter-spacing:.04em;line-height:1.2;font-variant-numeric:tabular-nums}
+.abyss-floor span{font-size:12px;color:#c9c0e6}
+.abyss-portal.boss .abyss-floor span{color:#ffc9a8}
+.abyss-row{gap:10px;margin-top:12px}
+.abyss-row .abyss-step{width:42px;height:42px;padding:0;border-radius:50%;background:transparent;border:1px solid var(--border);color:var(--text);font-size:14px}
+.abyss-level-input{height:42px;text-align:center;font-size:17px;font-weight:700;font-variant-numeric:tabular-nums;border-radius:12px}
+
+/* 战斗：标题写出当前层数；速度是一条分段轨道，当前倍速用月金；播报是浮在双月前的一条半透明丝带 */
+.game-hud{border-radius:18px;box-shadow:inset 0 1px 0 var(--panel-edge);padding:10px 12px}
+.game-hud .hud-title{font-size:15px;display:flex;align-items:center;gap:6px}
+.hud-boss{font-family:inherit;font-size:11px;font-weight:700;padding:2px 9px;border-radius:999px;background:rgba(255,140,110,.16);color:#ffb59a!important;letter-spacing:.06em}
+.game-hud .hud-speeds{justify-content:space-between;gap:2px;padding:3px;border-radius:999px;background:rgba(255,255,255,.045)}
+.game-hud .speed-btn{flex:1;border:0;background:none;border-radius:999px;padding:6px 0;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.game-hud .speed-btn.on{background:color-mix(in srgb,var(--gold) 18%,transparent);color:var(--gold);font-weight:700}
+.game-hud #bMode{flex:1.4;color:var(--text);box-shadow:inset 0 0 0 1px var(--border)}
+.game-hud .hud-close{border-radius:999px;padding:6px 14px}
+.battle-log{left:50%;right:auto;width:max-content;max-width:86%;transform:translate(-50%,-50%);padding:6px 14px;border-radius:999px;background:rgba(18,14,40,.5);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);box-shadow:inset 0 1px 0 rgba(255,255,255,.08)}
+.battle-log:empty{display:none}
+.intent-label{margin-top:2px;color:#f0d39a;text-shadow:0 1px 4px rgba(10,8,24,.9)}
+.intent-label:empty{display:none}
+#app[data-theme="light"] .battle-log,#app[data-theme="peach"] .battle-log,#app[data-theme="mint"] .battle-log,#app[data-theme="lavender"] .battle-log,#app[data-theme="sky"] .battle-log{background:rgba(18,14,40,.62)}
 </style>
 <style>/* 家园：同一片双月夜空下的浮岛。界面颜色全部取自应用主题变量，7 套主题都能跟随；只有地图插画有自己的昼夜天色。
    圆角分级：大面板 18，行与输入框 12，按钮 12，标签与分段导航用全圆角。强调色只用 --gold。 */
@@ -4621,16 +4675,40 @@ function gardenScene(isMonster){
     <path d="M0 395Q170 371 300 391t300-1v10H0Z" fill="${c.bot}" opacity=".6"/>
   </svg>`;
 }
+/* 召唤祭坛：月石台座托在一块小浮岛上。台面的金色符文环在压扁的坐标里旋转，看起来像平放着转动；召唤时转速加快。 */
 function summonAltar(){
-  return `<div class="summon-altar" aria-hidden="true"><div class="altar-halo"></div>
-    <svg class="altar-art" viewBox="0 0 300 130"><ellipse cx="150" cy="103" rx="119" ry="20" fill="#101522" opacity=".3"/>
-      <path d="M39 76v15c0 36 222 36 222 0V76" fill="#625c78"/><ellipse cx="150" cy="76" rx="111" ry="31" fill="#888298"/>
-      <ellipse cx="150" cy="73" rx="99" ry="26" fill="#a39aa9"/><ellipse cx="150" cy="73" rx="86" ry="21" fill="#77758b" stroke="#dfcba3" stroke-width="1.4"/>
-      <ellipse cx="150" cy="73" rx="64" ry="15" fill="none" stroke="#e3d4ba" stroke-opacity=".5"/>
-      <path d="m150 54 8 8-8 7-8-7Zm-74 15 10 4-10 4-9-4m157-4 9 4-9 4-10-4m-74 7 8 7-8 8-8-8" fill="#e6d5b4" opacity=".8"/>
-      <path d="m56 94 17 6m35 10 15 2m52 0 15-2m36-10 17-6" stroke="#c8bdc4" opacity=".35" stroke-width="2"/>
+  const id='altar-'+(++sceneArtId);
+  const runes=Array.from({length:8},(_,i)=>{const a=i*Math.PI/4,x=(Math.cos(a)*77).toFixed(1),y=(Math.sin(a)*77-7).toFixed(1);return `<path d="M${x} ${y}l5 7-5 7-5-7Z" fill="#f0d9a2"/>`;}).join('');
+  return `<div class="summon-altar" aria-hidden="true"><div class="altar-halo"></div><div class="altar-beam"></div>
+    <svg class="altar-art" viewBox="0 0 300 152">
+      <defs>
+        <linearGradient id="${id}-top" x2="0" y2="1"><stop stop-color="#cbc1df"/><stop offset="1" stop-color="#8d84a8"/></linearGradient>
+        <linearGradient id="${id}-side" x2="0" y2="1"><stop stop-color="#6c6489"/><stop offset="1" stop-color="#3f3a5c"/></linearGradient>
+        <linearGradient id="${id}-rock" x2="0" y2="1"><stop stop-color="#3a3354"/><stop offset=".6" stop-color="#262140"/><stop offset="1" stop-color="#1a172c" stop-opacity="0"/></linearGradient>
+        <radialGradient id="${id}-glow"><stop stop-color="#cbbaff" stop-opacity=".65"/><stop offset="1" stop-color="#cbbaff" stop-opacity="0"/></radialGradient>
+        <radialGradient id="${id}-pool"><stop style="stop-color:hsl(var(--summon-hue) 70% 80%);stop-opacity:.55"/><stop offset="1" style="stop-color:hsl(var(--summon-hue) 70% 80%);stop-opacity:0"/></radialGradient>
+      </defs>
+      <g class="altar-isle">
+        <path d="M30 80C60 76 100 86 150 86C200 86 240 76 270 80C258 96 236 104 214 112C190 122 168 136 150 150C134 134 112 122 88 112C64 104 42 96 30 80Z" fill="url(#${id}-rock)"/>
+        <path d="M30 80C60 76 100 86 150 86C200 86 240 76 270 80C250 88 210 92 150 93C90 92 50 88 30 80Z" fill="#4f6f66"/>
+        <path d="M96 112q-3 12 2 22M204 112q3 10 0 20" stroke="#2a2442" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+        <circle cx="150" cy="146" r="12" fill="url(#${id}-glow)"/><path d="M150 139l3 7-3 7-3-7Z" fill="#ddd1ff"/>
+      </g>
+      <path d="M38 64v14c0 32 224 32 224 0V64" fill="url(#${id}-side)"/>
+      <path d="M38 78c0 32 224 32 224 0" fill="none" stroke="#a99fc6" stroke-opacity=".35"/>
+      <ellipse cx="150" cy="64" rx="112" ry="30" fill="url(#${id}-top)"/>
+      <ellipse cx="150" cy="64" rx="112" ry="30" fill="none" stroke="#f0d9a2" stroke-opacity=".55" stroke-width="1.4"/>
+      <ellipse cx="150" cy="64" rx="96" ry="24" fill="#5d5679"/>
+      <ellipse cx="150" cy="64" rx="70" ry="17" fill="url(#${id}-pool)"/>
+      <g transform="translate(150 64) scale(1 .27)"><g class="altar-runes">
+        <circle r="88" fill="none" stroke="#f0d9a2" stroke-opacity=".8" stroke-width="1.6" vector-effect="non-scaling-stroke"/>
+        <circle r="66" fill="none" stroke="#f0d9a2" stroke-opacity=".45" stroke-width="1.2" stroke-dasharray="5 9" vector-effect="non-scaling-stroke"/>
+        ${runes}
+      </g></g>
+      <g fill="#ddd1ff"><path d="M40 52l6-20 6 20-6 8Z" opacity=".8"/><path d="M248 52l6-20 6 20-6 8Z" opacity=".8"/></g>
+      <circle cx="46" cy="44" r="14" fill="url(#${id}-glow)"/><circle cx="254" cy="44" r="14" fill="url(#${id}-glow)"/>
     </svg><div class="altar-core"></div>
-    <span class="altar-star" style="--x:29%;--y:29%">${uiIcon('spark')}</span><span class="altar-star" style="--x:70%;--y:39%">${uiIcon('spark')}</span><span class="altar-star" style="--x:59%;--y:14%">${uiIcon('spark')}</span></div>`;
+    <span class="altar-star" style="--x:29%;--y:22%">${uiIcon('spark')}</span><span class="altar-star" style="--x:70%;--y:30%">${uiIcon('spark')}</span><span class="altar-star" style="--x:59%;--y:10%">${uiIcon('spark')}</span></div>`;
 }
 function dispatchSummaryHTML(){
   const n=S.slimes.filter(isDispatched).length;
@@ -4748,7 +4826,7 @@ function renderSummon(){
       ${full?'召唤空间已满':`迎接新伙伴 · ${summonCost()?summonCost()+' 晶币':'免费'}`}
     </button>
     ${full?'<p class="muted small">提升召唤师等级，可以解锁更多伙伴席位。</p>':''}
-    <p class="muted small summon-pity">再召唤 ${summonPityLeft()} 次内必得稀有元素（光/暗/空间/时间）</p>
+    <div class="summon-pity"><div class="pity-track" aria-hidden="true">${Array.from({length:SUMMON_PITY},(_,i)=>`<i class="${i<SUMMON_PITY-summonPityLeft()?'on':''}"></i>`).join('')}</div><p class="muted small">再召唤 ${summonPityLeft()} 次内必得稀有元素（光/暗/空间/时间）</p></div>
     <details class="rules-details"><summary>了解属性与召唤概率</summary><p>岩、火、水、风较常见；草、冰、雷、幻较稀有；光、暗稀有；空间、时间极为罕见。</p></details>
   </div>
 
@@ -4756,7 +4834,7 @@ function renderSummon(){
     <h3>${uiIcon('gem')} 献祭天材地宝</h3>
     <p class="muted small">消耗1个天材地宝，小幅提升对应属性史莱姆的召唤概率（仅对下一次召唤有效）。</p>
     <div class="boost-grid">
-      ${ELEMENT_KEYS.map(el=>`<button class="boost-btn" data-act="boost" data-element="${el}" aria-pressed="${!!summonBoost[el]}">
+      ${ELEMENT_KEYS.map(el=>`<button class="boost-btn" data-act="boost" data-element="${el}" aria-pressed="${!!summonBoost[el]}" style="--el-h:${ELEMENTS[el].h}">
         ${elementIcon(el)}${el}${summonBoost[el]?`+${summonBoost[el]}`:''}
       </button>`).join('')}
     </div>
@@ -4773,9 +4851,13 @@ function renderSummon(){
 
 function mapLandmarks(map){
   const id='landscape-'+(++sceneArtId),snow=map.id==='snow',dusk=map.id==='dusk';
-  const c=snow?['#e6eff0','#afc9d0','#8ba9b5','#c4d8d8','#a5bfc7','#eef3e7']:
-    dusk?['#e8c2aa','#ad9ca7','#8a7e94','#8d8c83','#555f68','#edc6a5']:
-    ['#d3e0d1','#99b9b1','#6b9790','#8eac8a','#426e66','#e0dfb5'];
+  /* 色板：天顶、地平线、远山、地面亮部、地面暗部、光源。草原是白天的淡紫晴空，黄昏由紫转桃，雪原偏冷蓝 */
+  const c=snow?['#9fb3df','#e4edf2','#8fa9bf','#e6eff1','#8fa8bb','#f7f1df']:
+    dusk?['#6c639f','#f2b996','#7a6688','#a88a72','#4a4358','#ffd49c']:
+    ['#a9b8e6','#e2e8d4','#7ea69a','#9cc69c','#4a7b68','#f6e9c2'];
+  /* 画布按容器拉伸，圆会被纵向拉长；月亮用纵向压扁的椭圆抵消手机上的典型比例 */
+  const moons=`<ellipse cx="${dusk?262:470}" cy="${dusk?46:40}" rx="15" ry="13" fill="#f6ead0" opacity="${dusk?.85:.6}"/><ellipse cx="${dusk?230:432}" cy="${dusk?30:24}" rx="6" ry="5.3" fill="#e4ebfb" opacity="${dusk?.8:.5}"/>`;
+  const islets=[[60,70,.42],[214,40,.26]].map(([x,y,k])=>`<g transform="translate(${x} ${y}) scale(${k})" opacity=".5"><path d="M0 14C20 4 80 2 100 14C86 30 62 46 50 70C38 46 14 30 0 14Z" fill="${c[2]}"/><path d="M0 14C20 4 80 2 100 14C70 20 30 20 0 14Z" fill="${c[3]}"/></g>`).join('');
   const landmark=snow?`<path d="M337 222q15-104 112-96 80 5 91 101" fill="#829fa9"/><path d="M377 224q9-69 64-67 57 2 63 70" fill="#3f6274"/><path d="M340 171q29-63 100-55 66 4 89 56l-31-3-15 12-25-14-27 11-28-12-30 14Z" fill="#e9f2ed"/><path d="m61 222 29-103 30 103m18 0 23-81 26 81" fill="#759891"/><path d="m72 181 18-62 18 62-18-9Z" fill="#e9f1e7"/>`:
     dusk?`<g stroke="#b4a395" stroke-width="3"><path d="M65 222V119h25v103m68 0V119h25v103M57 113h134v19H57m33-19q34-54 68 0" fill="#7a7786"/><path d="M58 220h135v11H58m239-2 11-70 31-5 17 75m-49-39 40-5" fill="#727382"/></g><path d="M496 227V118m0 30-30-24m30 42 33-33" stroke="#6a6875" stroke-width="8" fill="none"/><path d="m237 228 22-18 17 18m100 0 21-23 22 23" fill="#8b8b88"/>`:
     `<g stroke="#776e59" stroke-width="8" stroke-linecap="round"><path d="M94 221V102m0 50-30-23m30 41 27-28M455 221V117m0 52-26-24m26 38 24-25"/></g><g fill="url(#${id}-leaves)"><path d="M24 130q-10-38 27-49-4-41 41-45 39-2 49 42 43 5 38 46-63 39-155 6Z"/><path d="M390 150q-7-31 25-40-3-36 33-39 38-1 44 34 39 8 31 40-54 33-133 5Z"/></g><path d="M46 105q17-30 48-23m-31-19q22-17 43-5m312 63q19-21 44-17" fill="none" stroke="#c8d3a6" stroke-opacity=".4" stroke-width="8" stroke-linecap="round"/><path d="M263 225v-44m-17-1h43l-9 18h-34Z" fill="#b6a581" stroke="#7e8268" stroke-width="3"/>`;
@@ -4786,7 +4868,7 @@ function mapLandmarks(map){
     <radialGradient id="${id}-sun"><stop stop-color="${c[5]}" stop-opacity=".9"/><stop offset=".25" stop-color="${c[5]}" stop-opacity=".65"/><stop offset="1" stop-color="${c[5]}" stop-opacity="0"/></radialGradient>
     <pattern id="${id}-grain" width="23" height="19" patternUnits="userSpaceOnUse"><circle cx="4" cy="4" r=".7" fill="#fff" opacity=".23"/><circle cx="16" cy="13" r=".6" fill="#152f39" opacity=".15"/></pattern></defs>
     <path d="M0 0h600v280H0Z" fill="url(#${id}-sky)"/>
-    <circle cx="430" cy="58" r="91" fill="url(#${id}-sun)"/><circle cx="430" cy="58" r="${dusk?24:17}" fill="${c[5]}" opacity=".85"/>
+    ${dusk?`<circle cx="430" cy="150" r="120" fill="url(#${id}-sun)"/><ellipse cx="430" cy="150" rx="30" ry="26" fill="${c[5]}" opacity=".9"/>`:''}${moons}${islets}
     <g class="landmark-back" fill="${c[2]}"><path d="M0 164 84 88 170 169 281 69 397 166 500 93 600 164V280H0Z" opacity=".32"/><path d="M0 192q102-76 220-18t213-13 167 31v88H0Z" opacity=".5"/>${snow?'<path d="m237 109 44-40 40 38-23-7-13 13-16-12Z" fill="#f4f6eb" opacity=".7"/>':''}</g>
     <path d="M0 213q93-24 185 2t192-3 223 1v67H0Z" fill="url(#${id}-ground)"/>
     <path d="M0 244q130 20 268-1t332 1" fill="none" stroke="${c[5]}" stroke-width="23" opacity=".22"/>
@@ -4794,7 +4876,9 @@ function mapLandmarks(map){
     <g fill="${c[4]}" opacity=".3"><ellipse cx="96" cy="225" rx="61" ry="7"/><ellipse cx="455" cy="225" rx="52" ry="7"/></g>
     <g fill="${c[5]}" opacity=".75"><circle cx="211" cy="225" r="2"/><circle cx="219" cy="229" r="2"/><circle cx="384" cy="243" r="2"/><circle cx="389" cy="238" r="2"/></g>
     <g fill="none" stroke="${c[4]}" stroke-width="2" opacity=".5"><path d="m21 257 3-10m-3 10-5-5m174 3 4-11m-4 11-6-6m366 4 3-11m-3 11 6-5"/></g>
-    <path d="M0 274q150-8 300 0t300 0v6H0Z" fill="${c[4]}" opacity=".5"/><path d="M0 0h600v280H0Z" fill="url(#${id}-grain)"/>
+    <path d="M0 274q150-8 300 0t300 0v6H0Z" fill="${c[4]}" opacity=".5"/>
+    <g fill="${c[4]}" opacity=".75"><path d="M0 280V238q24 4 34 22 4-30 26-36-2 32-14 56Z"/><path d="M600 280V232q-28 6-36 26-6-28-28-30 4 30 18 52Z"/></g>
+    <path d="M0 0h600v280H0Z" fill="url(#${id}-grain)"/>
   </svg>`;
 }
 
@@ -4895,6 +4979,29 @@ function renderExploreScene(){
     </div>`;
 }
 
+/* 深渊入口：浮石一圈圈沉向深处的光点，当前层数写在左侧；首领层换成暖红色的光 */
+function abyssPortalInfo(level){return isBossFloor(level)?'首领层 · 首通掉落额外宝物':`${abyssEnemyCount(level)} 名敌人等在下面`;}
+function abyssPortalHTML(){
+  const level=getAbyssLevel(),id='portal-'+(++sceneArtId);
+  const rocks=[[196,30,22,.9],[276,26,16,.75],[300,78,18,.7],[178,86,14,.6],[238,16,10,.6],[256,96,9,.5]].map(([x,y,w,o])=>`<path d="M${x-w} ${y}q${w} -${w*.35} ${w*2} 0q-${w*.5} ${w*.9}-${w} ${w*1.1}q-${w*.5}-${w*.2}-${w}-${w*1.1}Z" fill="#3b3462" opacity="${o}"/><path d="M${x-w} ${y}q${w} -${w*.35} ${w*2} 0q-${w} ${w*.25}-${w*2} 0Z" fill="#6b6396" opacity="${o}"/>`).join('');
+  return `<div class="abyss-portal ${isBossFloor(level)?'boss':''}" id="abyssPortal">
+    <svg class="abyss-art" viewBox="0 0 320 120" preserveAspectRatio="xMaxYMid slice" aria-hidden="true">
+      <defs><radialGradient id="${id}-core" cx=".5" cy=".5" r=".5"><stop class="portal-core" offset="0"/><stop class="portal-mid" offset=".35"/><stop offset="1" stop-color="#120f24" stop-opacity="0"/></radialGradient></defs>
+      <ellipse cx="240" cy="62" rx="110" ry="58" fill="url(#${id}-core)"/>
+      <g fill="none" stroke="#b9acf0"><ellipse cx="240" cy="62" rx="92" ry="34" stroke-opacity=".18"/><ellipse cx="240" cy="64" rx="64" ry="23" stroke-opacity=".26"/><ellipse cx="240" cy="66" rx="38" ry="13" stroke-opacity=".38"/><ellipse cx="240" cy="67" rx="16" ry="5" stroke-opacity=".6"/></g>
+      ${rocks}
+      <circle cx="240" cy="67" r="3" fill="#fff4dc"/>
+    </svg>
+    <div class="abyss-floor"><b id="abyssPortalFloor">第 ${level} 层</b><span id="abyssPortalInfo">${abyssPortalInfo(level)}</span></div>
+  </div>`;
+}
+function syncAbyssPortal(){
+  const el=document.getElementById('abyssPortal');if(!el)return;
+  const level=getAbyssLevel();
+  el.classList.toggle('boss',isBossFloor(level));
+  el.querySelector('#abyssPortalFloor').textContent=`第 ${level} 层`;
+  el.querySelector('#abyssPortalInfo').textContent=abyssPortalInfo(level);
+}
 function renderTravel(){
   if(!S.slimes.length){
     return `<div class="panel center">
@@ -4921,6 +5028,7 @@ function renderTravel(){
 
   <div class="panel">
     <h3>${uiIcon('sword')} 深渊冒险</h3>
+    ${abyssPortalHTML()}
     <p class="muted small">最多 5 只伙伴，已解锁 ${getAbyssUnlocked()}/50 层。每 5 层挑战首领，首通领取全额奖励与额外宝物；重复挑战收益 20%。失败只结算已击败敌人的 25%。</p>
     <div class="abyss-row">
       <label>怪物等级</label>
@@ -6794,7 +6902,7 @@ function startAbyssBattle(options){
   const speeds = [1,2,3,5,10];
   overlay.innerHTML = `
     <div class="game-hud">
-      <span class="hud-title">${uiIcon('sword')} 深渊对战</span>
+      <span class="hud-title">${uiIcon('sword')} ${challenge?'协作练习':`深渊 第 ${mLevel} 层`}${bossFloor?'<b class="hud-boss">首领</b>':''}</span>
       <div class="hud-speeds">
         ${speeds.map(sp=>`<button class="speed-btn ${battleSpeed===sp?'on':''}" data-speed="${sp}">${sp}x</button>`).join('')}
         <button class="speed-btn" id="bMode">自动</button>
@@ -9065,6 +9173,7 @@ document.addEventListener('click', e=>{
       S.abyssLevel = clamp((S.abyssLevel||1) - 1, 1, getAbyssUnlocked());
       const inp = document.getElementById('abyssLevelInput');
       if(inp) inp.value = S.abyssLevel;
+      syncAbyssPortal();
       save();
       break;
     }
@@ -9072,6 +9181,7 @@ document.addEventListener('click', e=>{
       S.abyssLevel = clamp((S.abyssLevel||1) + 1, 1, getAbyssUnlocked());
       const inp = document.getElementById('abyssLevelInput');
       if(inp) inp.value = S.abyssLevel;
+      syncAbyssPortal();
       save();
       break;
     }
@@ -9119,6 +9229,7 @@ document.addEventListener('input', e=>{
     v=clamp(Math.floor(v),1,getAbyssUnlocked());
     e.target.value=v;
     S.abyssLevel = v;
+    syncAbyssPortal();
     save();
   }
 });
