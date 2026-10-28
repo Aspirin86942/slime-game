@@ -36,18 +36,23 @@ const buildingRows:[string,string,string,string,string,[number,number],string,st
  ['memorial','纪念馆','♡','陈列伙伴回忆与旅程纪念物','memory',[2,1],'聚餐关系收益增加','访客舒适度增加']
 ];
 export const BUILDINGS:BuildingDef[]=buildingRows.map((r,i)=>({id:r[0],name:r[1],icon:r[2],desc:r[3],service:r[4],size:r[5],upgrades:[r[6],r[7]],zone:Math.floor(i/4),cost:{wood:12+4*Math.floor(i/4),stone:8+3*Math.floor(i/4)}}));
+BUILDINGS.push({id:'trough',name:'饲料槽',zone:0,icon:'▱',desc:'伙伴走过来分享实际存放的饲料',service:'feed',size:[1,1],cost:{wood:8,stone:4},upgrades:['伙伴安心用餐','家园的用餐角落']},{id:'toys',name:'玩具区',zone:0,icon:'◉',desc:'一起接球、叠叠乐和练习观察',service:'play',size:[1,1],cost:{wood:8,stone:4},upgrades:['保留共同游戏的记录','伙伴喜欢的游乐角落']});
 const decorNames=[['碎石小径','苔石小径','木板步道','白砂路','落叶路','星砂路'],['矮木篱','藤编围栏','白石围栏','竹篱','蘑菇围栏','月牙围栏'],['纸灯','萤光灯','蘑菇灯','冰晶灯','星灯','暖炉灯'],['长椅','摇椅','野餐毯','秋千','躺椅','树桩桌'],['木花架','藤花门','垂吊花盆','种子风铃','水莲盆','菌菇架'],['庭院路牌','苗圃标签','访客告示','旅人留言板','星图牌','伙伴名牌'],['落叶堆','蜜源花篮','小鸟浴盆','虫洞木桩','苔石丘','浅水盆'],['种子相框','溪流石刻','小小灶台','归家门牌','霜花瓶','旅程相册']];
 export const DECORATIONS:DecorationDef[]=decorNames.flatMap((names,g)=>names.map((name,i)=>({id:`decor-${g}-${i}`,name,group:g,icon:['·','╬','✦','▱','❋','⚑','♧','♡'][g],effect:['铺设可通行的小路','遮阴 +3','光照 +4','舒适与聚餐回忆','授粉环境 +3','家园标识与回忆','湿度与肥力 +3','舒适与回忆'][g],cost:{wood:3+g,stone:2+i}})));
 export const FAMILIES=['花卉','草药','蔬果','果树','菌菇','水生'];
 const plants=[['晨露花','铃兰','日光菊','月见花','绯瓣花','星绒花'],['薄荷','甘露草','暖叶草','霜叶草','清心草','回声草'],['甜萝卜','蜜番茄','月南瓜','脆豆','光莓','雨瓜'],['苹果树','蜜桃树','风梨树','银杏','雪梨树','星枣树'],['苔菇','灯笼菇','雨伞菇','绒球菇','晶耳','梦孢菇'],['浮萍','水莲','芦苇','净水藻','冰灯莲','星舟草']];
 const hybrids=[['露铃花','昼月菊','绯星花'],['甘薄草','暖霜草','心声草'],['蜜萝果','南豆瓜','光雨莓'],['桃果树','风银树','雪枣树'],['苔灯菇','雨绒菇','晶梦菇'],['萍莲','苇藻','冰舟莲']];
-export const PLANTS:PlantDef[]=plants.flatMap((names,f)=>names.map((name,i)=>({id:`plant-${f}-${i}`,name,family:f,minutes:f===3?120:[5,15,30,60,15,30][i],color:([315,155,20,90,35,185][f]+i*11)%360,light:f===4?30:f===3?65:55,moisture:f===5?80:f===4?65:50,temp:i===3||i===4?12:22,product:['petal','herb','food','fruit','mushroom','algae'][f],use:['染料与授粉','药剂与料理','聚餐与远征','果酱与林间访客','料理与分解共生','净水与水生访客'][f]})));
+export const PLANTS:PlantDef[]=plants.flatMap((names,f)=>names.map((name,i)=>({id:`plant-${f}-${i}`,name,family:f,minutes:f===3?120:[5,15,30,60,15,30][i],color:([315,155,20,90,35,185][f]+i*11)%360,light:f===4?30:f===3?65:55,moisture:f===5?80:f===4?65:50,temp:i===3||i===4?12:22,product:['petal','herb','ingredient','fruit','mushroom','algae'][f],use:['染料与授粉','药剂与料理','聚餐与远征','果酱与林间访客','料理与分解共生','净水与水生访客'][f]})));
 for(let f=0;f<6;f++)for(let i=0;i<3;i++){const a=PLANTS.find(p=>p.id===`plant-${f}-${i*2}`)!; PLANTS.push({...a,id:`hybrid-${f}-${i}`,name:hybrids[f][i],minutes:f===3?120:60,parents:[a.id,`plant-${f}-${i*2+1}`],use:a.use+'；命名杂交品种'});}
-export const MATERIALS:Record<string,string>={wood:'木材',stone:'石材',dew:'露水',food:'食材',petal:'花瓣',herb:'草药',fruit:'果实',mushroom:'菌菇',algae:'水草',plank:'木板',dye:'染料',fertilizer:'肥料',soil:'沃土',meal:'便当',soup:'暖汤',potion:'恢复药剂',crystal:'共鸣晶石',notes:'研究笔记',stardust:'星尘',relic:'遗迹碎片',keepsake:'纪念物'};
+PLANTS.push({id:'glowflower',name:'发光花',family:0,minutes:5,color:65,light:55,moisture:50,temp:22,product:'petal',use:'共同旅行带回的花；开花后成为夜间休息的角落'});
+export const MATERIALS:Record<string,string>={feed:'基础饲料',snack:'果香小食',wood:'木材',stone:'石材',dew:'露水',ingredient:'食材',petal:'花瓣',herb:'草药',fruit:'果实',mushroom:'菌菇',algae:'水草',plank:'木板',dye:'染料',fertilizer:'肥料',soil:'沃土',meal:'便当',soup:'暖汤',potion:'恢复药剂',crystal:'共鸣晶石',notes:'研究笔记',stardust:'星尘',relic:'遗迹碎片',keepsake:'纪念物'};
 export const RECIPES:Recipe[]=[
- {id:'meal',name:'野餐便当',building:'kitchen',cost:{food:2,fruit:1},output:{meal:2},seconds:60,level:1},
+ {id:'feed',name:'基础饲料',building:'kitchen',cost:{ingredient:1},output:{feed:2},seconds:60,level:1},
+ {id:'simplemeal',name:'家常便当',building:'kitchen',cost:{ingredient:2},output:{meal:1},seconds:60,level:1},
+ {id:'snack',name:'果香小食',building:'kitchen',cost:{fruit:1},output:{snack:2},seconds:60,level:1},
+ {id:'meal',name:'野餐便当',building:'kitchen',cost:{ingredient:2,fruit:1},output:{meal:2},seconds:60,level:1},
  {id:'soup',name:'暖叶浓汤',building:'kitchen',cost:{herb:2,mushroom:1},output:{soup:2},seconds:120,level:2},
- {id:'starmeal',name:'星光便当',building:'kitchen',cost:{food:2,stardust:1},output:{meal:5},seconds:180,level:3},
+ {id:'starmeal',name:'星光便当',building:'kitchen',cost:{ingredient:2,stardust:1},output:{meal:5},seconds:180,level:3},
  {id:'plank',name:'精制木板',building:'woodshop',cost:{wood:4},output:{plank:2},seconds:60,level:1},
  {id:'keepsake',name:'雕刻纪念物',building:'woodshop',cost:{plank:2,dye:1},output:{keepsake:1},seconds:180,level:3},
  {id:'dye',name:'花瓣染料',building:'alchemy',cost:{petal:3,dew:1},output:{dye:2},seconds:60,level:1},
@@ -57,7 +62,7 @@ export const RECIPES:Recipe[]=[
  {id:'soil',name:'活力沃土',building:'compost',cost:{fertilizer:2,mushroom:1},output:{soil:2},seconds:180,level:3},
  {id:'notes',name:'生态笔记',building:'archive',cost:{petal:1,herb:1,algae:1},output:{notes:2},seconds:120,level:1},
  {id:'archive-keepsake',name:'装帧旅行纪念册',building:'archive',cost:{notes:4,relic:1},output:{keepsake:1},seconds:180,level:3},
- {id:'training',name:'协作练习',building:'training',cost:{food:2},output:{notes:1},seconds:120,level:3}
+ {id:'training',name:'协作练习',building:'training',cost:{ingredient:2},output:{notes:1},seconds:120,level:3}
 ];
 const visitorRows:[string,number,string,string,number,number,number][]=[
  ['蜜蜂',0,'2 株开花植物，湿度 ≥40','种子产出 +1',40,0,2],['粉蝶',1,'3 株植物，湿度 ≥45','授粉产出增加',45,0,3],['夜蛾',1,'夜间，2 株植物','发现夜间花粉',30,0,2],['瓢虫',0,'3 株植物','改善植物适应',35,0,3],['蜻蜓',3,'水质 ≥60、湿度 ≥60','湿地调查加成',60,60,2],['萤火虫',2,'夜间，水质 ≥55','旅行可发现星尘',45,55,2],['蚯蚓',0,'湿度 ≥50、2 株植物','土壤肥力 +8',50,0,2],['潮虫',2,'湿度 ≥65、2 株植物','堆肥产量增加',65,0,2],['独角仙',2,'4 株植物','林木产量增加',45,0,4],['树蛙',2,'湿度 ≥60、水质 ≥50','水质 +5',60,50,2],['溪虾',3,'水质 ≥65','水生植物加速',65,65,1],['银鳍鱼',3,'水质 ≥75、3 株植物','水塘观察记录',65,75,3],['松鼠',2,'3 株植物，其中有果树','旅行带回果实',30,0,3],['刺猬',0,'4 株植物','发现草药',40,0,4],['织巢鸟',2,'4 株植物','授粉与种子传播',30,0,4],['苔灵',2,'湿度 ≥70、4 株植物','肥力 +10',70,0,4],['雪雀',4,'冬季或冰元素伙伴','带回耐寒种子',25,0,1],['星蛾',5,'夜间，3 株植物','星尘产量增加',30,0,3]

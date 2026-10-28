@@ -10,7 +10,7 @@ const S = {
   feedTrough:0, totalEarned:0, seq:1, nameSeq:0,
   theme:'sunset', globalPlan:null, customPlans:{},
   monItemConfigs: defaultMonItems(),
-  saveVersion:3, world:LivingWorld.createWorld(), spaceMode:'free', abyssLevel:1, abyssUnlocked:1,
+  saveVersion:4, world:LivingWorld.createWorld(), spaceMode:'free', abyssLevel:1, abyssUnlocked:1,
   summonPity:0, sweepUsed:0, lastActive:0, planClock:0,
   lastAbyssSel:[],
   exploreMapIndex:0,
@@ -19,7 +19,8 @@ const S = {
   battleSpeed: 1,
   battleMode: 'auto'
 };
-let activeTab='space';
+LivingWorld.ensure(S);
+let activeTab='home';
 let plSlimes=[];
 let travelTipsOpen = false;
 let summonBoost = {};

@@ -1,10 +1,10 @@
 const FX = {
   field: null, log: [], _txt: 0, _part: 0,
-  _merge: null, _shakeRank: 0, _shakeKind: '', _shakeRaf: 0,
+  _merge: null, _flashes: new WeakMap(), _shakeRank: 0, _shakeKind: '', _shakeRaf: 0, _shakePulse: null,
 
   /* 记录演出容器（.battle-field） */
   bindField(el){
-    this.field = el || null;
+    this.field = el || null;this._merge=null;
     return this.field;
   },
   /* 高速档压缩演出时长 */
@@ -29,29 +29,37 @@ const FX = {
     this._shakeRaf = requestAnimationFrame(()=>{
       this._shakeRaf = 0;
       const key = this._shakeKind || 'light';
+      const strength = this._shakeRank;
       this._shakeRank = 0; this._shakeKind = '';
       const el = this._host();
       if(!el || el === document.body) return;
+      // Merge same-strength camera pulses within 500 ms; a stronger impact still interrupts.
+      const now=performance.now();
+      if(this._shakePulse?.el===el && now-this._shakePulse.at<500 && this._shakePulse.strength>=strength)return;
+      const pulse={el,strength,at:now};this._shakePulse=pulse;
       el.classList.remove('field-shake');
       void el.offsetWidth;
       el.setAttribute('data-k', key);
       el.classList.add('field-shake');
       this._record('shake', key, '', 'shake');
-      setTimeout(()=>el.classList.remove('field-shake'), 220);
+      setTimeout(()=>{if(this._shakePulse===pulse)el.classList.remove('field-shake');}, 220);
     });
   },
 
   /* 命中闪白：打在 .breath 上，暴击额外放大描边 */
   flash(el, isCrit){
-    if(el && typeof matchMedia==='function'){const r=el.getBoundingClientRect();LivingWorld.impact(r.left+r.width/2,r.top+r.height/2,'#ffe2ad',isCrit);}
     if(!el) return;
+    const now=performance.now(),previous=this._flashes.get(el);
+    if(previous&&now-previous.at<80&&(!isCrit||previous.crit))return;
+    const pulse={at:now,crit:!!isCrit};this._flashes.set(el,pulse);
+    if(typeof matchMedia==='function'){const r=el.getBoundingClientRect();LivingWorld.impact(r.left+r.width/2,r.top+r.height/2,'#ffe2ad',isCrit);}
     const tb = (el.querySelector && el.querySelector('.breath')) || el;
     if(!tb || !tb.classList) return;
     tb.classList.remove('hit-flash', 'crit');
     void tb.offsetWidth;
     tb.classList.add('hit-flash');
     if(isCrit) tb.classList.add('crit');
-    setTimeout(()=>tb.classList.remove('hit-flash', 'crit'), isCrit ? 280 : 200);
+    setTimeout(()=>{if(this._flashes.get(el)===pulse)tb.classList.remove('hit-flash', 'crit');}, isCrit ? 280 : 200);
   },
 
   /* 飘字：同目标 250ms 内同 cls 的纯数字合并累加 */
@@ -66,7 +74,9 @@ const FX = {
     const num = mm ? parseInt(mm[1], 10) : null;
     const suffix = mm ? mm[2] : '';
     const now = performance.now();
-    const m = this._merge;
+    if(!(this._merge instanceof WeakMap))this._merge=new WeakMap();
+    let target=this._merge.get(el);if(!target){target=new Map();this._merge.set(el,target);}
+    const mergeKey=cls+'|'+suffix,m=target.get(mergeKey);
     if(num !== null && m && m.suffix === suffix && m.el === el && m.cls === cls && (now - m.t) < 250 && m.node && m.node.isConnected){
       m.sum += num;
       m.t = now;
@@ -103,7 +113,7 @@ const FX = {
     node._born = now;
     setTimeout(()=>node.remove(), dur + 60);
     this._trimFloat(field);
-    this._merge = { el, cls, t: now, node, sum: num === null ? 0 : num, suffix, count: 1 };
+    target.set(mergeKey,{ el, cls, t: now, node, sum: num === null ? 0 : num, suffix, count: 1 });
     this._record('float', icon + raw, cls, 'float');
     return node;
   },
@@ -135,7 +145,8 @@ const FX = {
   burst(el, color, count){
     if(!el) return;
     const field = this._host();
-    const n = Math.max(1, Math.min(40, count || 10));
+    const n = Math.min(Math.max(1, Math.min(40, count || 10)),60-field.querySelectorAll('.fx-part').length);
+    if(n<=0)return;
     const fr = field.getBoundingClientRect();
     const tr = (el.querySelector ? (el.querySelector('.slime') || el) : el).getBoundingClientRect();
     const cx = tr.left - fr.left + tr.width / 2;
@@ -262,7 +273,7 @@ function abyssEnemyCount(floor){
 }
 function makeAbyssMonster(level, boss){
   const m = createSlime(true);
-  for(const key of ['strPotential','agiPotential','magPotential']) m[key] = rndInt(ABYSS_POT_MIN, ABYSS_POT_MAX);
+  for(const key of ['strPotential','agiPotential','magPotential']) m[key] = gameInt(ABYSS_POT_MIN, ABYSS_POT_MAX);
   m.level = level;
   m.str = growthStat(m.strPotential, level);
   m.agi = growthStat(m.agiPotential, level);
@@ -318,14 +329,17 @@ function calculateBattleRewards(battle,win,level){
 }
 /* 扫荡（参考爬塔类游戏）：对最高已通关层直接结算一场 3 只敌人的胜利，每日 3 次 */
 function sweepAbyss(){
+  if(storageConflict || persistenceBlocked || saveRetryNeeded)return false;
   checkDailyReset();
   const floor = highestClearedFloor();
   if(!floor){ toast('先通关至少一层深渊才能扫荡'); return false; }
   if((S.sweepUsed||0) >= SWEEP_PER_DAY){ toast('今日扫荡次数已用完，明天再来'); return false; }
   const ids = new Set(S.lastAbyssSel || []);
-  let team = S.slimes.filter(s=>ids.has(s.id)).slice(0,5);
-  if(!team.length) team = S.slimes.slice(0, 5);
-  if(!team.length){ toast('还没有伙伴可以扫荡'); return false; }
+  const available=S.slimes.filter(s=>!hasExplorePlan(s)&&!LivingWorld.isBusy(S,s.id));
+  let team = available.filter(s=>ids.has(s.id)).slice(0,5);
+  if(!team.length) team = available.slice(0, 5);
+  if(!team.length){ toast('请先让伙伴回家，再参加扫荡'); return false; }
+  if(!LivingWorld.reserve(S,team.map(s=>s.id),'battle'))return false;
   const fake = {
     monsters: [0,1,2].map(()=>({hp:0, ref:{level:floor}})),
     allies: team.map(s=>({hp:1, ref:s}))
@@ -336,6 +350,7 @@ function sweepAbyss(){
   S.totalEarned += r.coinGain;
   const each = Math.floor(r.totalExp / team.length);
   team.forEach(s=>addExp(s, each));
+  LivingWorld.finishBattle(S,team.map(s=>s.id),true,`深渊第${floor}层扫荡`);
   save(); renderTop(); renderTab();
   toast(`扫荡第 ${floor} 层完成\n晶币 +${r.coinGain} · 每只伙伴经验 +${each}\n今日剩余 ${SWEEP_PER_DAY - S.sweepUsed} 次`, 'good');
   return true;

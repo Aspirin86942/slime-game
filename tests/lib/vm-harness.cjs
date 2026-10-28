@@ -64,7 +64,7 @@ function loadGame(file, code) {
     // Startup/render/self-test boot is not the subject of this rule-level harness.
     program.runInContext(context,{timeout:10000});
     const run = source=>vm.runInContext(source,context,{filename:'review-test.js',timeout:10000});
-    run(`renderTop=()=>{};renderTab=()=>{};updateLive=()=>{};toast=()=>{};openModal=()=>{};closeModal=()=>{};window.__TEST__={};`);
+    run(`gameRandom=()=>Math.random();renderTop=()=>{};renderTab=()=>{};updateLive=()=>{};toast=()=>{};openModal=()=>{};closeModal=()=>{};window.__TEST__={};`);
     return {context,run,storage,intervals,timeouts,
       tick(ms){
         const end=now+ms;

@@ -1,4 +1,4 @@
-import type {ExploreEvent,StoryCharacter,PersonalityChain,PairEvent,Element} from './types.ts';
+import type {ExploreEvent,StoryCharacter,PersonalityChain,PairEvent,Element,Chapter} from './types.ts';
 import {PERSONALITIES} from './content.ts';
 // Original, local story content. Stable IDs are part of saved progress.
 const encounters:[string,string,string,string][][]=[
@@ -96,9 +96,9 @@ function eventKind(row:[string,string,string,string],i:number):string {
  if(i===10)return '伙伴';
  return i%2===0?'调查':'采集';
 }
-export const EVENTS:ExploreEvent[]=encounters.flatMap((rows,region)=>rows.map((r,i)=>({id:`event-${region}-${i}`,region,title:r[0],text:r[1],kind:eventKind(r,i),choices:[
+export const EVENTS:ExploreEvent[]=encounters.flatMap((rows,region)=>rows.map((r,i):ExploreEvent=>({id:`event-${region}-${i}`,region,title:r[0],text:r[1],kind:eventKind(r,i),choices:[
  {text:r[2],result:`${r[2]}之后，大家把这次发现记进旅行册。${['新的线索在纸上变得清楚。','同行伙伴认真保存了你们的手绘记录。','溪水的变化终于有了可以比较的记录。','居民把修好的工具交到你们手中。','回程的脚步比来时更加安稳。','遗迹又多了一段关于今天的记忆。'][region]}`,reward:{wood:4+region,notes:1,dew:2},flag:`discovery-${region}-${i}`},
- {text:r[3],result:`大家一起完成了“${r[3]}”。${['收集到的材料会让家园多一个小角落。','林间居民拿出珍藏的种子作为谢礼。','水边的访客慢慢靠近了新的栖地。','这一次，温暖被安全地留了下来。','寒冷中也留下了可以共同生活的位置。','星光映在每个伙伴的脸上。'][region]}`,reward:{stone:3+region,food:2,stardust:region>=3?1:0},flag:`discovery-${region}-${i}`}
+ {text:r[3],result:`大家一起完成了“${r[3]}”。${['收集到的材料会让家园多一个小角落。','林间居民拿出珍藏的种子作为谢礼。','水边的访客慢慢靠近了新的栖地。','这一次，温暖被安全地留了下来。','寒冷中也留下了可以共同生活的位置。','星光映在每个伙伴的脸上。'][region]}`,reward:{stone:3+region,ingredient:2,stardust:region>=3?1:0},flag:`discovery-${region}-${i}`}
  ]})));
 
 type StoryRow=[string,string,string,string];
@@ -169,7 +169,7 @@ const storyRows:StoryRow[][]=[
  ]
 ];
 const identities:[string,string,Element,string,string][]=[['sprout','芽芽','草','温柔','祖母的种子'],['tide','汐汐','水','沉稳','溪流修复'],['ember','烬团','火','天真','控制热量'],['moss','苔石','岩','安静','重建庭院'],['frost','铃霜','冰','胆小','寻找共生'],['lantern','夜灯','光','胆小','克服黑夜'],['leap','跳跳','风','活泼','学会信任'],['dream','星眠','空间','安静','重拾记忆']];
-export const CHARACTERS:StoryCharacter[]=identities.map((a,i)=>({id:a[0],name:a[1],element:a[2],personality:a[3],theme:a[4],chapters:storyRows[i].map((r,n)=>({title:r[0],text:r[1],need:['首次拜访','收获一次植物','发现 3 项线索','发现 6 项线索并有访客记录','完成一次旅行并建造 4 种设施','发现 10 项线索并修好一个营地'][n],choices:[
+export const CHARACTERS:StoryCharacter[]=identities.map((a,i)=>({id:a[0],name:a[1],element:a[2],personality:a[3],theme:a[4],chapters:storyRows[i].map((r,n):Chapter=>({title:r[0],text:r[1],need:['首次拜访','收获一次植物','发现 3 项线索','发现 6 项线索并有访客记录','完成一次旅行并建造 4 种设施','发现 10 项线索并修好一个营地'][n],choices:[
  {text:r[2],result:`${a[1]}和你一起完成了这件事。它把“${r[2]}”记在了回忆里。${n===5?'这段旅程有了自己的结局，你们仍会一起生活。':'它愿意把接下来的困惑也告诉你。'}`,reward:{notes:n+1,keepsake:n===5?1:0},flag:`${a[0]}-${n}-a`},
  {text:r[3],result:`${a[1]}认真听完你的想法，决定试试“${r[3]}”。${n===5?'它为这一段故事留下了独一无二的纪念物。':'这个选择改变了它对自己的看法，也留下一个新的约定。'}`,reward:{dew:4+n,keepsake:n===5?1:0},flag:`${a[0]}-${n}-b`}
  ]}))}));
@@ -190,6 +190,12 @@ const personalRows:[string,string,string,string][][]=[
  [['最舒服的角落','它总在同一块石头上晒太阳。','新建水渠经过那里，它不愿挪动。','大家为它找了更合适的休息点，它顺便帮忙看水位。'],['自动浇水梦','它想让植物自己喝水。','第一次做的水管漏得到处都是。','修好的灌溉装置省了很多力气，它骄傲地写下说明。'],['慢慢也能到达','旅行队走得太快，它落在后面。','它发现路边有别人没看到的种子。','队伍留出观察时间，它的慢成为另一种贡献。']],
  [['过于聪明的交易','它设计一场总能赢的交换游戏。','伙伴不再愿意参加，它觉得很无聊。','公开规则后游戏重新热闹起来，胜负也有了意义。'],['故意留下线索','它想让朋友自己发现礼物。','线索太难，大家都猜错了。','它增加一条温柔的提示，惊喜终于抵达主人。'],['试探信任','它说了一句并不真实的话，想知道朋友会不会相信。','朋友认真去帮忙，它突然后悔了。','承认真相后两人重新约定，信任无需反复设题。']]
 ];
-export const PERSONAL_CHAINS:PersonalityChain[]=personalRows.flatMap((rows,p)=>rows.map((r,i)=>({id:`personal-${p}-${i}`,personality:PERSONALITIES[p],title:r[0],chapters:[r[1],r[2],r[3]],choices:['陪它一起行动','先听它说完自己的想法']})));
+export const PERSONAL_CHAINS:PersonalityChain[]=personalRows.flatMap((rows,p)=>rows.map((r,i):PersonalityChain=>({id:`personal-${p}-${i}`,personality:PERSONALITIES[p],title:r[0],chapters:[r[1],r[2],r[3]],choices:['陪它一起行动','先听它说完自己的想法']})));
 const pairs:[string,string][]=[['两只水壶','两位伙伴各带了一只水壶，浇到同一块苗床时才发现彼此的计划。'],['分一半的果实','最后一个果实大小不均，两位伙伴都想把大的一半留给对方。'],['谁睡靠窗','共同旅行的帐篷只有一个靠窗的位置，两位伙伴有不同的理由。'],['轮流领路','熟悉森林的伙伴迷失在湿地里，另一位第一次有机会带路。'],['不同的礼物','一位喜欢实用工具，一位喜欢漂亮石头，它们准备互送礼物。'],['迟到的约定','一位伙伴因照料幼体迟到，另一位已经等了很久。'],['一起修桥','长木板需要稳定的力量，也需要准确的方向，两位伙伴各有长处。'],['静与闹','一位想听水声，一位想玩接球，它们都喜欢同一片空地。'],['冷暖之间','两位伙伴对温度的喜好不同，却想共用一张餐桌。'],['旅行分工','一位总拿地图，一位总背材料，它们决定交换一次工作。'],['名字写反了','纪念牌上写反了两位伙伴的名字，它们因此谈起各自的贡献。'],['共同的小苗','两位伙伴分别照料同一株小苗，今天第一次一起看见它开花。'],['借出去的工具','借来的工具有一道划痕，借用者不知道如何开口。'],['雨下的伞','伞有些小，两位伙伴总把伞沿推向对方。'],['没说完的故事','一位讲到最重要的地方被打断，另一位其实记得它停在哪里。'],['好胜的练习','友好的切磋变得认真，两位伙伴都不想先认输。'],['同一条围巾','长围巾能围住两位伙伴，走路却需要相同的节奏。'],['等待开花','一位每天查看花苞，一位相信花会自己选择时候。'],['背包的位置','背包只剩一点空间，两位伙伴想带走不同的纪念物。'],['帮忙的方式','一位直接动手整理，另一位希望先被询问。'],['安静的陪伴','今天一位伙伴不想说话，另一位把杯子放在它身旁。'],['看见的星座','两位伙伴看着同一片星空，却画出完全不同的图案。'],['回家的名字','旅人询问它们来自哪里，两位伙伴同时说出了家园的名字。'],['下一次旅程','旅行结束后，两位伙伴把下一趟路线画在同一张纸上。']];
 export const PAIR_EVENTS:PairEvent[]=pairs.map((r,i)=>({id:`pair-${i}`,title:r[0],text:r[1],choices:['让双方说出各自的需要','一起尝试一个共同办法']}));
+
+// Explicit ability wording is executable content, never merely a button label.
+for(const event of EVENTS)for(const choice of event.choices){const match=/([岩火水风草冰雷幻光暗]|时间|空间)(?:元素)?伙伴/.exec(choice.text);if(match)choice.requires={...choice.requires,element:match[1] as Element};}
+
+// Food brought from the warehouse is charged by the same choice transaction.
+for(const [id,index,item] of [['event-0-3',0,'feed'],['event-1-5',1,'feed'],['event-4-7',0,'meal']] as const){const choice=EVENTS.find(e=>e.id===id)!.choices[index];choice.requires={...choice.requires,cost:{[item]:1}};}

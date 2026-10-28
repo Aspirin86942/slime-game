@@ -59,9 +59,11 @@
     if(opts.seed !== undefined){
       let sd = (opts.seed >>> 0) || 1;
       Math.random = () => { sd = (sd * 1664525 + 1013904223) >>> 0; return sd / 4294967296; };
+      gameRandom=()=>Math.random(); // The diagnostic seed must cover gameplay draws too.
     }
     S.slimes = [];
     S.monsters = [];
+    S.world=LivingWorld.createWorld(opts.seed??0x51a7);S.saveVersion=4; // Fresh fixture keeps V4 references consistent.
     S.abyssLevel = opts.monsterLevel || 1;
     S.abyssUnlocked=Math.max(getAbyssUnlocked(),S.abyssLevel); // Diagnostic fixture only.
     S.battleSpeed = opts.speed || 10;

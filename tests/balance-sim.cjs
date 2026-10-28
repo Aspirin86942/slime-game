@@ -4,10 +4,12 @@
  * Node VM 执行，DOM/计时器为模拟；只测数值，不测画面。
  * 用法（项目根目录）：
  *   node tests/balance-sim.cjs [史莱姆.html] [--n=200] [--json=tools/out/balance.json] [--check]
+ * --checkpoint=tools/out/balance-checkpoint.json：中断后复用同源码、同参数已完成的楼层。
  * --check：按《数值设计.md》的目标区间判定，任一不达标则退出码 1。
  */
 const fs = require('fs');
 const path = require('path');
+const {createHash}=require('node:crypto');
 const args = require.main === module ? process.argv.slice(2) : [];
 const opt = k => { const a = args.find(x => x.startsWith('--' + k + '=')); return a ? a.split('=').slice(1).join('=') : null; };
 const file = path.resolve(args.find(x => !x.startsWith('--')) || path.join(__dirname, '..', '史莱姆.html'));
@@ -48,8 +50,11 @@ function battle(h, level, floor, team = Number(opt('team')) || teamSize(floor)) 
 const DELTAS = opt('deltas') ? opt('deltas').split(',').map(Number) : [-5, -3, 0, 2, 5, 10];
 const FLOORS = opt('floors') ? opt('floors').split(',').map(Number) : [1,3,4,5,9,10,14,15,19,20,24,25,29,30,34,35,39,40,44,45,49,50];
 function winGrid() {
+  const checkpoint=opt('checkpoint'),identity=createHash('sha256').update(html).update(fs.readFileSync(__filename)).update(fs.readFileSync(path.join(__dirname,'lib/vm-harness.cjs'))).update(JSON.stringify({N,DELTAS,FLOORS,team:opt('team')})).digest('hex');
+  let completed=[];if(checkpoint&&fs.existsSync(checkpoint)){const saved=JSON.parse(fs.readFileSync(checkpoint,'utf8'));if(saved.identity===identity)completed=saved.rows;}
   const rows = [];
   for (const F of FLOORS) {
+    const saved=completed.find(r=>r.floor===F);if(saved){rows.push(saved);console.log(`复用已完成 F${F}: ${N*DELTAS.length} 场`);continue;}
     const row = {floor: F, team: Number(opt('team')) || teamSize(F), cells: {}};
     for (const d of DELTAS) {
       const L = Math.max(1, F + d);
@@ -62,7 +67,8 @@ function winGrid() {
       }
       row.cells[d] = {level: L, win: wins / N, turns: turns / N, stalled};
     }
-    rows.push(row);
+    rows.push(row);console.log(`完成 F${F}: ${N*DELTAS.length} 场 (${rows.length}/${FLOORS.length})`);
+    if(checkpoint){fs.mkdirSync(path.dirname(checkpoint),{recursive:true});fs.writeFileSync(checkpoint,JSON.stringify({identity,rows}));}
   }
   return rows;
 }
@@ -73,6 +79,7 @@ function economy(level, seconds, mapIndex = 0) {
   const S = h.state();
   S.started = true; S.slimes = [makeSlime(h, level)]; S.globalPlan = 'explore'; S.exploreTeam = null; S.exploreMapIndex = mapIndex;
   S.abyssUnlocked = mapIndex === 2 ? 26 : mapIndex === 1 ? 11 : 1;
+  h.run(`S.world.familiar=['${mapIndex*2}:0'];S.world.discoveries=Array.from({length:20},(_,i)=>'fixture:'+i);S.world.stock.feed=9999;LivingWorld.execute(S,{type:'depart',region:${mapIndex*2},route:0,team:S.slimes.map(s=>s.id),mode:'offline',duration:300,repeat:true});`);
   const coins0 = S.coins, treasure0 = S.bag.treasure, exp0 = S.slimes[0].exp, lv0 = S.slimes[0].level;
   for (let t = 1; t <= seconds; t++) h.tick(1000);
   const s = S.slimes[0];
@@ -88,6 +95,7 @@ function offline(level, hours) {
   if (h.run('typeof settleOffline') !== 'function') return null;
   const S = h.state();
   S.started = true; S.slimes = [makeSlime(h, level)]; S.globalPlan = 'explore'; S.exploreTeam = null;
+  h.run("S.world.familiar=['0:0'];S.world.stock.feed=9999;LivingWorld.execute(S,{type:'depart',region:0,route:0,team:S.slimes.map(s=>s.id),mode:'offline',duration:300,repeat:true});");
   const coins0 = S.coins;
   const r = h.run('settleOffline')(hours * 3600 * 1000);
   return {level, hours, coins: S.coins - coins0, seconds: r.seconds, actions: r.actions, levelsGained: S.slimes[0].level - level};
@@ -110,11 +118,11 @@ function levelPace() {
 function starter30(){
   const h=boot();seed(h,20261027);const S=h.state();S.started=true;
   h.run('doSummon();clearSummonReveal();doSummon();clearSummonReveal();');
-  const afterSummon=S.coins;S.globalPlan='explore';
+  const afterSummon=S.coins;h.run("S.world.familiar=['0:0'];S.world.stock.feed=9999;LivingWorld.execute(S,{type:'depart',region:0,route:0,team:S.slimes.map(s=>s.id),mode:'offline',duration:300,repeat:true});");
   for(let t=0;t<1800;t++)h.tick(1000);
   const earned=S.coins-afterSummon,level=S.slimes[0].level;
   const cost=h.run('mergeCost(S.slimes[0],S.slimes[1])');
-  h.run('S.globalPlan=null;mergeSel=S.slimes.map(s=>s.id);doMerge();');
+  h.run("for(const t of [...S.world.trips]){LivingWorld.dispatch({type:'recall',id:t.id});LivingWorld.dispatch({type:'claimTrip',id:t.id});}S.globalPlan=null;mergeSel=S.slimes.map(s=>s.id);doMerge();");
   const merged=S.slimes.length===1;h.run('doSummon();clearSummonReveal();');
   return {earned,level,mergeCost:cost,merged,refilled:S.slimes.length===2,coinsLeft:S.coins};
 }
@@ -137,7 +145,7 @@ const econ = [1, 10, 30].map(L => economy(L, 3600));
 const off = offline(10, 12);
 const pace = levelPace();
 const starter=starter30(),hits=hitPace(),regions=[economy(10,3600,1),economy(30,3600,2)];
-const out = {file: path.basename(file), n: N, seedScheme:'floor * 10007 + sample', grid, economyPerHour: econ, regionEconomy:regions, offline12h: off, levelPace: pace,starter30:starter,hitPace:hits};
+const out = {file: path.basename(file), sha256:createHash('sha256').update(html).digest('hex'), elapsedSeconds:(Date.now()-t0)/1000, n: N, seedScheme:'floor * 10007 + sample', grid, economyPerHour: econ, regionEconomy:regions, offline12h: off, levelPace: pace,starter30:starter,hitPace:hits};
 
 console.log(`== 胜率（前期 2 只、随后 3/4/5 只随机伙伴，每格 ${N} 场；列 = 伙伴等级相对层数）==`);
 console.log('层数 | ' + DELTAS.map(d => (d >= 0 ? '+' : '') + d).map(s => s.padStart(10)).join(''));

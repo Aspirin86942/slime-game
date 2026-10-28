@@ -3,20 +3,20 @@ function createSlime(forceMonster, opts){
   /* 魔物不吃玩家的献祭加成；保底召唤只在稀有元素里抽 */
   const element = opts && opts.rare ? pickRareElement(summonBoost) : pickElement(isMon ? null : summonBoost);
 
-  const strPotential = isMon ? rndInt(12, 26) : rndInt(5, 20);
-  const agiPotential = isMon ? rndInt(12, 26) : rndInt(5, 20);
-  const magPotential = isMon ? rndInt(12, 26) : rndInt(5, 20);
-  const luck = isMon ? rndInt(3, 14) : rndInt(0, 10);
-  const wit  = isMon ? rndInt(3, 14) : rndInt(0, 10);
+  const strPotential = isMon ? gameInt(12, 26) : gameInt(5, 20);
+  const agiPotential = isMon ? gameInt(12, 26) : gameInt(5, 20);
+  const magPotential = isMon ? gameInt(12, 26) : gameInt(5, 20);
+  const luck = isMon ? gameInt(3, 14) : gameInt(0, 10);
+  const wit  = isMon ? gameInt(3, 14) : gameInt(0, 10);
 
-  const baseSize = +(0.66 + Math.random() * 0.34).toFixed(2);
+  const baseSize = +(0.66 + gameRandom() * 0.34).toFixed(2);
 
   const str = strPotential;
   const agi = agiPotential;
   const mag = magPotential;
   const initStaminaMax = Math.round(80 + baseSize * 40);
 
-  const morality = rndInt(-100,100);
+  const morality = gameInt(-100,100);
   const id = S.seq++;
 
   S.nameSeq = (S.nameSeq || 0) + 1;
@@ -24,11 +24,11 @@ function createSlime(forceMonster, opts){
   const nameNo = S.nameSeq;
 
   const traits = [];
-  if(Math.random() < 0.15){
-    const count = Math.random() < 0.25 ? 2 : 1;
+  if(gameRandom() < 0.15){
+    const count = gameRandom() < 0.25 ? 2 : 1;
     const pool = [...TRAITS_POOL];
     for(let i=0;i<count && pool.length;i++){
-      const idx = Math.floor(Math.random()*pool.length);
+      const idx = Math.floor(gameRandom()*pool.length);
       const t = pool.splice(idx,1)[0];
       const nt = {n:t.n,d:t.d,k:t.k,v:t.v};
       refreshTraitDesc(nt);
@@ -38,7 +38,7 @@ function createSlime(forceMonster, opts){
 
   const s = {
     id, name:`${element}${nameNo}`, element, morality,
-    personality: pick(PERSONALITIES),
+    personality: gamePick(PERSONALITIES),
     mood:70, stamina:initStaminaMax, traits,
     level:1, exp:0, size:baseSize, resting:false,
     intimacy:0, locked:false, mergeCount:0,
@@ -48,8 +48,8 @@ function createSlime(forceMonster, opts){
   s.hp = hpMax(s);
   if(forceMonster){
     s.isMonster = true;
-    s.monSat = rnd(18,58);
-    s.monLight = rnd(14,34);
+    s.monSat = gameRange(18,58);
+    s.monLight = gameRange(14,34);
   }
   s.skill = HEAL_ELEMENTS.includes(element) ? '治疗' : '元素弹';
   return s;
@@ -196,6 +196,8 @@ function useItem(k,id){
   if(s.isMonster && k !== 'food'){ toast('魔物无法使用该道具'); return; }
   if((S.bag[k]||0) <= 0){ toast('数量不足，请先购买'); return; }
 
+  if(k === 'food' && !s.isMonster){LivingWorld.dispatch({type:'interact',slime:id,action:'feed'});return;}
+  if(!s.isMonster&&LivingWorld.isBusy(S,id)){toast('请先让伙伴回家');return;}
   if(k === 'food'){
     S.bag.food--;
     s.stamina = clamp(s.stamina + 30, 0, staminaMax(s));
@@ -206,7 +208,7 @@ function useItem(k,id){
   }
   else if(k === 'treasure'){
     S.bag.treasure--;
-    const inc = rndInt(6,14);
+    const inc = gameInt(6,14);
     s.strPotential = clamp(s.strPotential + Math.round(inc/3), 5, 40);
     s.agiPotential = clamp(s.agiPotential + Math.round(inc/3), 5, 40);
     s.magPotential = clamp(s.magPotential + Math.round(inc/3), 5, 40);
@@ -221,7 +223,7 @@ function useItem(k,id){
     const pool = TRAITS_POOL.filter(t=>!s.traits.some(x=>x.n===t.n));
     if(!pool.length){ toast('已无可抽取的词条'); return; }
     S.bag.ticket--;
-    const t = pick(pool);
+    const t = gamePick(pool);
     const nt = {n:t.n, d:t.d, k:t.k, v:t.v};
     refreshTraitDesc(nt);
     s.traits.push(nt);
@@ -287,6 +289,7 @@ function renderMergePreview(){
     <p class="small"><b>随机变化：</b>75% 潜力不变；25% 三项潜力同时 +1～3（各等概率，上限 40），并幸运/悟性 +1（上限 20）。体型 90% 不变 / 10% +${(b.size*0.008).toFixed(3)}。</p>
     <p class="small"><b>元素：</b>${a.element===b.element ? '同元素，100% 保持 '+a.element : '80% 保持 '+a.element+' / 18% 继承 '+b.element+' / 2% 从草、冰、雷、幻、光、暗、空间、时间等概率抽取（可能抽回双方元素）'}。技能随最终元素匹配。</p>
     <p class="small" style="color:var(--danger,#ff8299)"><b>永久消耗：</b>${esc(b.name)}（Lv.${b.level}）及其未继承的词条、经验 ${b.exp||0}、亲密度 ${b.intimacy||0}与规划；无法撤销。</p>
+    <p class="small">副宠的回忆按原身份保留在历史档案中。${Object.values(S.world.stories).filter(i=>i.status==='active'&&i.participants.includes(b.id)).length} 段未完成故事将中止并归档。</p>
     <p class="small"><b>费用 ${p.cost} 晶币</b> · 当前 ${Math.floor(S.coins)} · 主宠第 ${(a.mergeCount||0)+1} 次融合，后续费用递增。${S.coins < p.cost ? '余额不足，请先探索。':''}</p>`;
   btn.disabled = S.coins < p.cost;
   btn.textContent = `消耗 ${p.cost} 晶币，确认合体`;
@@ -348,7 +351,7 @@ function doMerge(){
   }
   if(S.coins < preview.cost){ toast(`晶币不足，合体需要 ${preview.cost} 晶币`); renderMergePreview(); return; }
 
-  const potBonus = Math.random() < 0.25 ? rndInt(1,3) : 0;
+  const potBonus = gameRandom() < 0.25 ? gameInt(1,3) : 0;
   const pots = {};
   for(const key of ['strPotential','agiPotential','magPotential']) pots[key] = Math.max(a[key], Math.min(40, a[key] + potBonus));
   const stats = growthStats(a, preview.level, pots);
@@ -356,16 +359,16 @@ function doMerge(){
   (b.traits||[]).forEach(bt=>{
     const mt = mergedTraits.find(t=>t.n===bt.n);
     if(mt){ mt.v = +(mt.v * 1.2).toFixed(4); refreshTraitDesc(mt); }
-    else if(mergedTraits.length < 3 && Math.random() < 0.5){
+    else if(mergedTraits.length < 3 && gameRandom() < 0.5){
       const nt = {...bt}; refreshTraitDesc(nt); mergedTraits.push(nt);
     }
   });
-  const newSize = Math.random() < 0.1 ? +(a.size + b.size * 0.008).toFixed(3) : a.size;
+  const newSize = gameRandom() < 0.1 ? +(a.size + b.size * 0.008).toFixed(3) : a.size;
   let newElement = a.element;
   if(a.element !== b.element){
-    const r = Math.random();
+    const r = gameRandom();
     if(r >= 0.80 && r < 0.98) newElement = b.element;
-    else if(r >= 0.98) newElement = pick(['草','冰','雷','幻','光','暗','空间','时间']);
+    else if(r >= 0.98) newElement = gamePick(['草','冰','雷','幻','光','暗','空间','时间']);
   }
 
   /* Mutate the retained primary in place: references, custom name, earned
@@ -380,6 +383,7 @@ function doMerge(){
   });
   a.skill = HEAL_ELEMENTS.includes(newElement) ? '治疗' : '元素弹';
   a.hp = Math.min(a.hp, hpMax(a));
+  LivingWorld.archiveCompanion(S,b.id);
   S.slimes = S.slimes.filter(s=>s!==b);
   S.monsters = S.monsters.filter(s=>s!==b);
   delete S.customPlans[b.id];
@@ -400,6 +404,7 @@ function togglePetLock(id){
 }
 
 function openPlan(id){
+  if(S.saveVersion>=4){closeModal();switchTab('journey');return;}
   const s = getSlime(id); if(!s) return;
   const plan = S.customPlans[id];
   openModal(`
@@ -478,6 +483,7 @@ function openDetail(id, fromMonster){
         <div class="info-row"><span>技能</span><b>${s.skill}</b></div>
       </div>
 
+      <div class="lw-actions"><button class="btn sm" data-act="feed" data-id="${s.id}">喂饲料</button>${!isMon?`<button class="btn sm" data-act="treasure" data-id="${s.id}">天材地宝</button><button class="btn sm" data-act="trait" data-id="${s.id}">抽取词条</button><button class="btn sm" data-act="drinkPotion" data-id="${s.id}">经验药水</button>`:''}</div>
       <div class="stat-section-title">◈ 天赋</div>
       <div class="trait-list">
         ${elemTalent ? `<span class="trait-chip" style="background:rgba(139,123,255,.15);color:var(--accent2);border-color:rgba(139,123,255,.3);">${elemTalent.name} · ${elemTalent.desc}</span>` : ''}
@@ -499,7 +505,8 @@ function renameSlime(id){
 }
 
 function startBallGame(s){
-  if(ballGame) return;
+  if(ballGame || document.getElementById('gameOverlay')) return;
+  if(!LivingWorld.reserve(S,[s.id],'play')){toast('请先让伙伴回家休息');return;}
   const overlay = document.createElement('div');
   overlay.id = 'gameOverlay';
   overlay.innerHTML = `
@@ -517,7 +524,7 @@ function startBallGame(s){
       <div class="game-ball" id="gameBall"></div>
     </div>
   `;
-  $('#app').appendChild(overlay);
+  $('#app').appendChild(overlay);$('#app').classList.add('has-game-overlay');
   const field = overlay.querySelector('#gameField');
   const slimeEl = overlay.querySelector('#gameSlime');
   const ballEl = overlay.querySelector('#gameBall');
@@ -539,23 +546,23 @@ function startBallGame(s){
   placeBall(50, 75);
   showBall(true);
   const slimeTimer = setInterval(()=>{
-    if(!G.running) return;
+    if(!G.running || storageConflict || persistenceBlocked || saveRetryNeeded) return;
     if(G.ballState === 'toSlime') return;
-    G.slimeX = clamp(G.slimeX + rnd(-18,18), 18, 82);
+    G.slimeX = clamp(G.slimeX + gameRange(-18,18), 18, 82);
     slimeEl.style.left = G.slimeX + '%';
     slimeEl.dataset.mood = Math.random()<0.5 ? 'jump' : 'crawl';
     setTimeout(()=>{ if(slimeEl && G.running) slimeEl.dataset.mood = 'idle'; }, 900);
   }, 1300);
   G.timers.push(slimeTimer);
   const clock = setInterval(()=>{
-    if(!G.running) return;
+    if(!G.running || storageConflict || persistenceBlocked || saveRetryNeeded) return;
     G.timeLeft--;
     overlay.querySelector('#gTime').textContent = Math.max(0, G.timeLeft);
     if(G.timeLeft <= 0) endGame();
   }, 1000);
   G.timers.push(clock);
   field.addEventListener('pointerdown', ev=>{
-    if(!G.running) return;
+    if(!G.running || storageConflict || persistenceBlocked || saveRetryNeeded) return;
     if(G.ballState !== 'ready' && G.ballState !== 'toPlayer') return;
     const rect = field.getBoundingClientRect();
     const bx = rect.left + (G.ballX/100)*rect.width;
@@ -577,10 +584,12 @@ function startBallGame(s){
     const startX = G.ballX, startY = G.ballY;
     const targetX = G.slimeX, targetY = 30;
     const dur = 420;
-    const t0 = performance.now();
+    let lastNow = performance.now(), elapsed = 0;
     function step(now){
-      if(!G.running) return;
-      const p = Math.min(1, (now - t0)/dur);
+      if(!G.running || G.ballState !== 'toSlime' || storageConflict || persistenceBlocked) return;
+      if(saveRetryNeeded){ lastNow = now; G.animId = requestAnimationFrame(step); return; }
+      elapsed += Math.max(0, now - lastNow); lastNow = now;
+      const p = Math.min(1, elapsed/dur);
       const x = startX + (targetX-startX)*p;
       const y = startY + (targetY-startY)*p;
       placeBall(x,y);
@@ -597,12 +606,13 @@ function startBallGame(s){
   }
   function fallDown(){
     const base = 23 + G.catches * 0.015;
-    const variation = rnd(0.8, 1.25);
+    const variation = gameRange(0.8, 1.25);
     const speedY = clamp(base * variation, 15, 40);
-    const drift = rnd(-7, 7);
+    const drift = gameRange(-7, 7);
     let lastNow = performance.now();
     function step(now){
-      if(!G.running) return;
+      if(!G.running || G.ballState !== 'toPlayer' || storageConflict || persistenceBlocked) return;
+      if(saveRetryNeeded){ lastNow = now; G.animId = requestAnimationFrame(step); return; }
       const dt = Math.min(0.05, (now - lastNow)/1000);
       lastNow = now;
       G.ballY += speedY * dt;
@@ -611,12 +621,14 @@ function startBallGame(s){
       if(G.ballY >= 83.33){
         G.ballState = 'gone';
         showBall(false);
-        setTimeout(()=>{
-          if(!G.running) return;
+        function resetBall(){
+          if(!G.running || G.ballState !== 'gone' || storageConflict || persistenceBlocked) return;
+          if(saveRetryNeeded){ setTimeout(resetBall, 100); return; }
           placeBall(50, 75);
           showBall(true);
           G.ballState = 'ready';
-        }, 420);
+        }
+        setTimeout(resetBall, 420);
         return;
       }
       G.animId = requestAnimationFrame(step);
@@ -624,7 +636,7 @@ function startBallGame(s){
     G.animId = requestAnimationFrame(step);
   }
   function endGame(){
-    if(!G.running) return;
+    if(!G.running || storageConflict || persistenceBlocked || saveRetryNeeded) return;
     G.running = false;
     G.timers.forEach(t=>clearInterval(t));
     if(G.animId) cancelAnimationFrame(G.animId);
@@ -633,10 +645,10 @@ function startBallGame(s){
     const intimacyGain = Math.floor(catches / 10);
     s.mood = clamp(s.mood + moodGain, 0, 100);
     s.intimacy = (s.intimacy||0) + intimacyGain;
-    save();
-    overlay.remove();
+    LivingWorld.release(S,'play',true);save();
+    overlay.remove();$('#app').classList.remove('has-game-overlay');
     ballGame = null;
-    if(activeTab === 'space') renderTab();
+    renderTab();
     if(catches > 0){
       toast(`⚽ 游戏结束！\n接住 ${catches} 次\n心情 +${moodGain}　亲密度 +${intimacyGain}`, 'good');
     } else {
@@ -647,14 +659,15 @@ function startBallGame(s){
 }
 
 function startStackGame(){
-  if(stackGame) return;
-  const idleSlimes = S.slimes.filter(s=>!isDispatched(s));
+  if(stackGame || document.getElementById('gameOverlay')) return;
+  const idleSlimes = S.slimes.filter(s=>!isDispatched(s)&&!LivingWorld.isBusy(S,s.id));
   if(idleSlimes.length < 1){
     toast('空间中没有自由活动的史莱姆，无法进行游戏');
     return;
   }
   const overlay = document.createElement('div');
   overlay.id = 'gameOverlay';
+  if(!LivingWorld.reserve(S,idleSlimes.map(s=>s.id),'play'))return;
   const recordNow = S.stackRecord || 0;
   overlay.innerHTML = `
     <div class="game-hud">
@@ -669,12 +682,12 @@ function startStackGame(){
       ${Array.from({length:14}).map(()=>`<div class="bg-star" style="left:${rnd(2,98)}%;top:${rnd(2,98)}%;"></div>`).join('')}
     </div>
   `;
-  $('#app').appendChild(overlay);
+  $('#app').appendChild(overlay);$('#app').classList.add('has-game-overlay');
   const field = overlay.querySelector('#gameField');
   requestAnimationFrame(()=>{
     const W = field.clientWidth;
     const H = field.clientHeight;
-    if(!W || !H){ setTimeout(()=>{ overlay.remove(); stackGame=null; }, 100); return; }
+    if(!W || !H){ setTimeout(()=>{ LivingWorld.release(S,'play');overlay.remove();$('#app').classList.remove('has-game-overlay'); stackGame=null; }, 100); return; }
     const pool = idleSlimes;
     let usedIndex = 0;
     let activeEl = null;
@@ -713,7 +726,7 @@ function startStackGame(){
       return {el, w, h};
     }
     function spawnActive(){
-      if(!G.running) return;
+      if(!G.running || storageConflict || persistenceBlocked || saveRetryNeeded) return;
       const s = pool[usedIndex % pool.length];
       const {el, w, h} = buildSlimeEl(s);
       const lastTop = stack.length ? stack[stack.length - 1].topY : (H * 0.2 - h/2);
@@ -781,13 +794,14 @@ function startStackGame(){
       }
       trimOutOfScreen();
       setTimeout(()=>{
-        if(!G.running) return;
+        if(!G.running || storageConflict || persistenceBlocked || saveRetryNeeded) return;
         spawnActive();
         state = 'moving';
       }, 280);
     }
     function loop(t){
-      if(!G.running) return;
+      if(!G.running)return;
+      if(storageConflict || persistenceBlocked || saveRetryNeeded){lastT=t;requestAnimationFrame(loop);return;}
       if(!lastT) lastT = t;
       const dt = Math.min(0.05, (t - lastT)/1000);
       lastT = t;
@@ -825,14 +839,14 @@ function startStackGame(){
       requestAnimationFrame(loop);
     }
     field.addEventListener('click', ()=>{
-      if(!G.running) return;
+      if(!G.running || storageConflict || persistenceBlocked || saveRetryNeeded) return;
       if(state === 'moving' && activeEl){
         state = 'dropping';
         dropY = parseFloat(activeEl.style.top) || (H*0.2 - activeObj.h/2);
       }
     });
     function endGame(){
-      if(!G.running) return;
+      if(!G.running || storageConflict || persistenceBlocked || saveRetryNeeded) return;
       G.running = false;
       const n = stack.length;
       const isNewRecord = n > recordNow;
@@ -848,10 +862,10 @@ function startStackGame(){
           slime.intimacy = (slime.intimacy||0) + gains[id];
         }
       });
-      save();
-      overlay.remove();
+      LivingWorld.release(S,'play',true);save();
+      overlay.remove();$('#app').classList.remove('has-game-overlay');
       stackGame = null;
-      if(activeTab === 'space') renderTab();
+      renderTab();
       if(n > 0){
         if(isNewRecord){
           toast(`🧱 叠叠乐结束！\n成功叠放 ${n} 只史莱姆\n🎉 新纪录！最高 ${n} 只`, 'good');

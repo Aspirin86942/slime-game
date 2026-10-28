@@ -160,8 +160,8 @@ function median(list) {
     console.log(`\n特效开销：关特效 ${off.fps} fps → 开特效 ${on.fps} fps（${cost >= 0 ? '下降' : '提升'} ${Math.abs(cost).toFixed(1)}%）`);
     console.log(`p95 帧耗时：${off.p95Ms}ms → ${on.p95Ms}ms`);
   }
-  const ok = !!(on && off && on.fps >= 50 && off.fps >= 50 && (!on.stressFps || on.stressFps >= 30));
-  console.log(`判定：${ok ? 'PASS' : 'FAIL'}（要求开/关特效都 ≥50fps，压力场景 ≥30fps）`);
+  const ok = !!(on && off && on.fps >= 55 && off.fps >= 55 && (!on.stressFps || on.stressFps >= 30));
+  console.log(`判定：${ok ? 'PASS' : 'FAIL'}（要求开/关特效都 ≥55fps，压力场景 ≥30fps）`);
   fs.writeFileSync(path.join(__dirname, 'fps-result.json'), JSON.stringify({ when: new Date().toISOString(), out }, null, 2), 'utf8');
   process.exit(ok ? 0 : 1);
 })();

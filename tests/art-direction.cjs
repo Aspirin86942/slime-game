@@ -16,14 +16,17 @@ const setup = `(() => {
   T._battle.closeBattle();
   S.slimes.forEach((s,i)=>{s.name=['小石头','涌泉','青藤'][i];s.intimacy=34;s.mood=90;});
   S.name='星野';S.level=30;S.coins=28640;S.points=1260;
-  S.bag={food:12,treasure:3,ticket:5,expPotion:2,net:4};
+  Object.assign(S.bag,{food:12,treasure:3,ticket:5,expPotion:2,net:4});
   S.theme='sunset';applyTheme();renderTop();switchTab('space');
   return true;
 })()`;
 const overflow = `(() => {
   const app=document.querySelector('#app').getBoundingClientRect();
   return [...document.querySelectorAll('#content button,.companion-head h2,.home-objective,.boost-grid,#modalBox button')]
-    .filter(el=>{const r=el.getBoundingClientRect();return r.width&&r.height&&(r.left<app.left-1||r.right>app.right+1);})
+    .filter(el=>{const r=el.getBoundingClientRect();if(!r.width||!r.height)return false;
+      // Offscreen tabs inside a working horizontal scroller are reachable by touch.
+      let left=r.left,right=r.right;for(let n=el.parentElement;n&&n.id!=='app';n=n.parentElement){const css=getComputedStyle(n);if(['auto','scroll','hidden','clip'].includes(css.overflowX)){const box=n.getBoundingClientRect();left=Math.max(left,box.left);right=Math.min(right,box.right);}}
+      return right>left&&(left<app.left-1||right>app.right+1);})
     .map(el=>({text:el.textContent.trim().slice(0,30),class:el.className}));
 })()`;
 const buttonContrast = `(() => {
@@ -31,7 +34,7 @@ const buttonContrast = `(() => {
   const color=value=>{ctx.clearRect(0,0,1,1);ctx.fillStyle=value;ctx.fillRect(0,0,1,1);return [...ctx.getImageData(0,0,1,1).data];};
   const blend=(fg,bg)=>fg.slice(0,3).map((v,i)=>v*fg[3]/255+bg[i]*(1-fg[3]/255));
   const lum=rgb=>rgb.map(v=>{v/=255;return v<=.04045?v/12.92:((v+.055)/1.055)**2.4;}).reduce((sum,v,i)=>sum+v*[.2126,.7152,.0722][i],0);
-  return ['.home-objective .btn','.home-care .btn'].map(selector=>{
+  return ['.lw-map-tools .lw-button','.lw-care .lw-button'].map(selector=>{
     const el=document.querySelector(selector),chain=[];
     for(let n=el;n&&n.id!=='app';n=n.parentElement)chain.unshift(n);
     let bg=color(getComputedStyle(document.querySelector('#app')).getPropertyValue('--bgMid'));
@@ -51,15 +54,14 @@ const buttonContrast = `(() => {
     await p.ev(setup);await sleep(150);
     for(const [width,height] of [[390,844],[320,667],[480,900]]){
       await viewport(width,height);await p.ev('switchTab("space");true');await sleep(80);
-      const layout=await p.ev(`(() => {const pg=document.querySelector('#playground').getBoundingClientRect(),nav=document.querySelector('.tabbar').getBoundingClientRect();return {top:pg.top,bottom:pg.bottom,nav:nav.top,overflow:document.documentElement.scrollWidth-innerWidth};})()`);
-      check('Garden fully visible at '+width+'x'+height,layout.top<230&&layout.bottom<layout.nav&&layout.overflow===0,layout);
+      const layout=await p.ev(`(() => {const pg=document.querySelector('.lw-map').getBoundingClientRect(),nav=document.querySelector('.tabbar').getBoundingClientRect();return {top:pg.top,bottom:pg.bottom,nav:nav.top,overflow:document.documentElement.scrollWidth-innerWidth};})()`);
+      check('Garden fully visible at '+width+'x'+height,layout.top<320&&layout.bottom<layout.nav&&layout.overflow===0,layout);
       check('Controls fit at width '+width,(await p.ev(overflow)).length===0);
       await shot('home-'+width);
     }
     await viewport(390,844);
-    await p.ev(`S.name='名字很长也想一起探索世界的召唤师';switchTab('space');true`);
-    const longName=await p.ev(`(() => {const h=document.querySelector('.companion-head h2'),p=document.querySelector('#playground').getBoundingClientRect();return {lines:h.clientHeight/parseFloat(getComputedStyle(h).lineHeight),top:p.top};})()`);
-    check('Long name retains a two-line heading and visible garden',longName.lines<=2.1&&longName.top<230,longName);
+    await p.ev("S.slimes[0].name='名字很长也想一起探索的伙伴';switchTab('home');true");
+    check('Long partner names remain accessible and fit the home',(await p.ev(overflow)).length===0);
     await shot('home-long-name');
     await p.ev(`S.name='星野';true`);
     for(const theme of ['sunset','dark','light','peach','mint','lavender','sky']){
@@ -71,13 +73,8 @@ const buttonContrast = `(() => {
       check('Home button text contrast: '+theme,contrasts.every(x=>x.ratio>=4.5),contrasts);
       if(theme==='light')await shot('home-light');
     }
-    await p.ev(`S.theme='sunset';applyTheme();S.globalPlan='explore';switchTab('travel');true`);
-    for(let i=0;i<3;i++){
-      await p.ev(`S.exploreMapIndex=${i};renderTab();true`);await sleep(120);
-      const refs=await p.ev(`(() => {const ids=[...document.querySelectorAll('.explore-scene [id]')].map(e=>e.id);return {unique:new Set(ids).size===ids.length,svg:document.querySelectorAll('.scene-landmarks').length};})()`);
-      check('Landscape gradients remain unique: '+i,refs.unique&&refs.svg===2,refs);
-      await shot('explore-'+i);
-    }
+    await p.ev("S.theme='sunset';applyTheme();switchTab('journey');true");
+    check('Six places share the travel map',await p.ev("document.querySelectorAll('.lw-world-map button').length===6"));await shot('travel-map');
     await p.ev(`S.globalPlan=null;switchTab('summon');true`);
     check('Summon controls fit',(await p.ev(overflow)).length===0);
     await shot('summon');
@@ -87,8 +84,8 @@ const buttonContrast = `(() => {
     check('Battle preserves compact creatures and readable labels',battle.width>=49&&battle.width<=52&&battle.minText>=11,battle);
     await shot('battle');
     await p.ev(`window.__TEST__._battle.closeBattle();switchTab('bag');true`);await shot('bag');
-    await p.ev(`switchTab('space');S.spaceMode='monster';renderTab();true`);await shot('empty-monster');
-    check('Decorative scenery does not intercept touch',await p.ev(`getComputedStyle(document.querySelector('.garden-art')).pointerEvents==='none'`));
+    await p.ev(`switchTab('monsters');renderTab();true`);await shot('empty-monster');
+    check('Original care controls are reachable',await p.ev("document.querySelector('#content').textContent.includes('魔物照料')"));
 
     // Normal mode in this temporary browser profile verifies persistence too.
     await p.client.send('Page.navigate',{url:URL});

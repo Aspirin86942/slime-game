@@ -96,6 +96,11 @@ const ELEMENT_WEIGHTS = {
   '光':2,  '暗':2,
   '空间':0.8, '时间':0.8
 };
+// Persist gameplay randomness independently of decorative effects.
+function gameRandom(){return S.saveVersion>=4?LivingWorld.gameRandom(S):Math.random();}
+const gameRange=(a,b)=>a+gameRandom()*(b-a);
+const gameInt=(a,b)=>Math.floor(gameRange(a,b+1));
+const gamePick=a=>a[Math.floor(gameRandom()*a.length)];
 function pickElement(boost){
   const weights = {...ELEMENT_WEIGHTS};
   if(boost){
@@ -105,7 +110,7 @@ function pickElement(boost){
   }
   const entries = Object.entries(weights);
   const total = entries.reduce((a,[,v])=>a+v,0);
-  let r = Math.random()*total;
+  let r = gameRandom()*total;
   for(const [k,v] of entries){ r -= v; if(r <= 0) return k; }
   return entries[0][0];
 }
@@ -114,7 +119,7 @@ function pickElement(boost){
 const RARE_ELEMENTS = ELEMENT_KEYS.filter(k=>ELEMENT_WEIGHTS[k] <= 2);
 function pickRareElement(boost){
   const pool = RARE_ELEMENTS.map(k=>[k, ELEMENT_WEIGHTS[k] + ((boost && boost[k]) || 0)]);
-  let r = Math.random() * pool.reduce((a,[,v])=>a+v, 0);
+  let r = gameRandom() * pool.reduce((a,[,v])=>a+v, 0);
   for(const [k,v] of pool){ r -= v; if(r <= 0) return k; }
   return pool[0][0];
 }

@@ -1,4 +1,5 @@
 import {BUILDINGS,DECORATIONS,PLANTS,VISITORS} from './content.ts';
+import {workerPresent} from './life.ts';
 import type {World,Slime,Environment,Placement} from './types.ts';
 export const season=(w:World)=>Math.floor(w.clock/25200)%4;
 export const day=(w:World)=>Math.floor(w.clock/3600);
@@ -26,6 +27,7 @@ export function environment(w:World,zone:number,x=6,y=6,slimes:Slime[]=[]):Envir
   if(d?.service==='quality'||d?.service==='aquatic'){e.quality+=10*p.level;e.reasons.push(`${d.name}：改善水质`);}
   const dec=DECORATIONS.find(d=>d.id===p.def);if(dec){if(dec.group===1)shades+=3;if(dec.group===2)lights+=4;if(dec.group===6||dec.group===4)comfort+=3;}
   for(const job of w.workers.filter(j=>j.building===p.id)){
+   if(w.version===4&&!workerPresent(w,job.slimeId,p.id))continue;
    const el=slimes.find(s=>s.id===job.slimeId)?.element;
    if(el==='水'){e.moisture+=10;e.reasons.push('水伙伴：湿度 +10');}
    if(el==='草'){e.fertility+=10;e.reasons.push('草伙伴：肥力 +10');}

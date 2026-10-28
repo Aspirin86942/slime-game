@@ -1,6 +1,8 @@
 const DIAGNOSTIC_MODE=/(?:^|[?&])(selftest|gallery|battle|fps)(?:=|&|$)/.test(location.search||'');
 const SAVE_KEY = 'slimeSummonerSave';
 const SAVE_BACKUP_KEY = 'slimeSummonerSave_v1_backup';
+const SAVE_V3_BACKUP_KEY='slimeSummonerSave_v3_backup';
+let saveRetryNeeded=false;
 const SAVE_V2_BACKUP_KEY = 'slimeSummonerSave_v2_backup';
 let saveSnapshot;
 let storageConflict=false;
@@ -8,7 +10,7 @@ function storageNotice(message){
   persistenceWarning=message;
   let banner=document.getElementById('saveProtectionBanner');
   if(!banner){banner=document.createElement('div');banner.id='saveProtectionBanner';banner.className='save-protection-banner';document.body.appendChild(banner);}
-  banner.innerHTML=esc(message)+(storageConflict?' <button data-act="reloadSave">重新加载</button>':'');
+  banner.innerHTML=esc(message)+(storageConflict?' <button data-act="reloadSave">重新加载</button>':saveRetryNeeded?' <button data-act="retrySave">重试保存</button>':'');
 }
 window.addEventListener('storage',e=>{if(!DIAGNOSTIC_MODE && e.key===SAVE_KEY && e.newValue!==saveSnapshot){storageConflict=true;storageNotice('另一个页面更新了存档。本页已停止推进，请重新加载后继续。');}});
 let persistenceWarning = '';
@@ -21,7 +23,8 @@ function validSaveData(d){
     return Object.keys(value).every(k=>!['__proto__','prototype','constructor'].includes(k) && safeTree(value[k]));
   };
   if(!safeTree(d)) return false;
-  if(Number(d.saveVersion)>3 || (d.saveVersion===3 && !d.world)) return false;
+  if(Number(d.saveVersion)>4 || (d.saveVersion>=3 && (!d.world||d.world.version!==d.saveVersion))) return false;
+  if(d.saveVersion===4 && ['bag','feedTrough'].some(k=>Object.prototype.hasOwnProperty.call(d,k))) return false;
   if(d.world!==undefined && !LivingWorld.validWorld(d.world,d.slimes.map(s=>s.id))) return false;
   const number=(obj,k,min=0,integer=false)=>obj[k]===undefined || (typeof obj[k]==='number' && Number.isFinite(obj[k]) && obj[k]>=min && (!integer || Number.isInteger(obj[k])));
   for(const k of ['coins','points','summonerExp','totalEarned','feedTrough','stackRecord','lastActive']) if(!number(d,k)) return false;
@@ -58,10 +61,10 @@ function save(){
   try{
     const current=localStorage.getItem(SAVE_KEY);
     if(saveSnapshot!==undefined && current!==saveSnapshot){storageConflict=true;storageNotice('另一个页面更新了存档。本页已停止推进，请重新加载后继续。');return false;}
-    LivingWorld.ensure(S);LivingWorld.reconcile(S);S.saveVersion=3;S.lastActive=Math.max(Number(S.lastActive)||0,Date.now());
-    const raw=JSON.stringify(S);localStorage.setItem(SAVE_KEY,raw);saveSnapshot=raw;
+    LivingWorld.ensure(S);LivingWorld.reconcile(S);S.saveVersion=4;S.lastActive=Math.max(Number(S.lastActive)||0,Date.now());
+    const raw=JSON.stringify(S);localStorage.setItem(SAVE_KEY,raw);saveSnapshot=raw;saveRetryNeeded=false;
     const banner=document.getElementById('saveProtectionBanner');if(banner)banner.remove();return true;
-  }catch(e){storageNotice('存储空间不足或浏览器禁止存档。进度暂存在本页，请不要关闭页面。');return false;}
+  }catch(e){saveRetryNeeded=true;storageNotice('存储空间不足或浏览器禁止存档。进度暂存在本页，请不要关闭页面。');return false;}
 }
 
 function load(){
@@ -72,16 +75,22 @@ function load(){
     if(!raw) return false;
     const d = JSON.parse(raw);
     if(!validSaveData(d)) throw new Error('存档结构无效');
-    if(!DIAGNOSTIC_MODE && (Number(d.saveVersion)||0)<3 && !localStorage.getItem(SAVE_V2_BACKUP_KEY)) localStorage.setItem(SAVE_V2_BACKUP_KEY,raw);
-    if(!DIAGNOSTIC_MODE && (Number(d.saveVersion)||0)<2 && !localStorage.getItem(SAVE_BACKUP_KEY)) localStorage.setItem(SAVE_BACKUP_KEY,raw);
-    Object.keys(S).forEach(k=>delete S[k]);
+    const fromVersion=Number(d.saveVersion)||1;
+    if(!DIAGNOSTIC_MODE&&fromVersion<4){
+      for(const base of [SAVE_V3_BACKUP_KEY,...(fromVersion<3?[SAVE_V2_BACKUP_KEY]:[]),...(fromVersion<2?[SAVE_BACKUP_KEY]:[])]){
+        let key=base,index=0;while(localStorage.getItem(key)!==null&&localStorage.getItem(key)!==raw)key=base+'_'+Date.now()+'_'+(++index);
+        if(localStorage.getItem(key)!==raw)localStorage.setItem(key,raw);
+        if(localStorage.getItem(key)!==raw)throw new Error('原始存档备份未成功');
+      }
+    }
+    delete S.bag;delete S.feedTrough;Object.keys(S).forEach(k=>delete S[k]);
     Object.assign(S,JSON.parse(JSON.stringify(SAVE_DEFAULTS)),d);
     const clears=d.progress && d.progress.abyssClears;
     let proven=1;
     if(clears && typeof clears==='object') Object.keys(clears).forEach(k=>{ if(clears[k]) proven=Math.max(proven,Math.min(50,(Number(k)||0)+1)); });
     S.abyssUnlocked=clamp(Math.floor(Number(d.abyssUnlocked)||proven),1,50);
     const oldSelected=Number(S.abyssLevel)||1;
-    getAbyssLevel(); S.saveVersion=3; LivingWorld.ensure(S);
+    getAbyssLevel();S.saveVersion=fromVersion;if(fromVersion<3&&!d.world){S.world=LivingWorld.createWorld();S.world.version=3;}
     persistenceBlocked=false;
     persistenceWarning=oldSelected>S.abyssUnlocked ? '旧档已安全备份：旧版任意选择层数不是通关记录，深渊按胜利逐层解锁。伙伴、属性和资源全部保留。' : '';
     if(!S.customPlans) S.customPlans = {};
@@ -97,6 +106,7 @@ function load(){
     if(!S.bag) S.bag = {food:0,treasure:0,ticket:0,expPotion:0,net:0};
     if(typeof S.bag.expPotion !== 'number') S.bag.expPotion = 0;
     if(typeof S.bag.net !== 'number') S.bag.net = 0;
+    if(fromVersion===4)LivingWorld.attachLegacyInventory(S);
     if(!S.monsters) S.monsters = [];
     if(!Array.isArray(S.lastAbyssSel)) S.lastAbyssSel = [];
     if(typeof S.nameSeq !== 'number') S.nameSeq = 0;
@@ -133,9 +143,22 @@ function load(){
       if(typeof s.hp !== 'number') s.hp = hpMax(s);
     });
     S.seq=Math.max(S.seq||1,...[...S.slimes,...S.monsters].map(s=>s.id+1));
+    if(fromVersion<4){
+      const away=!DIAGNOSTIC_MODE&&S.started&&S.lastActive>0?Math.floor(clamp(Date.now()-S.lastActive,0,43200000)/1000):0;
+      LivingWorld.prepareLegacy(S);
+      if(away)advanceWorld(away,true);
+      const preset=Array.isArray(S.exploreTeam)?S.exploreTeam.slice():S.slimes.filter(hasExplorePlan).map(s=>s.id);
+      S.legacyTeamPreset=preset;S.globalPlan=null;S.customPlans={};S.slimes.forEach(s=>s.resting=false);
+      LivingWorld.upgradeWorld(S.world,S.slimes,fromVersion,Date.now());S.saveVersion=4;LivingWorld.attachLegacyInventory(S);
+      const mapping=[0,3,4];for(let old=0;old<3;old++)if((S.progress?.regions?.[old]??0)>0)for(let route=0;route<3;route++){const key=mapping[old]+':'+route;if(!S.world.familiar.includes(key))S.world.familiar.push(key);}
+      S.lastActive=Math.max(S.lastActive||0,Date.now());
+      S.world.notices.unshift('旧派遣已结清并回家，队伍预设保留。欢迎一起经营这个家。');
+    }else{LivingWorld.ensure(S);S.world.activities=Object.fromEntries(Object.entries(S.world.activities).filter(([,a])=>a.ref==='mini'));}
+    if(!LivingWorld.validWorld(S.world,S.slimes.map(s=>s.id)))throw new Error('迁移后的存档无效');
+    if(fromVersion<4&&!DIAGNOSTIC_MODE&&!save())throw new Error('迁移无法保存');
     return true;
   }catch(e){
-    const restored=JSON.parse(previous); Object.keys(S).forEach(k=>delete S[k]); Object.assign(S,restored);
+    const restored=JSON.parse(previous); delete S.bag;delete S.feedTrough;Object.keys(S).forEach(k=>delete S[k]); Object.assign(S,restored);LivingWorld.ensure(S);
     persistenceBlocked=true; persistenceWarning='现有存档无法安全读取，已停止自动写入以保护原始数据。';
     return false;
   }
@@ -662,7 +685,7 @@ function itemIcon(item){return uiIcon({food:'food',treasure:'gem',ticket:'ticket
 function refreshUIIcons(root){
   root=root||document;
   root.querySelectorAll('[data-ui-icon]').forEach(el=>{if(!el.querySelector('.ui-icon'))el.innerHTML=uiIcon(el.dataset.uiIcon);});
-  const nav={space:'home',world:'leaf',summon:'spark',travel:'map',bag:'bag',status:'person'};
+  const nav={home:'home',journey:'map',companions:'person',space:'home',world:'leaf',summon:'spark',travel:'map',bag:'bag',status:'person'};
   const acts={settings:'settings',summon:'spark',mergeopen:'spark',cycleMap:'map',globalplan:'map',setupTeam:'person',abyssSetup:'sword',refill:'food',selectToy:'ball',toggleSpaceMode:'home',buy:'bag',buy10:'bag',feed:'food',treasure:'gift',drinkPotion:'gift',breakthrough:'bolt',claimGoal:'gift',challengeStart:'sword',petlock:'lock'};
   root.querySelectorAll('button[data-act]').forEach(b=>{
     const a=b.dataset.act;
@@ -849,28 +872,19 @@ function renderTop(){
 }
 
 function switchTab(t){
-  if(activeTab==='space' && t!=='space'){
-    plSlimes.forEach(p=>{
-      if(p.timer) clearInterval(p.timer);
-      if(p.bubbleTimer) clearInterval(p.bubbleTimer);
-    });
-    plSlimes = [];
-  }
-  if(t !== 'space') selectedToy = null;
-  if(t === 'travel') travelTipsOpen = false;
-  activeTab = t;
-  document.querySelectorAll('.tabbar button').forEach(b=>b.classList.toggle('active', b.dataset.tab===t));
+  const aliases={space:'home',world:'home',travel:'journey'};
+  t=aliases[t]||t;
+  plSlimes.forEach(p=>{if(p.timer)clearInterval(p.timer);if(p.bubbleTimer)clearInterval(p.bubbleTimer);});plSlimes=[];
+  selectedToy=null;activeTab=t;
+  if(['home','journey','companions'].includes(t))LivingWorld.navigate(t);
+  const primary=['summon','status','monsters'].includes(t)?'companions':t==='challenges'?'journey':t==='bag'?'home':t;
+  document.querySelectorAll('.tabbar button').forEach(b=>b.classList.toggle('active',b.dataset.tab===primary));
   renderTab();
 }
 function renderTab(){
-  checkDailyReset();
-  stopExploreItems();
-  const el = $('#content');
-  const map = {status:renderStatus, summon:renderSummon, travel:renderTravel, space:renderSpace, bag:renderBag, world:()=>LivingWorld.render()};
-  el.innerHTML = (map[activeTab]||renderSpace)();
-  refreshUIIcons(el);
-  if(activeTab==='world')LivingWorld.mount();
-  if(activeTab==='space'){initPlayground();el.dataset.spaceIdle=(S.spaceMode==='monster'?S.monsters:S.slimes.filter(s=>!isDispatched(s))).map(s=>s.id).join(',');}
-  if(activeTab==='travel') setTimeout(startExploreItems, 50);
+  checkDailyReset();stopExploreItems();
+  const el=$('#content'),main=['home','journey','companions'].includes(activeTab);
+  const map={status:renderStatus,summon:renderSummon,challenges:renderTravel,bag:renderBag,monsters:renderMonsterCare};
+  el.innerHTML=main?LivingWorld.render():`<button class="btn themed" data-act="goto" data-tab="${activeTab==='challenges'?'journey':activeTab==='bag'?'home':'companions'}">返回${activeTab==='challenges'?'远行':activeTab==='bag'?'家园':'伙伴'}</button>`+(map[activeTab]||(()=>LivingWorld.render()))();
+  refreshUIIcons(el);if(main)LivingWorld.mount();
 }
-

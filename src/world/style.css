@@ -165,3 +165,34 @@
 .lw-reduced *{animation:none!important;transition:none!important}@media(prefers-reduced-motion:reduce){.lw *,.slime *{animation:none!important;transition:none!important}}
 @media(max-width:350px){.lw h2{font-size:22px}.lw-button{font-size:12px;padding:7px 9px}.lw-nav button{font-size:12px;min-width:34px}.lw-stock b{font-size:17px}.lw-visitor-list{grid-template-columns:1fr}.lw-game-grid{gap:4px}.lw-game-grid button{font-size:19px}.lw-inline-form{flex-wrap:wrap}.lw-inline-form .lw-field{flex-basis:65%}.lw-environment-summary{grid-template-columns:repeat(2,1fr)}}
 .save-protection-banner{position:fixed;z-index:10000;top:0;left:50%;transform:translateX(-50%);width:min(100%,480px);background:#633627;color:#fff6de;padding:12px;font-size:12px;line-height:1.6;box-shadow:0 3px 15px #0003}.save-protection-banner button{margin-left:6px;padding:4px 8px;border:1px solid #fff9;background:#fff2;color:inherit;border-radius:4px}
+
+/* Both map modes render the same original CSS character. */
+.lw-resident{transition:transform .85s linear;cursor:pointer}
+.lw-original-slime{width:72px;height:72px;display:flex;align-items:flex-end;justify-content:center;pointer-events:none}
+.lw-original-slime .slime{flex:none;transform:scale(.52);transform-origin:50% 100%}
+.lw-map-sub{font-size:9px;opacity:.86}
+.lw-companion-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:6px 0 12px}
+.lw-companion-bar .lw-field{flex:1;min-width:150px}
+.lw-wish{border:1px solid var(--lw-line);padding:10px 12px;border-radius:14px;margin:10px 0;background:var(--lw-gold-soft)}
+.lw-world-map{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:14px 0}
+.lw-world-map button{min-height:72px;display:flex;flex-direction:column;align-items:flex-start;text-align:left}
+.lw-world-map .is-active{border-color:var(--lw-gold);background:var(--lw-gold-soft)}
+.lw-world-map b{font-size:15px}.lw-meal-person{display:inline-flex;gap:6px;padding:9px}
+.lw-story .lw-button{margin:4px 6px 4px 0}.lw-inventory span{overflow-wrap:anywhere}
+.lw .lw-recipe,.lw .lw-field{min-width:0}.lw select{max-width:100%}
+.tabbar button{min-height:60px}.bag-trigger{font-size:21px}
+.lw-reduced .lw-resident{transition:none}
+@media(prefers-reduced-motion:reduce){.lw-resident{transition:none}}
+@media(max-width:360px){.lw-companion-bar{gap:5px}.lw-world-map b{font-size:14px}.topbar{gap:5px}.topbar .cur{font-size:11px}.topbar .settings-trigger{width:30px}}
+
+.modal>.close{z-index:20}
+
+/* Residents keep living while layout gestures reach the facilities below them. */
+.lw-edit .lw-resident{pointer-events:none}
+
+/* Fullscreen play covers the home; avoid painting its map and animations underneath. */
+#app.has-game-overlay #gameScreen{visibility:hidden}
+#app.has-game-overlay #gameScreen *{animation-play-state:paused!important}
+
+.battle-field{contain:layout paint}
+.fx-float,.fx-part{will-change:transform,opacity}

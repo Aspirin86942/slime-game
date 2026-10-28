@@ -80,18 +80,17 @@ check('abyss: direct attempt cannot start above the unlocked level',()=>{
   const b=h.context.__TEST__._battle;
   if(b){assert.ok(b.B.monsters.every(m=>m.ref.level<=1));assert.equal(h.state().abyssLevel,1);}
 });
-for(const stamina of [1,19])check(`exploration: stamina ${stamina} enters rest and eventually resumes`,()=>{
-  const h=boot();const s=h.slime({stamina,mood:100});Object.assign(h.state(),{started:true,globalPlan:'explore',slimes:[s]});
-  h.run('runPlans()');assert.equal(s.resting,true);
-  const coins=h.state().coins;
-  let n=0;while(s.resting&&n++<400)h.tick(1000);
-  assert.equal(s.resting,false,'Passive recovery must exit rest at a visible threshold');
-  assert.ok(s.stamina>=20);h.run('runPlans()');assert.ok(h.state().coins>coins,'Exploration resumes earning');
+for(const stamina of [1,19])check(`collection: stamina ${stamina} enters rest and eventually resumes`,()=>{
+ const h=boot(),s=h.slime({stamina,mood:100});Object.assign(h.state(),{started:true,slimes:[s]});
+ h.run("S.world.familiar=['0:0'];S.world.stock.feed=10;LivingWorld.execute(S,{type:'depart',region:0,route:0,team:[S.slimes[0].id],mode:'offline',duration:300});advanceWorld(1,true);");
+ assert.equal(h.state().world.trips[0].resting,true);let n=0;while(h.state().world.trips[0].resting&&n++<400)h.run('advanceWorld(1,true)');
+ assert.equal(h.state().world.trips[0].resting,false);h.run('advanceWorld(12,true)');assert.ok(h.state().world.trips[0].coins>0);
 });
-for(const mode of ['space','ball','stack'])check(`exploration: dispatched team keeps progressing during ${mode}`,()=>{
-  const h=boot();const s=h.slime({stamina:100,mood:100});Object.assign(h.state(),{started:true,globalPlan:'explore',slimes:[s]});
-  h.run(`activeTab='space';${mode==='ball'?'ballGame={running:true};':mode==='stack'?'stackGame={running:true};':''}`);
-  const before=h.state().coins;h.run('runPlans()');assert.equal(s.stamina,80);assert.ok(h.state().coins>before);
+for(const mode of ['home','ball','stack'])check(`collection: another partner can stay in ${mode} while travel progresses`,()=>{
+ const h=boot(),s=h.slime({stamina:100,mood:100}),home=h.slime();Object.assign(h.state(),{started:true,slimes:[s,home]});
+ h.run("S.world.familiar=['0:0'];S.world.stock.feed=10;LivingWorld.execute(S,{type:'depart',region:0,route:0,team:[S.slimes[0].id],mode:'offline',duration:300});");
+ if(mode!=='home')assert.equal(h.run("LivingWorld.reserve(S,[S.slimes[1].id],'play')"),true);
+ h.run('advanceWorld(12,true)');assert.equal(s.stamina,80);assert.ok(h.state().world.trips[0].coins>0);
 });
 check('growth: zero XP does not manufacture summoner XP',()=>{
   const h=boot(),s=h.slime({wit:0});const before=h.state().summonerExp;h.context.pet=s;
@@ -220,13 +219,13 @@ check('battle: repeated start while overlay exists cannot duplicate roster/seque
   const h=boot(),b=h.battle();const seq=h.state().seq;h.run('startAbyssBattle()');assert.equal(h.context.__TEST__._battle,b);assert.equal(h.state().seq,seq);
 });
 check('companion home: default tab, target navigation and themes in settings',()=>{
-  const h=boot();assert.equal(h.run('activeTab'),'space');const content=h.run('renderSpace()');
-  assert.ok(content.includes('home-objective'));assert.ok(content.includes('data-act="goto"'));assert.ok(!content.includes('theme-row'));
+  const h=boot();assert.equal(h.run('activeTab'),'home');const content=h.run('LivingWorld.render()');
+  assert.ok(content.includes('lw-map'));assert.ok(content.includes('data-page="summon"'));assert.ok(!content.includes('theme-row'));
   h.run('openModal=html=>window.__settingsHTML=html;openSettings()');assert.ok(h.context.__settingsHTML.includes('theme-row'));
 });
 check('companionship: affinity thresholds unlock visible existing-expression responses without battle',()=>{
   const h=boot(),s=h.slime({intimacy:0});h.context.pet=s;const initial=h.run('bondMilestone(pet)');s.intimacy=10000;const max=h.run('bondMilestone(pet)');
-  assert.ok(max.need>initial.need);assert.notEqual(max.name,initial.name);assert.ok(h.run('renderSpace()').includes('home-objective'));
+  assert.ok(max.need>initial.need);assert.notEqual(max.name,initial.name);assert.ok(h.run('renderSpace()').includes('lw-map'));
 });
 
 check('migration: missing individual legacy fields fill safely without replacing earned values or reusing IDs',()=>{
@@ -365,14 +364,15 @@ check('potions: experience scales with level and benefits the selected partner',
 });
 function exploringHarness(){
   const h=boot({}, {now:Date.parse('2026-10-27T04:00:00Z')});
-  Object.assign(h.state(),{started:true,globalPlan:'explore',slimes:[h.slime({stamina:1,mood:100})]});
+  Object.assign(h.state(),{started:true,slimes:[h.slime({stamina:1,mood:100})]});
+  h.run("S.world.familiar=['0:0'];S.world.stock.feed=1000;LivingWorld.execute(S,{type:'depart',region:0,route:0,team:[S.slimes[0].id],mode:'offline',duration:300,repeat:true});");
   h.run('checkDailyReset(true)');return h;
 }
-check('offline: one-hour earnings, XP, recovery and dispatch phase equal live ticking',()=>{
+check('offline: collection earnings, growth and activity equal live ticking',()=>{
   const online=exploringHarness(),off=exploringHarness();
   for(let i=0;i<3600;i++)online.tick(1000);
   const r=off.run('settleOffline(3600000)');assert.ok(r.actions>0);assert.ok(r.exp>0);
-  for(const key of ['coins','totalEarned','bag','slimes','tasks','points','planClock'])assert.equal(JSON.stringify(off.state()[key]),JSON.stringify(online.state()[key]),key);
+  for(const key of ['coins','totalEarned','bag','slimes','tasks','points','world'])assert.equal(JSON.stringify(off.state()[key]),JSON.stringify(online.state()[key]),key);
   assert.equal(off.storage.size,0,'Offline simulation must not save a partially applied result');
 });
 check('offline: twelve-hour cap, clock rollback, and diagnostic isolation',()=>{
@@ -383,12 +383,10 @@ check('offline: twelve-hour cap, clock rollback, and diagnostic isolation',()=>{
   const diagnostic=boot({}, {search:'?gallery=1'});diagnostic.state().started=true;diagnostic.state().slimes=[diagnostic.slime()];
   const snapshot=diagnostic.run('JSON.stringify(S)');assert.equal(diagnostic.run('settleOffline(7200000)').actions,0);assert.equal(diagnostic.run('JSON.stringify(S)'),snapshot);
 });
-check('clock: delayed callbacks account for elapsed seconds once and survive dispatch-phase reload',()=>{
-  const h=exploringHarness();h.elapse(4000);h.run('tickWorld()');assert.equal(h.state().planClock,4);
-  h.run('tickWorld()');assert.equal(h.state().planClock,4);
-  h.elapse(19000);h.run('tickWorld()');assert.equal(h.state().planClock,11);h.run('save()');
-  const reload=boot(Object.fromEntries(h.storage));assert.equal(reload.run('load()'),true);assert.equal(reload.state().planClock,11);
-  reload.tick(1000);assert.equal(reload.state().planClock,0);
+check('clock: delayed callbacks account for elapsed seconds once and resume collection after reload',()=>{
+ const h=exploringHarness();h.elapse(4000);h.run('tickWorld()');assert.equal(h.state().world.trips[0].phase,4);
+ h.run('tickWorld()');assert.equal(h.state().world.trips[0].phase,4);h.elapse(19000);h.run('tickWorld();save()');assert.equal(h.state().world.trips[0].phase,23);
+ const reload=boot(Object.fromEntries(h.storage),{now:Date.parse('2026-10-27T04:00:23Z')});assert.equal(reload.run('load()'),true);assert.equal(reload.state().world.trips[0].phase,23);reload.tick(1000);assert.equal(reload.state().world.trips[0].phase,24);
 });
 check('migration: old same-day saves acquire new counters and task keys without losing earned stats',()=>{
   const h=exploringHarness();h.state().slimes[0].str=999;h.state().tasks={rent:2,summon:1,feed:0};
