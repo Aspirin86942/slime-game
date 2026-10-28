@@ -1,6 +1,7 @@
 const DIAGNOSTIC_MODE=/(?:^|[?&])(selftest|gallery|battle|fps)(?:=|&|$)/.test(location.search||'');
 const SAVE_KEY = 'slimeSummonerSave';
 const SAVE_BACKUP_KEY = 'slimeSummonerSave_v1_backup';
+const SAVE_V4_BACKUP_KEY='slimeSummonerSave_v4_backup';
 const SAVE_V3_BACKUP_KEY='slimeSummonerSave_v3_backup';
 let saveRetryNeeded=false;
 const SAVE_V2_BACKUP_KEY = 'slimeSummonerSave_v2_backup';
@@ -23,8 +24,8 @@ function validSaveData(d){
     return Object.keys(value).every(k=>!['__proto__','prototype','constructor'].includes(k) && safeTree(value[k]));
   };
   if(!safeTree(d)) return false;
-  if(Number(d.saveVersion)>4 || (d.saveVersion>=3 && (!d.world||d.world.version!==d.saveVersion))) return false;
-  if(d.saveVersion===4 && ['bag','feedTrough'].some(k=>Object.prototype.hasOwnProperty.call(d,k))) return false;
+  if(d.saveVersion!==undefined&&![1,2,3,4,5].includes(d.saveVersion) || (d.saveVersion>=3 && (!d.world||d.world.version!==d.saveVersion))) return false;
+  if(d.saveVersion>=4 && ['bag','feedTrough'].some(k=>Object.prototype.hasOwnProperty.call(d,k))) return false;
   if(d.world!==undefined && !LivingWorld.validWorld(d.world,d.slimes.map(s=>s.id))) return false;
   const number=(obj,k,min=0,integer=false)=>obj[k]===undefined || (typeof obj[k]==='number' && Number.isFinite(obj[k]) && obj[k]>=min && (!integer || Number.isInteger(obj[k])));
   for(const k of ['coins','points','summonerExp','totalEarned','feedTrough','stackRecord','lastActive']) if(!number(d,k)) return false;
@@ -56,12 +57,12 @@ function validSaveData(d){
 function getAbyssUnlocked(){ return clamp(Math.floor(Number(S.abyssUnlocked)||1),1,50); }
 function getAbyssLevel(){ S.abyssLevel=clamp(Math.floor(Number(S.abyssLevel)||1),1,getAbyssUnlocked()); return S.abyssLevel; }
 function save(){
-  if(DIAGNOSTIC_MODE) return true; // Preview/self-tests must never overwrite a player's real save.
+  if(DIAGNOSTIC_MODE || bulkSimulation) return true; // Preview/self-tests must never overwrite a player's real save.
   if(persistenceBlocked || storageConflict) return false;
   try{
     const current=localStorage.getItem(SAVE_KEY);
     if(saveSnapshot!==undefined && current!==saveSnapshot){storageConflict=true;storageNotice('另一个页面更新了存档。本页已停止推进，请重新加载后继续。');return false;}
-    LivingWorld.ensure(S);LivingWorld.reconcile(S);S.saveVersion=4;S.lastActive=Math.max(Number(S.lastActive)||0,Date.now());
+    LivingWorld.ensure(S);LivingWorld.reconcile(S);S.saveVersion=5;S.lastActive=Math.max(Number(S.lastActive)||0,Date.now());
     const raw=JSON.stringify(S);localStorage.setItem(SAVE_KEY,raw);saveSnapshot=raw;saveRetryNeeded=false;
     const banner=document.getElementById('saveProtectionBanner');if(banner)banner.remove();return true;
   }catch(e){saveRetryNeeded=true;storageNotice('存储空间不足或浏览器禁止存档。进度暂存在本页，请不要关闭页面。');return false;}
@@ -76,8 +77,8 @@ function load(){
     const d = JSON.parse(raw);
     if(!validSaveData(d)) throw new Error('存档结构无效');
     const fromVersion=Number(d.saveVersion)||1;
-    if(!DIAGNOSTIC_MODE&&fromVersion<4){
-      for(const base of [SAVE_V3_BACKUP_KEY,...(fromVersion<3?[SAVE_V2_BACKUP_KEY]:[]),...(fromVersion<2?[SAVE_BACKUP_KEY]:[])]){
+    if(!DIAGNOSTIC_MODE&&fromVersion<5){
+      for(const base of [[SAVE_BACKUP_KEY,SAVE_V2_BACKUP_KEY,SAVE_V3_BACKUP_KEY,SAVE_V4_BACKUP_KEY][fromVersion-1]]){
         let key=base,index=0;while(localStorage.getItem(key)!==null&&localStorage.getItem(key)!==raw)key=base+'_'+Date.now()+'_'+(++index);
         if(localStorage.getItem(key)!==raw)localStorage.setItem(key,raw);
         if(localStorage.getItem(key)!==raw)throw new Error('原始存档备份未成功');
@@ -90,7 +91,7 @@ function load(){
     if(clears && typeof clears==='object') Object.keys(clears).forEach(k=>{ if(clears[k]) proven=Math.max(proven,Math.min(50,(Number(k)||0)+1)); });
     S.abyssUnlocked=clamp(Math.floor(Number(d.abyssUnlocked)||proven),1,50);
     const oldSelected=Number(S.abyssLevel)||1;
-    getAbyssLevel();S.saveVersion=fromVersion;if(fromVersion<3&&!d.world){S.world=LivingWorld.createWorld();S.world.version=3;}
+    getAbyssLevel();S.saveVersion=fromVersion;if(fromVersion<3&&!d.world)S.world=LivingWorld.createWorld();
     persistenceBlocked=false;
     persistenceWarning=oldSelected>S.abyssUnlocked ? '旧档已安全备份：旧版任意选择层数不是通关记录，深渊按胜利逐层解锁。伙伴、属性和资源全部保留。' : '';
     if(!S.customPlans) S.customPlans = {};
@@ -103,10 +104,11 @@ function load(){
     if(S.battleMode !== 'auto' && S.battleMode !== 'interject' && S.battleMode !== 'step') S.battleMode = 'auto';
     if(!S.tasks) S.tasks = {rent:0, summon:0, feed:0};
     if(!S.taskClaimed) S.taskClaimed = {rent:false, summon:false, feed:false};
-    if(!S.bag) S.bag = {food:0,treasure:0,ticket:0,expPotion:0,net:0};
+    if(fromVersion<4&&!S.bag) S.bag = {food:0,treasure:0,ticket:0,expPotion:0,net:0};
+    if(fromVersion>=4)LivingWorld.attachLegacyInventory(S);
     if(typeof S.bag.expPotion !== 'number') S.bag.expPotion = 0;
     if(typeof S.bag.net !== 'number') S.bag.net = 0;
-    if(fromVersion===4)LivingWorld.attachLegacyInventory(S);
+    if(fromVersion>=4)LivingWorld.attachLegacyInventory(S);
     if(!S.monsters) S.monsters = [];
     if(!Array.isArray(S.lastAbyssSel)) S.lastAbyssSel = [];
     if(typeof S.nameSeq !== 'number') S.nameSeq = 0;
@@ -143,19 +145,18 @@ function load(){
       if(typeof s.hp !== 'number') s.hp = hpMax(s);
     });
     S.seq=Math.max(S.seq||1,...[...S.slimes,...S.monsters].map(s=>s.id+1));
-    if(fromVersion<4){
+    if(fromVersion<5){
       const away=!DIAGNOSTIC_MODE&&S.started&&S.lastActive>0?Math.floor(clamp(Date.now()-S.lastActive,0,43200000)/1000):0;
       LivingWorld.prepareLegacy(S);
-      if(away)advanceWorld(away,true);
-      const preset=Array.isArray(S.exploreTeam)?S.exploreTeam.slice():S.slimes.filter(hasExplorePlan).map(s=>s.id);
-      S.legacyTeamPreset=preset;S.globalPlan=null;S.customPlans={};S.slimes.forEach(s=>s.resting=false);
-      LivingWorld.upgradeWorld(S.world,S.slimes,fromVersion,Date.now());S.saveVersion=4;LivingWorld.attachLegacyInventory(S);
-      const mapping=[0,3,4];for(let old=0;old<3;old++)if((S.progress?.regions?.[old]??0)>0)for(let route=0;route<3;route++){const key=mapping[old]+':'+route;if(!S.world.familiar.includes(key))S.world.familiar.push(key);}
-      S.lastActive=Math.max(S.lastActive||0,Date.now());
-      S.world.notices.unshift('旧派遣已结清并回家，队伍预设保留。欢迎一起经营这个家。');
-    }else{LivingWorld.ensure(S);S.world.activities=Object.fromEntries(Object.entries(S.world.activities).filter(([,a])=>a.ref==='mini'));}
+      bulkSimulation=true;
+      try{if(away){if(fromVersion===4)LivingWorld.tick(S,away);else advanceWorld(away,true,fromVersion>=3);}}finally{bulkSimulation=false;}
+      if(fromVersion<4&&S.world.version<4)LivingWorld.upgradeWorld(S.world,S.slimes,fromVersion,Date.now());
+      LivingWorld.upgradeHome(S.world,S.slimes);S.saveVersion=5;LivingWorld.attachLegacyInventory(S);
+      if(fromVersion===4&&Array.isArray(S.legacyTeamPreset))S.exploreTeam=S.legacyTeamPreset.slice();
+      LivingWorld.flushPayments(S);S.lastActive=Date.now();S.planClock=Number(S.planClock)||0;
+    }else{LivingWorld.ensure(S);S.world.activities={};}
     if(!LivingWorld.validWorld(S.world,S.slimes.map(s=>s.id)))throw new Error('迁移后的存档无效');
-    if(fromVersion<4&&!DIAGNOSTIC_MODE&&!save())throw new Error('迁移无法保存');
+    if(fromVersion<5&&!DIAGNOSTIC_MODE&&!save())throw new Error('迁移无法保存');
     return true;
   }catch(e){
     const restored=JSON.parse(previous); delete S.bag;delete S.feedTrough;Object.keys(S).forEach(k=>delete S[k]); Object.assign(S,restored);LivingWorld.ensure(S);
@@ -213,34 +214,27 @@ function applyTheme(){
   document.querySelectorAll('.theme-btn').forEach(b=>b.classList.toggle('on', b.dataset.theme===S.theme));
 }
 
-function checkDailyReset(silent){
+function checkDailyReset(){
   const today = todayKey();
   if(S.taskDate !== today){
     S.taskDate = today;
-    S.tasks = {};
-    S.taskClaimed = {};
-    Object.keys(TASK_DEFS).forEach(k=>{ S.tasks[k] = 0; S.taskClaimed[k] = false; });
-    S.sweepUsed = 0;
-    if(!silent) save();
+    S.tasks = {rent:0, summon:0, feed:0};
+    S.taskClaimed = {rent:false, summon:false, feed:false};
+    save();
   }
-  Object.keys(TASK_DEFS).forEach(k=>{
-    if(S.tasks[k] === undefined) S.tasks[k] = 0;
-    if(S.taskClaimed[k] === undefined) S.taskClaimed[k] = false;
-  });
 }
-function addTaskProgress(key, n, silent){
-  checkDailyReset(silent);
+function addTaskProgress(key, n){
+  checkDailyReset();
   S.tasks[key] = (S.tasks[key]||0) + n;
   if(!S.taskClaimed[key]){
     const def = TASK_DEFS[key];
     if(S.tasks[key] >= def.need){
       S.taskClaimed[key] = true;
       S.points += def.reward;
-      if(!silent){
-        toast(`系统任务完成：${def.name}\n获得 ${def.reward} 系统积分`, 'good');
-        save(); renderTop();
-        if(activeTab==='status') renderTab();
-      }
+      toast(`系统任务完成：${def.name}\n获得 ${def.reward} 系统积分`, 'good');
+      save();
+      renderTop();
+      if(activeTab==='status') renderTab();
     }
   }
 }
@@ -317,7 +311,7 @@ function traitBonus(s,key){
 
 function slimeExpNeed(level){ return 100 + level*80; }
 
-function addSummonerExp(amount, silent){
+function addSummonerExp(amount){
   if(S.breakPending) return;
   if(amount <= 0) return;
   S.summonerExp += amount;
@@ -328,19 +322,19 @@ function addSummonerExp(amount, silent){
     if(S.level % 10 === 0){
       S.breakPending = true;
       S.summonerExp = 0;
-      if(!silent) toast(`👑 召唤师达到 Lv.${S.level}！\n需要手动突破才能继续升级`, 'good');
+      toast(`👑 召唤师达到 Lv.${S.level}！\n需要手动突破才能继续升级`, 'good');
       break;
     }
   }
 }
 
 function getPlan(id){
+  if(LivingWorld.isBusy(S,id)) return null;
   if(S.customPlans[id]) return S.customPlans[id];
   if(S.globalPlan) return {type:S.globalPlan, global:true};
   return null;
 }
 function isDispatched(s){
-  if(LivingWorld.isBusy(S,s.id)) return true;
   const plan = getPlan(s.id);
   if(!plan) return false;
   if(s.resting) return false;
@@ -463,6 +457,26 @@ function rectsIntersect(a, b){
   return !(a.right < b.left || a.left > b.right || a.bottom < b.top || a.top > b.bottom);
 }
 
+function applyExploreReward(item, slime){
+  const kind = item.type;
+  const base = item.value || 0;
+  if(kind === 'coin'){
+    const mult = 1 + slimePower(slime)/500;
+    const gain = Math.round(base * mult);
+    S.coins += gain;
+    S.totalEarned += gain;
+  } else if(kind === 'point'){
+    S.points += base;
+  } else if(kind === 'food'){
+    S.bag.food += base;
+  } else if(kind === 'exp'){
+    addExp(slime, base);
+  } else if(kind === 'treasure'){
+    S.bag.treasure += base;
+  }
+  save(); renderTop();
+}
+
 function triggerMonsterReactions(monster, slimeRects){
   if(!monster || !slimeRects || !slimeRects.length) return;
   const monPower = slimePower(monster);
@@ -546,7 +560,7 @@ function updateExploreItems(dt){
         item.fleeAngle = 0;
         triggerMonsterReactions(item.monster, slimeRects);
       } else {
-        /* 拾取仅作派遣演出；奖励统一由 runPlans 结算，切换页面不会改变收益。 */
+        applyExploreReward(item, hit.s);
         const slimeEl = hit.el.querySelector('.slime');
         if(slimeEl && Math.random() < 0.65){
           slimeEl.dataset.mood = 'happy';
@@ -567,41 +581,83 @@ function updateExploreItems(dt){
 
 /* ==================== 剧情 ==================== */
 const STORY_STEPS = [
-  {title:'月光把你带到这里',t:()=>`两轮月亮挂在夜空，浮岛轻轻晃动。<br>你是<b>${esc(S.name)}</b>，刚刚醒来的史莱姆召唤师。`,next:'跟着微光走'},
-  {title:'从此，有个小小的同行者',t:()=>`<b>${esc(S.sysName)}</b>从月光里探出脑袋，轻轻碰了碰你的手。<br>“我会陪着你。我们去找一个家吧。”`,next:'一起去看看'},
-  {title:'把这座浮岛，慢慢变成家',t:()=>`种一朵花，遇见新的伙伴，听一段沿途的故事。<br>行囊已经备好，生活从这一刻开始。`,next:'一起回家'}
+  {t:`「……喂，醒醒。」\n\n你猛地睁开眼。\n\n头顶是深紫色的夜空，两轮月亮静静地悬着。远处的浮空岛屿缓缓飘动，成群发光的水母从云层间掠过。\n\n这里是……哪里？`},
+  {t:`记忆像被搅碎的水面。\n\n你只记得自己在深夜赶完了一份报告，然后眼皮越来越沉……然后，就没有然后了。\n\n就在这时，一道冰冷的机械音在脑海里炸响——`},
+  {t:`【叮！检测到异世界灵魂波动……】\n\n【最强召唤师系统 · 激活成功】`,highlight:true},
+  {t:`金色的符文从你脚下升起，在空气中排列成一行行发光的小字。\n\n【宿主状态：未觉醒】\n【即将进行：天赋觉醒仪式】\n【请做好准备】`,highlight:true},
+  {t:`白光吞没了视野。\n\n你听见无数声音在耳边低语，像是在等待一个答案。\n\n然后——\n\n【觉醒完成！】\n【宿主天赋：史莱姆召唤师（SSS级 · 唯一）】`,highlight:true},
+  {t:`……史莱姆？\n\n你低下头，看见一只圆滚滚、软乎乎的小东西正歪着脑袋看你，眼睛一眨一眨的。\n\n【提示：请不要小看它。这世上最强的召唤师，都是从一只史莱姆开始的。】`},
+  {t:`系统界面在你面前缓缓展开，一个空白的角色栏位闪烁着微光。\n\n【请为宿主录入姓名】`,input:'name'},
+  {t:`录入完成。\n\n【检测到宿主尚未设定系统形象】\n【请自定义您的系统化身——它将常伴您左右】`,input:'sys'},
+  {t:`一切准备就绪。\n\n远处的城镇亮起了灯火，而你在这个魔法世界的旅途，正式开始了。\n\n【新手礼包已发放：晶币 ×2000、系统积分 ×200、饲料 ×5、天材地宝 ×2、词条抽取券 ×1】`,highlight:true}
 ];
+
 let storyStep = 0;
 let blocking = false;
 
-function assignStoryRole(){
-  if(persistenceBlocked) return;
-  let changed=false;
-  if(!S.name){S.name=['星野','月白','青禾','云岚','林夕','沐风','初晴','知秋'][Math.floor(Math.random()*8)];changed=true;}
-  if(!S.sysName){
-    const guide=[['团子',200],['小满',150],['糯米',42],['云朵',260],['桃桃',330],['青芽',100]][Math.floor(Math.random()*6)];
-    S.sysName=guide[0];S.sysLook={h:guide[1],s:66,l:70,eh:guide[1],es:48,el:25};changed=true;
-  }
-  if(changed)save();
-}
 function renderStory(){
-  assignStoryRole();
   if(storyStep >= STORY_STEPS.length){ finishStory(); return; }
-  const st=STORY_STEPS[storyStep],stage=$('#storyStage'),text=$('#storyText'),action=$('#storyAction'),screen=$('#storyScreen');
-  if(!screen.querySelector('.story-sky'))screen.insertAdjacentHTML('afterbegin',skyArt('story'));
-  screen.classList.add('story-arrival');
-  stage.innerHTML=`<div class="arrival-orbit">${lookHTML(S.sysLook,{mood:'happy'})}</div><span class="arrival-guide">${esc(S.sysName)} · 你的向导</span>`;
-  text.classList.remove('hl');
-  text.innerHTML=`<div class="arrival-progress" aria-label="序章 ${storyStep+1} / ${STORY_STEPS.length}">${STORY_STEPS.map((_,i)=>`<i class="${i<=storyStep?'is-read':''}"></i>`).join('')}</div><h1>${st.title}</h1><p>${st.t()}</p>`;
-  action.innerHTML=`<button class="btn gold full arrival-next" id="storyNext">${st.next}<span aria-hidden="true">→</span></button>`;
-  $('#storyNext').onclick=()=>{storyStep++;renderStory();};
-  $('#storyHint').textContent='你的身份已确定，故事就此开始';
-  blocking=false;
+  const st = STORY_STEPS[storyStep];
+  const stage = $('#storyStage'), text = $('#storyText'), action = $('#storyAction'), hint = $('#storyHint');
+  stage.innerHTML=''; action.innerHTML=''; hint.style.display='block';
+  text.innerHTML = st.t.split('\n').join('<br>');
+  text.classList.toggle('hl', !!st.highlight);
+  text.style.opacity = 0;
+  requestAnimationFrame(()=>{ text.style.transition='opacity .35s'; text.style.opacity=1; });
+
+  if(st.input === 'name'){
+    blocking = true; hint.style.display='none';
+    action.innerHTML = `
+      <input id="nameInput" class="story-input" placeholder="输入你的名字" maxlength="8" value="${esc(S.name||'')}">
+      <button class="btn gold full" id="nameOk">确 定</button>`;
+    const inp = $('#nameInput');
+    setTimeout(()=>inp.focus(),150);
+    $('#nameOk').onclick = ()=>{
+      const v = inp.value.trim();
+      if(!v){ inp.value=''; inp.placeholder='名字不能为空哦'; return; }
+      S.name = v; blocking=false; storyStep++; renderStory(); save();
+    };
+    inp.addEventListener('keydown',e=>{ if(e.key==='Enter') $('#nameOk').click(); });
+  }
+  else if(st.input === 'sys'){
+    blocking = true; hint.style.display='none';
+    buildSysCustom();
+  }
+}
+
+function buildSysCustom(){
+  const stage = $('#storyStage'), action = $('#storyAction');
+  const render = ()=>{ stage.innerHTML = lookHTML(S.sysLook,{mood:'idle'}); };
+  render();
+  const mk = (key,label,max)=>`
+    <label>${label}<input type="range" min="0" max="${max}" value="${S.sysLook[key]}" data-look="${key}">
+    <span data-out="${key}">${S.sysLook[key]}</span></label>`;
+  action.innerHTML = `
+    <div class="custom-panel">
+      <div style="font-size:11.5px;color:var(--muted);letter-spacing:1px;">—— 身体 ——</div>
+      ${mk('h','身体 色相',360)}${mk('s','身体 饱和',100)}${mk('l','身体 明度',100)}
+      <div style="font-size:11.5px;color:var(--muted);letter-spacing:1px;margin-top:4px;">—— 眼睛 ——</div>
+      ${mk('eh','眼睛 色相',360)}${mk('es','眼睛 饱和',100)}${mk('el','眼睛 明度',100)}
+      <input id="sysNameInput" class="story-input" placeholder="为系统起个昵称" maxlength="8" value="${esc(S.sysName||'团子')}">
+      <button class="btn gold full" id="sysOk">完 成 绑 定</button>
+    </div>`;
+  action.querySelectorAll('[data-look]').forEach(inp=>{
+    inp.addEventListener('input',()=>{
+      const k = inp.dataset.look;
+      S.sysLook[k] = +inp.value;
+      action.querySelector(`[data-out="${k}"]`).textContent = inp.value;
+      render();
+    });
+  });
+  $('#sysOk').onclick = ()=>{
+    const v = $('#sysNameInput').value.trim();
+    S.sysName = v || '团子';
+    blocking = false; storyStep++; renderStory(); save();
+  };
 }
 
 function finishStory(){
-  if(persistenceBlocked){ toast('请先恢复存档；原始数据仍受保护'); return; }
-  assignStoryRole();
+  if(!canWrite()){ toast('请先恢复存档；原始数据仍受保护'); return; }
   if(!S.started && !S.starterGiftClaimed){S.points += 200;S.starterGiftClaimed=true;}
   S.started = true;
   save();
@@ -641,7 +697,7 @@ function itemIcon(item){return uiIcon({food:'food',treasure:'gem',ticket:'ticket
 function refreshUIIcons(root){
   root=root||document;
   root.querySelectorAll('[data-ui-icon]').forEach(el=>{if(!el.querySelector('.ui-icon'))el.innerHTML=uiIcon(el.dataset.uiIcon);});
-  const nav={home:'home',journey:'map',companions:'person',space:'home',world:'leaf',summon:'spark',travel:'map',bag:'bag',status:'person'};
+  const nav={space:'home',home:'leaf',summon:'spark',travel:'map',bag:'bag',status:'person'};
   const acts={settings:'settings',summon:'spark',mergeopen:'spark',cycleMap:'map',globalplan:'map',setupTeam:'person',abyssSetup:'sword',refill:'food',selectToy:'ball',toggleSpaceMode:'home',buy:'bag',buy10:'bag',feed:'food',treasure:'gift',drinkPotion:'gift',breakthrough:'bolt',claimGoal:'gift',challengeStart:'sword',petlock:'lock'};
   root.querySelectorAll('button[data-act]').forEach(b=>{
     const a=b.dataset.act;
@@ -649,154 +705,57 @@ function refreshUIIcons(root){
     let name=acts[a];if(!name||b.querySelector('.ui-icon'))return;
     if(a==='globalplan'&&b.dataset.type==='clear')name='back';
     if(a==='selectToy'&&b.dataset.toy==='stack')name='stack';
-    if(a==='settings'&&b.classList.contains('settings-trigger')){b.innerHTML=uiIcon(name);return;}
+    if(a==='settings'){b.innerHTML=uiIcon(name);return;}
     for(const n of Array.from(b.childNodes)){if(n.nodeType===3)n.textContent=n.textContent.replace(/^[\s✨🗺️↩️👥⚔️🥣🎮⚽🧱⚡🎁◇]+/u,'').replace(/[✨]+$/u,'');}
     b.insertAdjacentHTML('afterbegin',uiIcon(name));
   });
 }
 
 let sceneArtId=0;
-/* 双月浮岛：开场剧情与深渊战斗共用的夜空（两轮月亮、浮空岛、发光水母），纯装饰、不接收触摸。
-   构图按场景分开：开场把月亮放在上方；战斗把月亮放进敌我之间的空当，避开血条、名字和预告 */
-function skyArt(kind){
-  const id='sky-'+(++sceneArtId), arena=kind==='arena';
-  const moonA=arena?{x:322,y:300,r:28}:{x:268,y:116,r:36};
-  const moonB=arena?{x:52,y:250,r:9}:{x:198,y:80,r:12};
-  const isles=arena?[[10,356,.44,.5],[244,226,.3,.42]]:[[34,548,.86,.85],[236,600,.5,.7],[44,150,.32,.55]];
-  const jellies=arena?[[104,292,.75,0],[250,392,.6,2.4],[184,240,.5,4.1]]:[[96,196,.8,0],[150,120,.55,2.2],[292,530,.9,1.6],[176,618,.7,3.2],[62,642,.6,4.4]];
-  const clouds=arena?[[424,.55],[446,.4]]:[[540,.5],[636,.45]];
-  const moon=(m,grad,halo,crater)=>`<circle cx="${m.x}" cy="${m.y}" r="${m.r*3.3}" fill="url(#${id}-${halo})"/>
-    <circle cx="${m.x}" cy="${m.y}" r="${m.r}" fill="url(#${id}-${grad})"/>
-    <circle cx="${m.x+m.r*.32}" cy="${m.y-m.r*.18}" r="${m.r*.17}" fill="${crater}" opacity=".32"/>
-    <circle cx="${m.x-m.r*.3}" cy="${m.y+m.r*.34}" r="${m.r*.11}" fill="${crater}" opacity=".26"/>`;
-  return `<svg class="sky-art ${arena?'arena-sky':'story-sky'}" viewBox="0 0 360 660" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-    <defs>
-      <radialGradient id="${id}-moonA" cx=".38" cy=".34" r=".78"><stop stop-color="#fffaf0"/><stop offset=".55" stop-color="#f3ddab"/><stop offset="1" stop-color="#d4aa68"/></radialGradient>
-      <radialGradient id="${id}-moonB" cx=".38" cy=".34" r=".78"><stop stop-color="#f5f8ff"/><stop offset=".6" stop-color="#c5d3f0"/><stop offset="1" stop-color="#8d9fcc"/></radialGradient>
-      <radialGradient id="${id}-haloA"><stop stop-color="#f2d9a6" stop-opacity=".3"/><stop offset="1" stop-color="#f2d9a6" stop-opacity="0"/></radialGradient>
-      <radialGradient id="${id}-haloB"><stop stop-color="#bcd0f5" stop-opacity=".26"/><stop offset="1" stop-color="#bcd0f5" stop-opacity="0"/></radialGradient>
-      <radialGradient id="${id}-glow"><stop stop-color="#cbbaff" stop-opacity=".55"/><stop offset="1" stop-color="#cbbaff" stop-opacity="0"/></radialGradient>
-      <linearGradient id="${id}-moss" x2="0" y2="1"><stop stop-color="#87a898"/><stop offset="1" stop-color="#4c6a63"/></linearGradient>
-      <linearGradient id="${id}-rock" x2="0" y2="1"><stop stop-color="#433b62"/><stop offset="1" stop-color="#1d1a32" stop-opacity=".5"/></linearGradient>
-      <linearGradient id="${id}-cloud" x2="0" y2="1"><stop stop-color="#b9aae8" stop-opacity=".2"/><stop offset="1" stop-color="#b9aae8" stop-opacity="0"/></linearGradient>
-      <symbol id="${id}-isle" viewBox="0 0 100 72" overflow="visible">
-        <path d="M0 14C8 6 22 3 36 5C48 1 64 2 76 6C88 4 97 9 100 14C93 22 83 27 76 35C68 47 59 59 51 70C44 58 37 47 28 39C18 31 7 24 0 14Z" fill="url(#${id}-rock)"/>
-        <path d="M0 14C8 6 22 3 36 5C48 1 64 2 76 6C88 4 97 9 100 14C86 18 70 16 50 18C30 16 13 18 0 14Z" fill="url(#${id}-moss)"/>
-        <path d="M30 40q-1 9 2 15M62 44q2 8 0 14M45 52q-1 7 1 12" stroke="#2a2442" stroke-width="1.2" fill="none" stroke-linecap="round"/>
-        <circle cx="51" cy="70" r="6" fill="url(#${id}-glow)"/><circle cx="51" cy="70" r="1.6" fill="#ddd1ff"/>
-      </symbol>
-      <symbol id="${id}-jelly" viewBox="-14 -14 28 34" overflow="visible">
-        <circle r="13" fill="url(#${id}-glow)"/>
-        <path d="M-7 1C-7-8 7-8 7 1C5 3 3.5 1 1.8 3C0 1-1.8 3-3.5 1C-5 3-6 2.5-7 1Z" fill="#ebe3ff" fill-opacity=".86"/>
-        <path d="M-4 3q-2 6 0 12M0 3q1.5 6 0 13M4 3q2 5 0 11" stroke="#d8cbff" stroke-opacity=".6" stroke-width=".9" fill="none" stroke-linecap="round"/>
-      </symbol>
-    </defs>
-    ${moon(moonA,'moonA','haloA','#b98d4f')}
-    ${moon(moonB,'moonB','haloB','#7183b3')}
-    ${isles.map(([x,y,s,o])=>`<use href="#${id}-isle" x="${x}" y="${y}" width="${100*s}" height="${72*s}" opacity="${o}"/>`).join('')}
-    ${clouds.map(([y,o])=>`<path d="M-20 ${y}C40 ${y-14} 90 ${y-4} 140 ${y-12}S240 ${y-2} 300 ${y-14}S370 ${y-6} 390 ${y-10}V${y+44}H-20Z" fill="url(#${id}-cloud)" opacity="${o}"/>`).join('')}
-    ${jellies.map(([x,y,s,d])=>`<g class="sky-jelly" style="--d:${d}s"><use href="#${id}-jelly" x="${x-14*s}" y="${y-14*s}" width="${28*s}" height="${34*s}"/></g>`).join('')}
-  </svg>`;
-}
-/* 己方站立的浮空岛：顶面苔原受右上方月光照亮，底部垂根与水母光；横向拉伸，描边不随之变形 */
-function arenaIsle(){
-  const id='isle-'+(++sceneArtId);
-  return `<svg class="arena-isle" viewBox="0 0 360 130" preserveAspectRatio="none" aria-hidden="true">
-    <defs>
-      <linearGradient id="${id}-moss" x1="0" x2="1"><stop stop-color="#3f5b52"/><stop offset=".7" stop-color="#5f8272"/><stop offset="1" stop-color="#7ea290"/></linearGradient>
-      <linearGradient id="${id}-rock" x2="0" y2="1"><stop stop-color="#3a3354"/><stop offset=".55" stop-color="#262140"/><stop offset="1" stop-color="#1a172c" stop-opacity="0"/></linearGradient>
-      <radialGradient id="${id}-glow"><stop stop-color="#cbbaff" stop-opacity=".7"/><stop offset="1" stop-color="#cbbaff" stop-opacity="0"/></radialGradient>
-    </defs>
-    <path d="M0 16C40 8 90 6 140 9C190 5 250 6 300 10C330 11 350 13 360 18C348 30 330 38 306 48C280 62 250 70 224 84C206 96 190 112 180 128C168 110 152 96 132 86C104 74 76 64 52 52C30 42 12 32 0 16Z" fill="url(#${id}-rock)"/>
-    <path d="M0 16C40 8 90 6 140 9C190 5 250 6 300 10C330 11 350 13 360 18C340 25 300 23 260 25C200 22 150 26 100 23C60 25 24 23 0 16Z" fill="url(#${id}-moss)"/>
-    <path d="M0 16C40 8 90 6 140 9C190 5 250 6 300 10C330 11 350 13 360 18" stroke="#c4e0cc" stroke-opacity=".32" stroke-width="1.2" fill="none" vector-effect="non-scaling-stroke"/>
-    <path d="M96 60q-3 14 2 26M150 84q-2 12 1 22M236 74q3 12 0 24M276 56q2 10 0 18" stroke="#2c2645" stroke-width="1.4" fill="none" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
-    <circle cx="98" cy="86" r="9" fill="url(#${id}-glow)"/><circle cx="236" cy="98" r="11" fill="url(#${id}-glow)"/><circle cx="180" cy="126" r="12" fill="url(#${id}-glow)"/>
-  </svg>`;
-}
-/* 陪伴庭院：双月从右上方照下来，地面是夜里的苔绿，石板路和蘑菇带一点月光；左上角的灯是唯一的暖色。魔物空间换成更冷的紫灰。 */
 function gardenScene(isMonster){
   const id='garden-'+(++sceneArtId);
-  const c=isMonster
-    ?{top:'#4a4466',mid:'#2f2c48',bot:'#1c1b31',leafA:'#5d5578',leafB:'#2c2944',rim:'#b9acd8',stone:'#77708f',pool:'#2a2746'}
-    :{top:'#355f63',mid:'#1f3f4c',bot:'#16223c',leafA:'#5f927e',leafB:'#1b3842',rim:'#d6ecd7',stone:'#8aa39b',pool:'#142440'};
+  const colors=isMonster?['#5b526e','#34374e','#252b40','#91879d']:['#72918b','#3f6465','#243e4a','#b1c0a0'];
   return `<svg class="garden-art" viewBox="0 0 600 400" preserveAspectRatio="none" aria-hidden="true">
     <defs>
-      <linearGradient id="${id}-ground" x2="0" y2="1"><stop stop-color="${c.top}"/><stop offset=".55" stop-color="${c.mid}"/><stop offset="1" stop-color="${c.bot}"/></linearGradient>
-      <radialGradient id="${id}-moon" cx=".82" cy="0" r=".9"><stop stop-color="#f6e6bd" stop-opacity=".28"/><stop offset=".45" stop-color="#f6e6bd" stop-opacity=".08"/><stop offset="1" stop-color="#f6e6bd" stop-opacity="0"/></radialGradient>
-      <linearGradient id="${id}-leaf" x2=".6" y2="1"><stop stop-color="${c.leafA}"/><stop offset="1" stop-color="${c.leafB}"/></linearGradient>
-      <radialGradient id="${id}-lamp"><stop stop-color="#fff4cb"/><stop offset=".2" stop-color="#edcf8b" stop-opacity=".6"/><stop offset="1" stop-color="#edcf8b" stop-opacity="0"/></radialGradient>
-      <radialGradient id="${id}-glow"><stop stop-color="#cbbaff" stop-opacity=".55"/><stop offset="1" stop-color="#cbbaff" stop-opacity="0"/></radialGradient>
-      <linearGradient id="${id}-beam" x1="1" y1="0" x2=".2" y2="1"><stop stop-color="#f6e6bd" stop-opacity=".13"/><stop offset="1" stop-color="#f6e6bd" stop-opacity="0"/></linearGradient>
-      <linearGradient id="${id}-pool" x2="0" y2="1"><stop stop-color="${c.pool}"/><stop offset="1" stop-color="#121a33"/></linearGradient>
+      <linearGradient id="${id}-ground" x2="0" y2="1"><stop stop-color="${colors[0]}"/><stop offset=".6" stop-color="${colors[1]}"/><stop offset="1" stop-color="${colors[2]}"/></linearGradient>
+      <radialGradient id="${id}-light"><stop stop-color="#f3e6bb" stop-opacity=".32"/><stop offset="1" stop-color="#f3e6bb" stop-opacity="0"/></radialGradient>
+      <linearGradient id="${id}-leaf" x2=".6" y2="1"><stop stop-color="${colors[3]}"/><stop offset="1" stop-color="${colors[1]}"/></linearGradient>
+      <radialGradient id="${id}-lamp"><stop stop-color="#fff4cb"/><stop offset=".2" stop-color="#edcf8b" stop-opacity=".7"/><stop offset="1" stop-color="#edcf8b" stop-opacity="0"/></radialGradient>
     </defs>
     <path fill="url(#${id}-ground)" d="M0 0h600v400H0z"/>
-    <path fill="url(#${id}-moon)" d="M0 0h600v400H0z"/>
-    <path fill="url(#${id}-beam)" d="M600 0H430L150 400H390L600 120Z"/>
-    <path d="M-30 302Q110 282 180 229T358 152Q450 124 630 164" fill="none" stroke="#e8e2c4" stroke-opacity=".06" stroke-width="80"/>
-    <path d="M-30 302Q110 282 180 229T358 152Q450 124 630 164" fill="none" stroke="#e8e2c4" stroke-opacity=".09" stroke-width="44"/>
-    <g fill="#0f1a2e" opacity=".3"><ellipse cx="100" cy="336" rx="92" ry="21"/><ellipse cx="526" cy="72" rx="90" ry="18"/><ellipse cx="455" cy="350" rx="96" ry="22"/></g>
-    <g fill="${c.stone}" stroke="#f1ead2" stroke-opacity=".28" stroke-width="1.5">
-      <path d="m87 269 42-9 27 17-14 17-45-2Z"/><path d="m162 237 33-13 29 12-9 17-40 3Z" opacity=".85"/>
-      <path d="m244 193 33-6 20 14-18 14-34-4Z" opacity=".7"/><path d="m324 155 37-5 18 13-13 11-39-3Z" opacity=".55"/><path d="m414 140 30-3 15 11-12 9-31-3Z" opacity=".4"/>
+    <ellipse cx="275" cy="165" rx="260" ry="200" fill="url(#${id}-light)"/>
+    <path d="M-30 302Q110 282 180 229T358 152Q450 124 630 164" fill="none" stroke="#bac0a2" stroke-opacity=".1" stroke-width="74"/>
+    <path d="M-30 302Q110 282 180 229T358 152Q450 124 630 164" fill="none" stroke="#c5c3a4" stroke-opacity=".17" stroke-width="45"/>
+    <g fill="#253f46" opacity=".33"><ellipse cx="100" cy="336" rx="92" ry="21"/><ellipse cx="526" cy="72" rx="90" ry="18"/><ellipse cx="455" cy="350" rx="96" ry="22"/></g>
+    <g fill="#a8b4a2" stroke="#d3d5b6" stroke-opacity=".16">
+      <path d="m87 269 42-9 27 17-14 17-45-2Z"/><path d="m162 237 33-13 29 12-9 17-40 3Z" opacity=".8"/>
+      <path d="m244 193 33-6 20 14-18 14-34-4Z" opacity=".6"/><path d="m324 155 37-5 18 13-13 11-39-3Z" opacity=".45"/>
     </g>
-    <ellipse cx="164" cy="352" rx="70" ry="17" fill="url(#${id}-pool)" opacity=".9"/>
-    <ellipse cx="164" cy="349" rx="64" ry="13" fill="none" stroke="#cfe2e0" stroke-opacity=".18"/>
-    <ellipse cx="186" cy="350" rx="11" ry="3.2" fill="#f6e6bd" opacity=".5"/><ellipse cx="150" cy="352" rx="4" ry="1.4" fill="#d6e2f7" opacity=".45"/>
     <g fill="url(#${id}-leaf)">
       <path d="M0 117Q22 20 126 7 99 67 0 117ZM0 89Q51 27 63-20H0ZM600 120Q527 78 522 13 583 21 600 75Z"/>
       <path d="M0 400V302q29 5 40 29-3-59 35-72 10 47-9 78 39-43 77-23-20 44-57 54 43-8 64 32Z"/>
       <path d="M600 400V284q-37 0-48 35 0-64-39-75-10 47 6 80-45-39-76-17 19 39 58 53-41-2-66 40Z"/>
       <path d="M600 0H435q7 34 43 43 35 19 67-6 8 42 55 44Z"/>
     </g>
-    <g fill="none" stroke="${c.rim}" stroke-opacity=".32" stroke-width="2" stroke-linecap="round"><path d="M522 13q5 50 78 62M435 0q10 36 43 43M513 244q37 11 39 75M75 259q-38 13-35 72"/></g>
-    <g fill="none" stroke="${c.rim}" stroke-opacity=".14" stroke-width="2"><path d="M0 114 93 30M19 398l46-111M592 394l-77-123M594 62l-117-40"/></g>
-    <g stroke="${c.rim}" stroke-width="2" stroke-linecap="round" opacity=".35"><path d="m113 118 4-11m0 11 7-7m282 178 3-10m-3 10-7-6m-182 62 3-9m0 9 6-5m258-229 3-9"/></g>
-    <g>
-      <circle cx="540" cy="212" r="22" fill="url(#${id}-glow)"/><path d="M531 214q9-16 18 0Z" fill="#d9ccff"/><path d="M540 214v8" stroke="#c9bfe6" stroke-width="2.4"/>
-      <circle cx="557" cy="226" r="14" fill="url(#${id}-glow)"/><path d="M551 228q6-11 12 0Z" fill="#e6dcff"/><path d="M557 228v6" stroke="#c9bfe6" stroke-width="2"/>
-      <circle cx="44" cy="178" r="16" fill="url(#${id}-glow)"/><path d="M37 180q7-13 14 0Z" fill="#d9ccff"/><path d="M44 180v7" stroke="#c9bfe6" stroke-width="2"/>
-    </g>
-    <g fill="#f1e8c8" opacity=".6"><circle cx="79" cy="199" r="2"/><circle cx="84" cy="204" r="2"/><circle cx="438" cy="305" r="2"/><circle cx="445" cy="302" r="2"/><circle cx="319" cy="76" r="1.5"/></g>
-    <circle cx="83" cy="92" r="58" fill="url(#${id}-lamp)"/>
-    <path d="M83 68v57m-9-46h18v24H74z" stroke="#c9bb92" stroke-width="3" fill="#3e4a52"/><path d="M79 86h8v13h-8z" fill="#ffe3a0"/>
-    <path d="M0 395Q170 371 300 391t300-1v10H0Z" fill="${c.bot}" opacity=".6"/>
+    <g fill="none" stroke="#d3d8b5" stroke-opacity=".2" stroke-width="2"><path d="M0 114 93 30M19 398l46-111M592 394l-77-123M594 62l-117-40"/></g>
+    <g fill="#819990"><path d="m33 166 16-8 19 10-3 13-25 2Z"/><path d="m513 217 23-12 23 15-10 17-30-2Z"/></g>
+    <g stroke="#c9d2aa" stroke-width="2" stroke-linecap="round" opacity=".45"><path d="m113 118 4-11m0 11 7-7m282 178 3-10m-3 10-7-6m-182 62 3-9m0 9 6-5m258-229 3-9"/></g>
+    <g fill="#ddd6b5" opacity=".7"><circle cx="79" cy="199" r="2"/><circle cx="84" cy="204" r="2"/><circle cx="438" cy="305" r="2"/><circle cx="445" cy="302" r="2"/><circle cx="319" cy="76" r="1.5"/></g>
+    <path d="M83 68v57m-9-46h18v24H74z" stroke="#b9ae8b" stroke-width="3" fill="#4d5c58"/>
+    <circle cx="83" cy="92" r="44" fill="url(#${id}-lamp)"/><path d="M79 86h8v13h-8z" fill="#ffe8a9"/>
+    <path d="M0 395Q170 371 300 391t300-1v10H0Z" fill="${colors[2]}" opacity=".45"/>
   </svg>`;
 }
-/* 召唤祭坛：月石台座托在一块小浮岛上。台面的金色符文环在压扁的坐标里旋转，看起来像平放着转动；召唤时转速加快。 */
 function summonAltar(){
-  const id='altar-'+(++sceneArtId);
-  const runes=Array.from({length:8},(_,i)=>{const a=i*Math.PI/4,x=(Math.cos(a)*77).toFixed(1),y=(Math.sin(a)*77-7).toFixed(1);return `<path d="M${x} ${y}l5 7-5 7-5-7Z" fill="#f0d9a2"/>`;}).join('');
-  return `<div class="summon-altar" aria-hidden="true"><div class="altar-halo"></div><div class="altar-beam"></div>
-    <svg class="altar-art" viewBox="0 0 300 152">
-      <defs>
-        <linearGradient id="${id}-top" x2="0" y2="1"><stop stop-color="#cbc1df"/><stop offset="1" stop-color="#8d84a8"/></linearGradient>
-        <linearGradient id="${id}-side" x2="0" y2="1"><stop stop-color="#6c6489"/><stop offset="1" stop-color="#3f3a5c"/></linearGradient>
-        <linearGradient id="${id}-rock" x2="0" y2="1"><stop stop-color="#3a3354"/><stop offset=".6" stop-color="#262140"/><stop offset="1" stop-color="#1a172c" stop-opacity="0"/></linearGradient>
-        <radialGradient id="${id}-glow"><stop stop-color="#cbbaff" stop-opacity=".65"/><stop offset="1" stop-color="#cbbaff" stop-opacity="0"/></radialGradient>
-        <radialGradient id="${id}-pool"><stop style="stop-color:hsl(var(--summon-hue) 70% 80%);stop-opacity:.55"/><stop offset="1" style="stop-color:hsl(var(--summon-hue) 70% 80%);stop-opacity:0"/></radialGradient>
-      </defs>
-      <g class="altar-isle">
-        <path d="M30 80C60 76 100 86 150 86C200 86 240 76 270 80C258 96 236 104 214 112C190 122 168 136 150 150C134 134 112 122 88 112C64 104 42 96 30 80Z" fill="url(#${id}-rock)"/>
-        <path d="M30 80C60 76 100 86 150 86C200 86 240 76 270 80C250 88 210 92 150 93C90 92 50 88 30 80Z" fill="#4f6f66"/>
-        <path d="M96 112q-3 12 2 22M204 112q3 10 0 20" stroke="#2a2442" stroke-width="1.6" fill="none" stroke-linecap="round"/>
-        <circle cx="150" cy="146" r="12" fill="url(#${id}-glow)"/><path d="M150 139l3 7-3 7-3-7Z" fill="#ddd1ff"/>
-      </g>
-      <path d="M38 64v14c0 32 224 32 224 0V64" fill="url(#${id}-side)"/>
-      <path d="M38 78c0 32 224 32 224 0" fill="none" stroke="#a99fc6" stroke-opacity=".35"/>
-      <ellipse cx="150" cy="64" rx="112" ry="30" fill="url(#${id}-top)"/>
-      <ellipse cx="150" cy="64" rx="112" ry="30" fill="none" stroke="#f0d9a2" stroke-opacity=".55" stroke-width="1.4"/>
-      <ellipse cx="150" cy="64" rx="96" ry="24" fill="#5d5679"/>
-      <ellipse cx="150" cy="64" rx="70" ry="17" fill="url(#${id}-pool)"/>
-      <g transform="translate(150 64) scale(1 .27)"><g class="altar-runes">
-        <circle r="88" fill="none" stroke="#f0d9a2" stroke-opacity=".8" stroke-width="1.6" vector-effect="non-scaling-stroke"/>
-        <circle r="66" fill="none" stroke="#f0d9a2" stroke-opacity=".45" stroke-width="1.2" stroke-dasharray="5 9" vector-effect="non-scaling-stroke"/>
-        ${runes}
-      </g></g>
-      <g fill="#ddd1ff"><path d="M40 52l6-20 6 20-6 8Z" opacity=".8"/><path d="M248 52l6-20 6 20-6 8Z" opacity=".8"/></g>
-      <circle cx="46" cy="44" r="14" fill="url(#${id}-glow)"/><circle cx="254" cy="44" r="14" fill="url(#${id}-glow)"/>
+  return `<div class="summon-altar" aria-hidden="true"><div class="altar-halo"></div>
+    <svg class="altar-art" viewBox="0 0 300 130"><ellipse cx="150" cy="103" rx="119" ry="20" fill="#101522" opacity=".3"/>
+      <path d="M39 76v15c0 36 222 36 222 0V76" fill="#625c78"/><ellipse cx="150" cy="76" rx="111" ry="31" fill="#888298"/>
+      <ellipse cx="150" cy="73" rx="99" ry="26" fill="#a39aa9"/><ellipse cx="150" cy="73" rx="86" ry="21" fill="#77758b" stroke="#dfcba3" stroke-width="1.4"/>
+      <ellipse cx="150" cy="73" rx="64" ry="15" fill="none" stroke="#e3d4ba" stroke-opacity=".5"/>
+      <path d="m150 54 8 8-8 7-8-7Zm-74 15 10 4-10 4-9-4m157-4 9 4-9 4-10-4m-74 7 8 7-8 8-8-8" fill="#e6d5b4" opacity=".8"/>
+      <path d="m56 94 17 6m35 10 15 2m52 0 15-2m36-10 17-6" stroke="#c8bdc4" opacity=".35" stroke-width="2"/>
     </svg><div class="altar-core"></div>
-    <span class="altar-star" style="--x:29%;--y:22%">${uiIcon('spark')}</span><span class="altar-star" style="--x:70%;--y:30%">${uiIcon('spark')}</span><span class="altar-star" style="--x:59%;--y:10%">${uiIcon('spark')}</span></div>`;
+    <span class="altar-star" style="--x:29%;--y:29%">${uiIcon('spark')}</span><span class="altar-star" style="--x:70%;--y:39%">${uiIcon('spark')}</span><span class="altar-star" style="--x:59%;--y:14%">${uiIcon('spark')}</span></div>`;
 }
 function dispatchSummaryHTML(){
   const n=S.slimes.filter(isDispatched).length;
@@ -828,19 +787,28 @@ function renderTop(){
 }
 
 function switchTab(t){
-  const aliases={space:'home',world:'home',travel:'journey'};
-  t=aliases[t]||t;
-  plSlimes.forEach(p=>{if(p.timer)clearInterval(p.timer);if(p.bubbleTimer)clearInterval(p.bubbleTimer);});plSlimes=[];
-  selectedToy=null;activeTab=t;
-  if(['home','journey','companions'].includes(t))LivingWorld.navigate(t);
-  const primary=['summon','status','monsters'].includes(t)?'companions':t==='challenges'?'journey':t==='bag'?'home':t;
-  document.querySelectorAll('.tabbar button').forEach(b=>b.classList.toggle('active',b.dataset.tab===primary));
+  if(activeTab==='space' && t!=='space'){
+    plSlimes.forEach(p=>{
+      if(p.timer) clearInterval(p.timer);
+      if(p.bubbleTimer) clearInterval(p.bubbleTimer);
+    });
+    plSlimes = [];
+  }
+  if(t !== 'space') selectedToy = null;
+  if(t === 'travel') travelTipsOpen = false;
+  activeTab = t;
+  document.querySelectorAll('.tabbar button').forEach(b=>b.classList.toggle('active', b.dataset.tab===t));
   renderTab();
 }
 function renderTab(){
-  checkDailyReset();stopExploreItems();
-  const el=$('#content'),main=['home','journey','companions'].includes(activeTab);
-  const map={status:renderStatus,summon:renderSummon,challenges:renderTravel,bag:renderBag,monsters:renderMonsterCare};
-  el.innerHTML=main?LivingWorld.render():`<button class="btn themed" data-act="goto" data-tab="${activeTab==='challenges'?'journey':activeTab==='bag'?'home':'companions'}">返回${activeTab==='challenges'?'远行':activeTab==='bag'?'家园':'伙伴'}</button>`+(map[activeTab]||(()=>LivingWorld.render()))();
-  refreshUIIcons(el);if(main)LivingWorld.mount();
+  checkDailyReset();
+  stopExploreItems();
+  const el = $('#content');
+  $('#app').classList.toggle('home-mode',activeTab==='home');
+  const map = {home:()=>LivingWorld.render(),status:renderStatus, summon:renderSummon, travel:renderTravel, space:renderSpace, bag:renderBag};
+  el.innerHTML = (map[activeTab]||renderSpace)();
+  refreshUIIcons(el);
+  if(activeTab==='home')LivingWorld.mount();
+  if(activeTab==='space'){initPlayground();el.dataset.spaceIdle=(S.spaceMode==='monster'?S.monsters:S.slimes.filter(s=>!isDispatched(s))).map(s=>s.id).join(',');}
+  if(activeTab==='travel') setTimeout(startExploreItems, 50);
 }

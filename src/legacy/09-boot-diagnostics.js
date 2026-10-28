@@ -2,11 +2,8 @@
   applyWaveMasks();
   battleSpeed = clamp(Number(S.battleSpeed)||1, 1, 10);
   if(load() && S.started){
+    if(!DIAGNOSTIC_MODE&&S.lastActive>0){settleOffline(Date.now()-S.lastActive);save();}
     battleSpeed = clamp(Number(S.battleSpeed)||1, 1, 10);
-    /* 离线收益：必须在任何 save() 之前读取上次时间戳。时钟回拨（负值）和旧档（无时间戳）不结算。 */
-    const away = Date.now() - (Number(S.lastActive)||0);
-    const offline = !DIAGNOSTIC_MODE && Number(S.lastActive) > 0 && away >= 1000 ? settleOffline(away) : null;
-    if(offline) save();
     /* 加载时若背包里还有经验药水，自动对等级最低的史莱姆使用 */
     if((S.bag.expPotion||0) > 0 && S.slimes.length){
       let guard = 0;
@@ -22,7 +19,6 @@
     checkDailyReset();
     renderTop();
     renderTab();
-    if(offline && offline.seconds>=60 && offline.actions) openModal(offlineReportHTML(offline));
   } else {
     renderStory();
     if(persistenceBlocked) openModal(`<h3>存档保护</h3><p>${esc(persistenceWarning)}</p><p class="muted small">存档内容无法安全读取时会停在这里，以便保留原始数据不被覆盖。确定放弃这份存档的话，可以清除后重新开始。</p><button class="btn gold full" data-act="resetSave">清除损坏存档并重新开始</button>`);
@@ -59,11 +55,9 @@
     if(opts.seed !== undefined){
       let sd = (opts.seed >>> 0) || 1;
       Math.random = () => { sd = (sd * 1664525 + 1013904223) >>> 0; return sd / 4294967296; };
-      gameRandom=()=>Math.random(); // The diagnostic seed must cover gameplay draws too.
     }
     S.slimes = [];
     S.monsters = [];
-    S.world=LivingWorld.createWorld(opts.seed??0x51a7);S.saveVersion=4; // Fresh fixture keeps V4 references consistent.
     S.abyssLevel = opts.monsterLevel || 1;
     S.abyssUnlocked=Math.max(getAbyssUnlocked(),S.abyssLevel); // Diagnostic fixture only.
     S.battleSpeed = opts.speed || 10;
@@ -143,12 +137,10 @@
     if(prev && prev.B && prev.B.timer) clearInterval(prev.B.timer);
     document.querySelectorAll('#gameOverlay').forEach(o => o.remove());
     window.__TEST__.startBattle(Object.assign({ speed:10, seed:7, elements:['火','冰'], level:20, monsterLevel:30 }, opts || {}));
-    S.battleMode = 'interject'; // 命中反馈检查走普攻；自动技能在整回合检查覆盖。
     const b = window.__TEST__._battle;
     b.B.allies.concat(b.B.monsters).forEach(u => {
       u.st = u.st || {};
       u.st.burn = 0; u.st.poison = 0; u.st.frozen = 0; u.st.paralysis = 0; u.st.charm = 0;
-      u.st.rockArmor = 0; u.st.iceArmor = 0;
     });
     /* 敌人血量拉高，避免一击必杀把震屏档位顶到 kill */
     b.B.monsters.forEach(m => { m.hp = m.maxHp * 20; });
@@ -496,7 +488,7 @@
   };
 
   check('C-mode', () => {
-    if(SAVE_DEFAULTS.battleMode !== 'auto') throw new Error('新档战斗模式默认应为 auto');
+    if(S.battleMode !== 'auto') throw new Error('S.battleMode 默认应为 auto，实际 ' + S.battleMode);
     return true;
   });
 
@@ -713,11 +705,10 @@
   });
   /* ===== 任务 11：自动战斗整回合必须真的跑完 ===== */
   check('C-phase', async () => {
-    const b = freshBattle({ elements:['火','火'] });
+    const b = freshBattle({ elements:['岩','火'] });
     try{
       setMode('auto');
       if(b.B.timer) clearInterval(b.B.timer);
-      b.B.monsters.forEach(u=>{u.ref.element='火';u.ref.skill='元素弹';u.st.immuneDebuff=true;});
       /* 把双方血量拉满，避免一个回合内就分出胜负（结束后血量会被还原，断言失去意义） */
       b.B.allies.concat(b.B.monsters).forEach(u=>{ u.maxHp = 999999; u.hp = 999999; });
       const before = FX.log.length;

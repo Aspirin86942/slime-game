@@ -1,17 +1,27 @@
 function startAbyssBattle(options){
   options = options || {};
-  if(document.getElementById('gameOverlay')) return;
+  if(!canWrite()||document.getElementById('gameOverlay')) return;
   const challenge = TRAINING_CHALLENGES[options.challengeId] || null;
   if(!challenge && !abyssSetupSel.length) return;
-  const allies = challenge ? [makeTrainingSlime(-1001, '借用·'+challenge.element+'伙伴', challenge.element, challenge.hp, challenge.str, challenge.mag, false)] : S.slimes.filter(s=>abyssSetupSel.includes(s.id) && !hasExplorePlan(s) && !LivingWorld.isBusy(S,s.id)).slice(0,5);
+  const allies = challenge ? [makeTrainingSlime(-1001, '借用·'+challenge.element+'伙伴', challenge.element, challenge.hp, challenge.str, challenge.mag, false)] : abyssSetupSel.map(id=>getSlime(id)).filter(Boolean).filter(s=>!isDispatched(s)&&!LivingWorld.isBusy(S,s.id));
   if(!allies.length){ toast('出战的史莱姆都在探险中，请先召回'); return; }
-  if(!challenge&&!LivingWorld.reserve(S,allies.map(s=>s.id),'battle')){toast('伙伴正在忙碌');return;}
+  if(!challenge&&!LivingWorld.reserve(S,allies.map(s=>s.id),'battle'))return;
   battleSpeed = clamp(Number(S.battleSpeed)||1, 1, 10);
-  const mLevel = challenge ? 1 : getAbyssLevel();
-  const bossFloor = !challenge && isBossFloor(mLevel);
-  const monCount = challenge ? 0 : abyssEnemyCount(mLevel);
+  const monCount = challenge ? 0 : rndInt(2, 4);
   const monsters = challenge ? [makeTrainingSlime(-2001, '练习·'+challenge.name, challenge.enemyElement, challenge.enemyHp, 25, 15, true)] : [];
-  for(let i=0;i<monCount;i++) monsters.push(makeAbyssMonster(mLevel, bossFloor && i === 0));
+  const mLevel = challenge ? 1 : getAbyssLevel();
+  for(let i=0;i<monCount;i++){
+    const m = createSlime(true);
+    m.isMonster = true;
+    m.level = mLevel;
+    m.str = m.strPotential * mLevel;
+    m.agi = m.agiPotential * mLevel;
+    m.mag = m.magPotential * mLevel;
+    m.size = +(m.size + (mLevel-1)*0.0016).toFixed(3);
+    m.hp = hpMax(m);
+    m.name = `${m.element}魔物${m.id}`;
+    monsters.push(m);
+  }
 
   const overlay = document.createElement('div');
   overlay.id = 'gameOverlay';
@@ -36,7 +46,7 @@ function startAbyssBattle(options){
   const speeds = [1,2,3,5,10];
   overlay.innerHTML = `
     <div class="game-hud">
-      <span class="hud-title">${uiIcon('sword')} ${challenge?'协作练习':`深渊 第 ${mLevel} 层`}${bossFloor?'<b class="hud-boss">首领</b>':''}</span>
+      <span class="hud-title">${uiIcon('sword')} 深渊对战</span>
       <div class="hud-speeds">
         ${speeds.map(sp=>`<button class="speed-btn ${battleSpeed===sp?'on':''}" data-speed="${sp}">${sp}x</button>`).join('')}
         <button class="speed-btn" id="bMode">自动</button>
@@ -44,16 +54,14 @@ function startAbyssBattle(options){
       <button class="hud-close" id="bClose">撤退</button>
     </div>
     <div class="battle-field">
-      ${skyArt('arena')}
-      ${Array.from({length:22}).map(()=>`<div class="bg-star" style="left:${rnd(2,98)}%;top:${rnd(2,62)}%;"></div>`).join('')}
-      ${arenaIsle()}
+      ${Array.from({length:30}).map(()=>`<div class="bg-star" style="left:${rnd(2,98)}%;top:${rnd(2,98)}%;"></div>`).join('')}
       <div class="battle-row enemy">${enemyHTML}</div>
       <div class="battle-log" id="battleLog">战斗开始！</div>
       <div class="battle-row ally">${allyHTML}</div>
       <div class="skill-bar hide" id="skillBar"></div>
     </div>
   `;
-  $('#app').appendChild(overlay);$('#app').classList.add('has-game-overlay');
+  $('#app').appendChild(overlay);
 
   const logEl = overlay.querySelector('#battleLog');
   const fieldEl = overlay.querySelector('.battle-field');
@@ -69,21 +77,7 @@ function startAbyssBattle(options){
     if(ref.element === '岩' && !ref.isTraining){ st.immuneDebuff = true; st.rockArmor = Math.round(hpMax(ref)*0.5); }
     if(ref.element === '冰'){ st.iceArmor = Math.round(hpMax(ref)*0.5); }
     if(ref.element === '时间'){ st.timeRevive = true; }
-    const maxHp = ref.trainingHp || Math.round(hpMax(ref) * (ref.isBoss ? BOSS_HP_MUL : 1));
-    return {ref, hp:Math.min(maxHp, ref.isBoss ? maxHp : ref.hp), maxHp, st, minis:[], cd:{}, acted:false, intent:null};
-  }
-  /* 元素羁绊：生命加成按比例放大当前血量，满血出战仍是满血 */
-  function applyBond(units){
-    if(challenge) return;
-    const bond = teamBond(units.map(u=>u.ref));
-    units.forEach(u=>{
-      u.atkMul = bond.atk[u.ref.element] || 1;
-      if(bond.hp > 1){
-        const full = u.hp >= u.maxHp;
-        u.maxHp = Math.round(u.maxHp * bond.hp);
-        u.hp = full ? u.maxHp : Math.min(u.maxHp, Math.round(u.hp * bond.hp));
-      }
-    });
+    return {ref, hp:ref.hp, maxHp:ref.trainingHp || hpMax(ref), st, minis:[], cd:{}, acted:false, intent:null};
   }
 
   const B = {
@@ -92,12 +86,8 @@ function startAbyssBattle(options){
     monsters: monsters.map(initBattleUnit),
     turn:0, timer:null, pendingTimers:[],
     paused:false, pauseTimer:null, _pauseResume:null,
-    atkBuff: 1, mLevel, training:!!challenge, trainingMode:'step', challengeId:options.challengeId || null, practiceUsed:{}, resolving:false,
-    /* 开战时快照：本层是否已通关，决定结算是首通全额还是重复挑战折扣 */
-    floorCleared: !challenge && abyssFloorCleared(mLevel)
+    atkBuff: 1, mLevel, training:!!challenge, trainingMode:'step', challengeId:options.challengeId || null, practiceUsed:{}, resolving:false
   };
-  applyBond(B.allies);
-  applyBond(B.monsters);
   B.rewardMonsters = B.monsters.slice();
   function currentBattleMode(){ return B.training ? B.trainingMode : S.battleMode; }
   if(challenge && options.challengeId==='cleanse'){ B.allies[0].st.burn=3; B.allies[0].st.poison=3; }
@@ -110,7 +100,7 @@ function startAbyssBattle(options){
   if(window.__TEST__) window.__TEST__._battle = {
     B, overlay, fieldEl, logEl, later, performAction, performMiniAction,
     getUnitEl, refreshBars, dealDamage, handleUnitDeath, nextTurn,
-    playerCast, playerBasic, renderSkillBar, castStrike, mitigate, unitAttack, bySpeed, tryFollowUp, autoCast,
+    playerCast, playerBasic, renderSkillBar, castStrike,
     waitForPlayer, closeBattle, enemyPhase, endBattle, queueEnemyIntents, refreshIntentPanel, turnControl,
     setDodgeRate: fn => { dodgeRate = fn; },
     setCritRate: fn => { critRate = fn; },
@@ -145,16 +135,16 @@ function startAbyssBattle(options){
     const atkEl = getUnitEl(attackerUnit, sideOfUnit(attackerUnit));
     const tSide = sideOfUnit(target);
     const tgtEl = getUnitEl(target, tSide);
-    if(tgtEl && atkEl) doElementBallEffect(ref, atkEl, tgtEl, opt.name && opt.name!=='普攻' && opt.name!=='追击');
+    if(tgtEl && atkEl) doElementBallEffect(ref, atkEl, tgtEl, opt.name && opt.name!=='普攻');
 
     const dodge = B.training || target.isMini ? 0 : dodgeRate(target.ref);
-    if(gameRandom()*100 < dodge){
+    if(Math.random()*100 < dodge){
       FX.float(tgtEl, 'MISS', { cls:'miss' });
       log(`${target.ref.name} 闪避了 ${ref.name} 的${opt.name || '攻击'}`);
       return 0;
     }
 
-    let baseDmg = unitAttack(attackerUnit) + (B.training ? 0 : gameInt(-3,3));
+    let baseDmg = physAtk(ref) + (B.training ? 0 : rndInt(-3,3));
     baseDmg = Math.round(baseDmg * (B.atkBuff||1));
     if(attackerUnit.st.weakness > 0) baseDmg = Math.round(baseDmg * (1 - attackerUnit.st.weakness*0.05));
 
@@ -166,14 +156,14 @@ function startAbyssBattle(options){
     if(ref.element === '光' && target.ref.isMonster) dmg *= 2;
 
     const critBonus = target.st.frostbite * 5;
-    const crit = !B.training && gameRandom() < (critRate(ref)+critBonus)/100;
+    const crit = !B.training && Math.random() < (critRate(ref)+critBonus)/100;
     if(crit) dmg = Math.round(dmg * 1.8);
-    dmg = mitigate(ref, target, Math.max(1, dmg));
+    dmg = Math.max(1, dmg);
 
     if(!opt.noElement && !B.training) applyAttackerElement(attackerUnit, target);
 
     /* 冰甲反伤：与自动路径一致，攻击带冰甲的冰属性目标会被冻伤 */
-    if(!opt.followUp && target.ref.element === '冰' && target.st.iceArmor > 0){
+    if(target.ref.element === '冰' && target.st.iceArmor > 0){
       if(applyStatus(attackerUnit, 'frostbite', 1))
         setTimeout(()=>log(`❄ ${ref.name} 被冰甲冻伤！`), 120);
     }
@@ -195,8 +185,8 @@ function startAbyssBattle(options){
     log(damageLogText(target, shield0, actual,
       `${ref.name} 的${opt.name || '攻击'}命中 ${target.ref.name}`, `${crit?'（暴击！）':''}${elemMsg}`));
     /* 与自动战斗对齐的属性后续效果：雷对水溅射 / 草吸血 / 命中水史莱姆召出迷你 */
-    if(!opt.followUp && ref.element === '雷' && actual > 0) doSplash(attackerUnit, target, actual);
-    if(!opt.followUp && ref.element === '草' && actual > 0){
+    if(ref.element === '雷' && actual > 0) doSplash(attackerUnit, target, actual);
+    if(ref.element === '草' && actual > 0){
       const heal = Math.round(actual * 0.5);
       attackerUnit.hp = Math.min(attackerUnit.maxHp, attackerUnit.hp + heal);
       FX.float(atkEl, '+' + heal, { cls:'good small' });
@@ -206,7 +196,7 @@ function startAbyssBattle(options){
         later(()=>{ doDrainEffect(tgtEl, atkEl, colGrass); }, Math.round(520 / battleSpeed));
       }
     }
-    if(!opt.followUp && !target.isMini && target.ref.element === '水' && target.hp > 0){
+    if(!target.isMini && target.ref.element === '水' && target.hp > 0){
       const mini = spawnMiniSlime(target, tSide);
       if(mini) miniSlimeAttack(mini);
     }
@@ -241,14 +231,14 @@ function startAbyssBattle(options){
   }
 
   function playerBasic(attackerUnit, targetUnit){
-    if(storageConflict || persistenceBlocked || saveRetryNeeded)return false;
+    if(!canWrite())return false;
     const ref = attackerUnit.ref;
     if(!attackerUnit || attackerUnit.hp <= 0) return false;
     if(attackerUnit.acted){ log(`${ref.name} 本回合已经行动过了`); renderSkillBar(); return false; }
     /* 冻结/麻痹/持续伤害/魅惑：手动行动也要先结算，否则玩家可以绕过控制 */
     if(turnControl(attackerUnit, 'ally')){ attackerUnit.acted = true; renderSkillBar(); return false; }
     const enemyMain = getAllAliveMain('enemy');
-    const target = targetUnit || gamePick(getAllAliveUnits('enemy'));
+    const target = targetUnit || pick(getAllAliveUnits('enemy'));
     if(!target || target.hp <= 0){ log('没有可攻击的目标'); renderSkillBar(); return false; }
     if(isUntargetable(target, enemyMain)){
       log(`${target.ref.name} 虚化中，无法选中`);
@@ -256,36 +246,13 @@ function startAbyssBattle(options){
       return false;
     }
     castStrike(attackerUnit, target, 1, { name:'普攻' });
-    tryFollowUp(attackerUnit, target);
     attackerUnit.acted = true;
     renderSkillBar();
     return true;
   }
 
-  function applyLivingCombo(attacker,target,damage,side){
-    if(B.training || !S.world || attacker.isMini) return;
-    B.comboUsed=B.comboUsed||{};
-    const team=side==='ally'?B.allies:B.monsters,opponents=side==='ally'?B.monsters:B.allies;
-    const effect=LivingWorld.comboFor(attacker.ref.element,team.filter(u=>u.hp>0).map(u=>u.ref.element),!!B.comboUsed[side]);
-    if(!effect.combo)return;
-    B.comboUsed[side]=true;
-    const base=Math.max(1,damage||unitAttack(attacker));
-    if(effect.heal)team.filter(u=>u.hp>0).forEach(u=>{const n=Math.round(u.maxHp*effect.heal);u.hp=Math.min(u.maxHp,u.hp+n);FX.float(getUnitEl(u,side),'+'+n,{cls:'good small'});});
-    if(effect.cleanse)team.filter(u=>u.hp>0).forEach(u=>{const key=['burn','poison','frostbite','frozen','paralysis','charm','weakness'].find(k=>u.st[k]>0);if(key)u.st[key]=0;});
-    if(effect.cooldown)team.filter(u=>u!==attacker).forEach(u=>{Object.keys(u.cd).forEach(k=>u.cd[k]=Math.max(0,u.cd[k]-1));});
-    const victim=target&&target.hp>0?target:opponents.find(u=>u.hp>0);
-    if(victim){
-      if(effect.extra){const hit=dealDamage(victim,Math.max(1,Math.round(base*effect.extra)));FX.float(getUnitEl(victim,side==='ally'?'enemy':'ally'),'-'+hit,{cls:'small'});}
-      if(effect.burn)applyStatus(victim,'burn',1);
-      if(effect.weakness)applyStatus(victim,'weakness',1);
-      if(victim.hp<=0)handleUnitDeath(victim,side==='ally'?'enemy':'ally');
-    }
-    if(effect.secondary){const other=opponents.find(u=>u!==target&&u.hp>0);if(other){dealDamage(other,Math.max(1,Math.round(base*.2)));if(other.hp<=0)handleUnitDeath(other,side==='ally'?'enemy':'ally');}}
-    log('元素协作 · '+effect.combo);refreshBars();
-  }
-
   function playerCast(attackerUnit, targetUnit){
-    if(storageConflict || persistenceBlocked || saveRetryNeeded)return false;
+    if(!canWrite())return false;
     const ref = attackerUnit ? attackerUnit.ref : null;
     if(!ref) return false;
     const sk = skillOf(ref);
@@ -339,7 +306,7 @@ function startAbyssBattle(options){
         /* 两道风刃必须打不同目标（规格：2 个随机敌人） */
         const cand = pool.filter(u=>hitList.indexOf(u) < 0 && u.hp > 0);
         if(!cand.length) break;
-        const t = gamePick(cand);
+        const t = pick(cand);
         hitList.push(t);
         castStrike(attackerUnit, t, 0.9, { name: sk.name });
         hits++;
@@ -401,7 +368,6 @@ function startAbyssBattle(options){
       }
     }
 
-    applyLivingCombo(attackerUnit,target,unitAttack(attackerUnit),'ally');
     attackerUnit.acted = true;
     attackerUnit.cd[el] = sk.cd;
     refreshIntentPanel();
@@ -457,10 +423,6 @@ function startAbyssBattle(options){
         <button class="sk-act" data-sk-act="skill" ${(skSel.acted || cd > 0) ? 'disabled' : ''}>${sk ? sk.name : '—'}${cd > 0 ? ' CD' + cd : ''}</button>
         <button class="sk-act ghost" data-sk-act="cancel">×</button>
       </div>`;
-    }
-    if(skSel && S.world){
-      const combo=LivingWorld.comboFor(skSel.ref.element,alive.map(u=>u.ref.element),!!(B.comboUsed&&B.comboUsed.ally));
-      if(combo.combo){const def=LivingWorld.COMBOS.find(c=>c.name===combo.combo);html+='<div class="small" style="padding:4px 7px;flex-basis:100%">协作预告：'+esc(combo.combo)+' · '+esc(def.desc)+'</div>';}
     }
     bar.innerHTML = html;
 
@@ -531,11 +493,9 @@ function startAbyssBattle(options){
 
   let battleClosed = false;
   let autoCloseTimer = null;
-  let storageResumeTimer = null;
-  const deferredActions = [];
 
   function closeBattle(){
-    if(storageConflict || persistenceBlocked || saveRetryNeeded)return;
+    LivingWorld.release(S,'battle');
     if(battleClosed) return;
     battleClosed = true;
     B.running = false;
@@ -544,36 +504,19 @@ function startAbyssBattle(options){
     if(B.pauseTimer){ clearTimeout(B.pauseTimer); B.pauseTimer = null; }
     B._pauseResume = null;
     if(autoCloseTimer){ clearTimeout(autoCloseTimer); autoCloseTimer = null; }
-    if(storageResumeTimer){ clearTimeout(storageResumeTimer); storageResumeTimer = null; }
-    deferredActions.length = 0;
     if(B.timer) clearInterval(B.timer);
     B.pendingTimers.forEach(t=>clearTimeout(t));
     B.pendingTimers = [];
-    overlay.remove();$('#app').classList.remove('has-game-overlay');
-    LivingWorld.clearFX();
-    LivingWorld.release(S,'battle');save();
-    renderTab();
+    overlay.remove();
+    save();
+    if(activeTab === 'space') renderTab();
   }
 
-  function resumeActions(){
-    storageResumeTimer = null;
-    if(battleClosed || storageConflict || persistenceBlocked)return;
-    if(saveRetryNeeded){ storageResumeTimer = setTimeout(resumeActions, 100); return; }
-    // Keep the original action order when several timers became due during a failed save.
-    while(deferredActions.length && !battleClosed && !storageConflict && !persistenceBlocked && !saveRetryNeeded){
-      deferredActions.shift()();
-    }
-    if(deferredActions.length && !battleClosed && !storageConflict && !persistenceBlocked)storageResumeTimer = setTimeout(resumeActions, 100);
-  }
   function later(fn, ms){
     const id = setTimeout(()=>{
       B.pendingTimers = B.pendingTimers.filter(x=>x!==id);
       if(battleClosed)return;
-      if(storageConflict || persistenceBlocked || saveRetryNeeded || deferredActions.length){
-        deferredActions.push(fn);
-        if(!storageResumeTimer && !storageConflict && !persistenceBlocked)storageResumeTimer = setTimeout(resumeActions, 100);
-        return;
-      }
+      if(!canWrite()){later(fn,250);return;}
       fn();
     }, ms);
     B.pendingTimers.push(id);
@@ -599,18 +542,6 @@ function startAbyssBattle(options){
   }
 
   function log(msg){ logEl.innerHTML = msg; }
-
-  /* 战斗内攻击力：攻击类型 × 元素羁绊 × 首领加成。教学战保持原来的物攻口径，课程数值不变。 */
-  function unitAttack(unit){
-    if(unit.isMini) return unit.atk;
-    const base = B.training ? physAtk(unit.ref) : attackPower(unit.ref);
-    return Math.round(base * (unit.atkMul || 1) * (unit.ref.isBoss ? BOSS_ATK_MUL : 1));
-  }
-  /* 防御/抗性减伤：在暴击和克制之后、护盾之前结算 */
-  function mitigate(attackerRef, target, dmg){
-    if(B.training) return dmg;
-    return Math.max(1, Math.round(dmg * mitigation(attackerRef, target.ref)));
-  }
 
   function dealDamage(target, dmg){
     const st = target.st;
@@ -1253,7 +1184,7 @@ function startAbyssBattle(options){
       id: 'mini_'+ownerUnit.ref.id+'_'+(++miniSeq),
       ownerUnit, side, slot,
       hp: maxHp, maxHp,
-      atk: Math.max(1, Math.round(unitAttack(ownerUnit) * 0.3)),
+      atk: Math.max(1, Math.round(physAtk(ownerUnit.ref) * 0.3)),
       st: {burn:0, poison:0, frostbite:0, frozen:0, freezeVisual:false, paralysis:0, charm:0, weakness:0, rockArmor:0, iceArmor:0, timeRevive:false, reviveUsed:false, immuneDebuff:false},
       ref: { name: `${ownerUnit.ref.name}的迷你水史莱姆`, element:'水', isMonster: ownerUnit.ref.isMonster, level: ownerUnit.ref.level }
     };
@@ -1279,8 +1210,8 @@ function startAbyssBattle(options){
     const targetSide = mini.side === 'ally' ? 'enemy' : 'ally';
     const all = getAllAliveUnits(targetSide);
     if(!all.length) return;
-    const target = gamePick(all);
-    const dmg = mitigate(mini.ref, target, Math.max(1, Math.round((mini.atk + gameInt(-2,2)) * (B.atkBuff||1))));
+    const target = pick(all);
+    const dmg = Math.max(1, Math.round((mini.atk + rndInt(-2,2)) * (B.atkBuff||1)));
     const shield0 = shieldOf(target);
     const actual = dealDamage(target, dmg);
     const tgtEl = getUnitEl(target, target.isMini ? target.side : targetSide);
@@ -1294,7 +1225,6 @@ function startAbyssBattle(options){
   }
 
   function performMiniAction(mini, side){
-    if(storageConflict || persistenceBlocked || saveRetryNeeded)return;
     if(!mini || mini.hp <= 0) return;
     if(mini.acted) return;
     const q = side==='enemy' ? (mini.intent && mini.intent.round===B.turn ? mini.intent : queueOneEnemy(mini)) : null;
@@ -1311,12 +1241,12 @@ function startAbyssBattle(options){
     const enemiesSide = side==='ally' ? 'enemy' : 'ally';
     const all = getAllAliveUnits(enemiesSide);
     if(!all.length) return;
-    const target = q ? resolveIntentTarget(mini,side,false) : gamePick(all);
+    const target = q ? resolveIntentTarget(mini,side,false) : pick(all);
     if(!target) return;
     const tgtEl = getUnitEl(target, target.isMini ? target.side : enemiesSide);
     const attackerForFx = {element:'水', colorOverride:{h:205, s:80, l:60}, miniScale: 0.55};
     if(tgtEl) doElementBallEffect(attackerForFx, el, tgtEl);
-    const dmg = mitigate(mini.ref, target, Math.max(1, Math.round((mini.atk + gameInt(-2,2)) * (B.atkBuff||1))));
+    const dmg = Math.max(1, Math.round((mini.atk + rndInt(-2,2)) * (B.atkBuff||1)));
     const shield0 = shieldOf(target);
     const actual = dealDamage(target, dmg);
     if(tgtEl){
@@ -1354,11 +1284,11 @@ function startAbyssBattle(options){
           setTimeout(()=>log(`☠ ${targetUnit.ref.name} 中毒！`), 120);
         break;
       case '雷':
-        if(gameRandom() < 0.35 && applyStatus(targetUnit, 'paralysis', 1))
+        if(Math.random() < 0.35 && applyStatus(targetUnit, 'paralysis', 1))
           setTimeout(()=>log(`⚡ ${targetUnit.ref.name} 被麻痹！`), 120);
         break;
       case '幻':
-        if(gameRandom() < 0.45 && applyStatus(targetUnit, 'charm', 1))
+        if(Math.random() < 0.45 && applyStatus(targetUnit, 'charm', 1))
           setTimeout(()=>log(`💗 ${targetUnit.ref.name} 被魅惑！`), 120);
         break;
       case '暗':
@@ -1402,10 +1332,10 @@ function startAbyssBattle(options){
       const friends = side==='ally' ? B.allies : B.monsters;
       const alive = friends.filter(f=>f.hp>0 && f!==unitWrapper);
       if(alive.length){
-        const target = gamePick(alive);
+        const target = pick(alive);
         const tgtEl = getUnitEl(target, side);
         if(tgtEl) doElementBallEffect(ref, unitEl, tgtEl);
-        const dmg = mitigate(ref, target, Math.max(1, Math.round(unitAttack(unitWrapper) * (B.atkBuff||1))));
+        const dmg = Math.max(1, Math.round((unitWrapper.isMini ? unitWrapper.atk : physAtk(ref)) * (B.atkBuff||1)));
         const actual = dealDamage(target, dmg);
         FX.flash(tgtEl, false);
         FX.float(tgtEl, '-' + actual, {});
@@ -1435,7 +1365,7 @@ function startAbyssBattle(options){
       const score = mult>1?2:mult===1?1:0;
       if(score>bestScore){bestScore=score;best=[t];} else if(score===bestScore) best.push(t);
     });
-    return B.training ? best[0] : gamePick(best);
+    return B.training ? best[0] : pick(best);
   }
   function queueOneEnemy(unit){
     if(unit.hp<=0) return null;
@@ -1446,7 +1376,7 @@ function startAbyssBattle(options){
       else if(B.challengeId==='control'){kind=(B.turn-1)%3===0?'heavy':'attack';power=kind==='heavy'?400:60;}
       else power=35;
       name=kind==='heavy'?'重击':'攻击';
-    } else if(unit.ref.skill==='治疗' && getAllAliveMain('enemy').some(u=>u.hp<u.maxHp*0.7)) {kind='heal';name=unit.ref.element==='光'?'治疗并净化':'治疗';}
+    } else if(unit.ref.skill==='治疗') {kind='heal';name=unit.ref.element==='光'?'治疗并净化':'治疗';}
     else if(unit.hp/unit.maxHp<0.4 && B.turn%3===2){kind='guard';name='防御 · 25%护盾';}
     else if(B.turn%3===0){kind='heavy';name='蓄力重击';mult=1.65;}
     const target=kind==='guard'?unit:chooseIntentTarget(unit,'enemy',kind==='heal');
@@ -1503,7 +1433,7 @@ function startAbyssBattle(options){
   }
 
   function performAction(unitWrapper, side){
-    if(storageConflict || persistenceBlocked || saveRetryNeeded)return;
+    if(!canWrite())return;
     const ref = unitWrapper.ref;
     const st = unitWrapper.st;
     if(unitWrapper.hp <= 0) return;
@@ -1512,9 +1442,6 @@ function startAbyssBattle(options){
 
     const unitEl = getUnitEl(unitWrapper, side);
     if(!unitEl) return;
-    if(side === 'ally' && !B.training && currentBattleMode() === 'auto' && autoCast(unitWrapper)) return;
-    /* autoCast 里的施法可能被冻结/麻痹消耗掉本次行动 */
-    if(unitWrapper.acted) return;
 
     /* 控制会取消同一条预告，绝不会在控制后偷偷执行原动作。 */
     const queued = side==='enemy' ? (unitWrapper.intent && unitWrapper.intent.round===B.turn ? unitWrapper.intent : queueOneEnemy(unitWrapper)) : null;
@@ -1543,9 +1470,7 @@ function startAbyssBattle(options){
     const wrap = unitEl.querySelector('.slime-wrap');
     if(wrap){ wrap.classList.add('attack-jump'); setTimeout(()=>wrap.classList.remove('attack-jump'), 700); }
 
-    /* 治疗系在队友低于 70% 生命时治疗，其他回合攻击，避免互相治疗拖住战斗。 */
-    const healTurn = queued ? queued.kind === 'heal' : (ref.skill === '治疗' && getAllAliveMain(side).some(u=>u.hp < u.maxHp*0.7));
-    if(healTurn){
+    if(ref.skill === '治疗'){
       const mains = getAllAliveMain(side);
       const allMainsFull = mains.every(u=>u.hp >= u.maxHp);
       const candidates = [];
@@ -1564,7 +1489,7 @@ function startAbyssBattle(options){
       }
       const tgtEl = getUnitEl(target, target.isMini ? target.side : side);
       if(tgtEl) doHealEffect(ref, unitEl, tgtEl);
-      const heal = Math.max(1, Math.round(magAtk(ref)*0.45 + ref.level*2));
+      const heal = Math.max(1, Math.round(magAtk(ref)*0.8 + ref.level*5));
       target.hp = Math.min(target.maxHp, target.hp + heal);
       FX.float(tgtEl, '+' + heal, { cls:'good' });
       if(ref.element === '光'){
@@ -1597,19 +1522,19 @@ function startAbyssBattle(options){
       if(score > bestScore){ bestScore = score; best = [e]; }
       else if(score === bestScore) best.push(e);
     });
-    const target = queued ? resolveIntentTarget(unitWrapper,side,false) : gamePick(best.length ? best : pool);
+    const target = queued ? resolveIntentTarget(unitWrapper,side,false) : pick(best.length ? best : pool);
     if(!target) return;
     const tgtEl = getUnitEl(target, target.isMini ? target.side : enemiesSide);
     if(tgtEl) doElementBallEffect(ref, unitEl, tgtEl, !!queued && queued.kind==='heavy');
 
     const dodge = B.training || target.isMini ? 0 : dodgeRate(target.ref);
-    if(gameRandom()*100 < dodge){
+    if(Math.random()*100 < dodge){
       FX.float(tgtEl, 'MISS', { cls:'miss' });
       log(`${target.ref.name} 闪避了 ${ref.name} 的攻击`);
       return;
     }
 
-    let baseDmg = unitAttack(unitWrapper) + (B.training ? 0 : gameInt(-3,3));
+    let baseDmg = physAtk(ref) + (B.training ? 0 : rndInt(-3,3));
     baseDmg = Math.round(baseDmg * (B.atkBuff||1));
     if(st.weakness > 0) baseDmg = Math.round(baseDmg * (1 - st.weakness*0.05));
 
@@ -1622,9 +1547,9 @@ function startAbyssBattle(options){
     if(ref.element === '光' && target.ref.isMonster) dmg *= 2;
 
     const critBonus = target.st.frostbite * 5;
-    const crit = !B.training && gameRandom() < (critRate(ref)+critBonus)/100;
+    const crit = !B.training && Math.random() < (critRate(ref)+critBonus)/100;
     if(crit) dmg = Math.round(dmg * 1.8);
-    dmg = mitigate(ref, target, Math.max(1, dmg));
+    dmg = Math.max(1, dmg);
 
     let elemMsg = '';
     if(elemMult > 1) elemMsg = '（克制！）';
@@ -1639,7 +1564,6 @@ function startAbyssBattle(options){
 
     const shield0 = shieldOf(target);
     const actual = dealDamage(target, dmg);
-    applyLivingCombo(unitWrapper,target,actual,side);
     if(tgtEl){
       FX.flash(tgtEl, crit);
       if(crit) FX.shake('crit');
@@ -1698,33 +1622,6 @@ function startAbyssBattle(options){
     }
 
     if(target.hp <= 0) handleUnitDeath(target, enemiesSide);
-    else if(!queued || queued.kind === 'attack') tryFollowUp(unitWrapper, target);
-  }
-
-  /* 追击（参考《火焰纹章》）：速度达到目标 1.3 倍时，普攻后追加一次 0.5× 攻击，不叠加元素效果 */
-  function tryFollowUp(unit, target){
-    if(B.training || !B.running || unit.isMini || !target || target.isMini || unit.hp <= 0 || target.hp <= 0) return;
-    if(atkSpeed(unit.ref) < atkSpeed(target.ref) * FOLLOW_UP_SPEED) return;
-    castStrike(unit, target, FOLLOW_UP_MULT, { name:'追击', noElement:true, followUp:true });
-  }
-  /* 同一方内按攻击速度从快到慢出手 */
-  function bySpeed(units){ return units.slice().sort((a,b)=>atkSpeed(b.ref) - atkSpeed(a.ref)); }
-  /* 自动模式：技能就绪就放（参考放置游戏的自动大招）。治疗技能只在有人低于 70% 或光系需要净化时释放。 */
-  function autoCast(unit){
-    const ref = unit.ref, sk = skillOf(ref);
-    if(!sk || (unit.cd[ref.element]||0) > 0) return false;
-    const team = getAllAliveUnits('ally');
-    if(sk.kind === 'heal'){
-      const hurt = team.some(u=>u.hp < u.maxHp * 0.7);
-      const debuffed = ref.element === '光' && team.some(u=>['burn','poison','frostbite','frozen','paralysis','charm','weakness'].some(k=>u.st[k] > 0));
-      return (hurt || debuffed) ? playerCast(unit, null) : false;
-    }
-    if(sk.kind === 'revive' && B.allies.some(u=>u !== unit && u.hp <= 0)) return playerCast(unit, null);
-    const mains = getAllAliveMain('enemy');
-    const pool = getAllAliveUnits('enemy').filter(e=>e.hp > 0 && !isUntargetable(e, mains));
-    if(!pool.length) return false;
-    const score = e => ((ELEMENT_CHART[ref.element]||{})[e.ref.element]||1) * 1000 - e.hp / e.maxHp;
-    return playerCast(unit, pool.reduce((a,b)=>score(b) > score(a) ? b : a));
   }
 
   function updateUnitLabel(el, b){
@@ -1866,11 +1763,10 @@ function startAbyssBattle(options){
   }
 
   function captureMonster(mon, btn){
-    if(storageConflict || persistenceBlocked || saveRetryNeeded)return;
+    if(!canWrite())return;
     if(B.training){ toast('借用训练不能捕捉，也不消耗捕捉网'); return; }
     if(!S.bag.net || S.bag.net <= 0){ toast('没有捕捉网了，请先去背包购买'); return; }
     S.bag.net--;
-    delete mon.isBoss;
     mon.hp = hpMax(mon);
     mon.isMonster = true;
     mon.mood = 30;
@@ -1888,12 +1784,11 @@ function startAbyssBattle(options){
   function aliveMonsters(){ return B.monsters.filter(m=>m.hp > 0); }
 
   function nextTurn(){
-    if(storageConflict || persistenceBlocked || saveRetryNeeded)return;
+    if(!canWrite())return;
     if(!B.running || B.resolving) return;
     /* 暂停中（逐回合等待玩家操作）不推进回合：否则 9s 轮询会把玩家还没行动的回合吃掉 */
     if(B.paused) return;
     B.turn++;
-    B.comboUsed={};
     B.resolving = true;
 
     /* 每回合：清掉上一轮的手动行动标记，并递减主动技 CD */
@@ -1917,7 +1812,7 @@ function startAbyssBattle(options){
 
     queueEnemyIntents();
     const stepDelay = Math.round(1400 / battleSpeed);
-    const as = bySpeed(aliveAllies());
+    const as = aliveAllies();
     const allyMinis = [];
     as.forEach(a=>{ (a.minis||[]).forEach(m=>{ if(m.hp>0) allyMinis.push(m); }); });
     const allyActors = as.concat(allyMinis);
@@ -1973,7 +1868,7 @@ function startAbyssBattle(options){
     };
     B._pauseResume = () => {
       if(unit.hp > 0 && !unit.acted){
-        const t = gamePick(getAllAliveUnits('enemy'));
+        const t = pick(getAllAliveUnits('enemy'));
         if(t) playerBasic(unit, t);
       }
       finish();
@@ -1982,7 +1877,7 @@ function startAbyssBattle(options){
       if(!B.running) return;
       if(unit.hp > 0 && !unit.acted){
         log(`${unit.ref.name} 超时未操作，自动普攻`);
-        const t = gamePick(getAllAliveUnits('enemy'));
+        const t = pick(getAllAliveUnits('enemy'));
         if(t) playerBasic(unit, t);
       }
       finish();
@@ -1999,7 +1894,7 @@ function startAbyssBattle(options){
       checkRevive('ally');
       if(!aliveAllies().length){ log('出战史莱姆全部倒下……'); endBattle(false); return; }
 
-      const ms2 = bySpeed(aliveMonsters());
+      const ms2 = aliveMonsters();
       const enemyMinis = [];
       ms2.forEach(m=>{ (m.minis||[]).forEach(x=>{ if(x.hp>0) enemyMinis.push(x); }); });
       const enemyActors = ms2.concat(enemyMinis);
@@ -2025,7 +1920,7 @@ function startAbyssBattle(options){
   }
 
   function endBattle(win){
-    if(storageConflict || persistenceBlocked || saveRetryNeeded)return;
+    if(!canWrite())return;
     if(!B.running) return;
     B.running = false;
     B.ended = true;
@@ -2048,23 +1943,12 @@ function startAbyssBattle(options){
         a.ref.mood=clamp(a.ref.mood+(win?10:3),0,100);
       });
       if(win) S.abyssUnlocked=Math.max(getAbyssUnlocked(),Math.min(50,(B.mLevel||1)+1));
-      if(win) addTaskProgress('abyss', 1);
-      /* 首通奖励按开战时快照判定，同一层只发一次 */
-      const bonus = win && !B.floorCleared ? firstClearBonus(B.mLevel||1) : null;
-      if(bonus){
-        S.bag.treasure = (S.bag.treasure||0) + bonus.treasure;
-        S.bag.net = (S.bag.net||0) + bonus.net;
-        S.bag.ticket = (S.bag.ticket||0) + bonus.ticket;
-        S.points += bonus.points;
-        B.result.bonus = bonus;
-      }
     }
     B.allies.forEach(a=>{
       a.hp=hpMax(a.ref);
       if(!B.training) a.ref.hp=a.hp;
       a.st.burn=a.st.poison=a.st.frostbite=a.st.frozen=a.st.freezeVisual=a.st.paralysis=a.st.charm=a.st.weakness=0;
     });
-    LivingWorld.finishBattle(S,allies.map(s=>s.id),win,challenge?'教学挑战':'深渊第'+mLevel+'层');
     save(); renderTop(); renderTab();
 
     refreshBars();
@@ -2129,7 +2013,7 @@ function startAbyssBattle(options){
     }
 
     const head = win ? '🎉 战斗胜利！' : '⚔️ 战斗结束……';
-    const rewardLine = B.training ? '教学练习不消耗伙伴，也不产生普通战利品。' : `击败 ${rewards.defeatedCount}/${(B.rewardMonsters||B.monsters).length} · ${win?'全额奖励':'已击败敌人 25% 奖励'}${rewards.repeat?' · 已通关层 ×20%':''}：${coinGain} 晶币 / ${totalExp} 总经验。${B.result.bonus?'<br>首领首通：'+bonusText(B.result.bonus):''}伙伴已恢复。`;
+    const rewardLine = B.training ? '教学练习不消耗伙伴，也不产生普通战利品。' : `击败 ${rewards.defeatedCount}/${(B.rewardMonsters||B.monsters).length} · ${win?'全额奖励':'已击败敌人 25% 奖励'}：${coinGain} 晶币 / ${totalExp} 总经验。伙伴已恢复。`;
     const catchLine = win && !B.training ? '<br>点击倒下的怪物可捕捉' : '';
     log(head + '<br>' + rewardLine + (progressLine ? '<br>'+progressLine : '') + catchLine);
 
@@ -2200,15 +2084,7 @@ function openMonItemEditor(idx){
 }
 
 /* ==================== 事件委托 ==================== */
-// Protect target-level controls before their handlers can mutate a pending save.
 document.addEventListener('click', e=>{
-  if((storageConflict || persistenceBlocked || saveRetryNeeded) && !e.target.closest('[data-act="reloadSave"],[data-act="retrySave"]')){
-    e.preventDefault();e.stopImmediatePropagation();
-  }
-}, true);
-document.addEventListener('click', e=>{
-  if(storageConflict || persistenceBlocked){const reload=e.target.closest('[data-act="reloadSave"]');if(reload)location.reload();return;}
-  if(saveRetryNeeded){const retry=e.target.closest('[data-act="retrySave"]');if(retry){save();renderTab();}return;}
   if(LivingWorld.handleClick(e))return;
   const t = e.target.closest('[data-act]');
   if(!t) return;
@@ -2216,7 +2092,10 @@ document.addEventListener('click', e=>{
     if(monItemLongPressed){ monItemLongPressed = false; return; }
   }
   const act = t.dataset.act, ds = t.dataset;
+  if(!canWrite()&&!['reloadSave','retrySave','tab','goto','close','settings','detail','resetSave'].includes(act)){toast('请先处理存档保护提示');return;}
   switch(act){
+    case 'reloadSave': location.reload();return;
+    case 'retrySave': save();return;
     case 'tab': switchTab(ds.tab); break;
     case 'goto': switchTab(ds.tab); break;
     case 'summon': doSummon(); break;
@@ -2239,28 +2118,22 @@ document.addEventListener('click', e=>{
     case 'settings': openSettings(); break;
     case 'theme': S.theme = ds.theme; applyTheme(); save(); openSettings(); break;
     case 'plan': openPlan(+ds.id); break;
-    case 'setplan': if(S.saveVersion>=4){switchTab('journey');closeModal();break;} if(LivingWorld.isBusy(S,+ds.id)){toast('请先结束伙伴的家园工作或远征');break;} S.customPlans[+ds.id] = {type:ds.type}; save(); renderTab(); closeModal(); toast('定制规划已设置', 'good'); break;
+    case 'setplan': if(LivingWorld.isBusy(S,+ds.id)){toast('请先让伙伴结束家园活动');break;} S.customPlans[+ds.id] = {type:ds.type}; save(); renderTab(); closeModal(); toast('定制规划已设置', 'good'); break;
     case 'clearplan': delete S.customPlans[+ds.id]; save(); renderTab(); closeModal(); toast('定制规划已清除'); break;
     case 'globalplan': {
-      if(S.saveVersion>=4){switchTab('journey');closeModal();break;}
       if(ds.type === 'clear'){ S.globalPlan = null; toast('全部召回，已停止探险'); }
       else { S.globalPlan = ds.type; toast('自动探险：派遣史莱姆出发探险', 'good'); }
       save(); renderTab(); break;
     }
     case 'cycleMap': {
-      /* 只在已解锁区域之间轮换 */
-      let next = S.exploreMapIndex||0;
-      do { next = (next + 1) % MAP_THEMES.length; } while(!regionUnlocked(next) && next !== 0);
-      S.exploreMapIndex = next;
+      S.exploreMapIndex = ((S.exploreMapIndex||0) + 1) % MAP_THEMES.length;
       save();
       renderTab();
       toast(`地图已切换：${MAP_THEMES[S.exploreMapIndex].name}`, 'good');
       break;
     }
     case 'toggleTips': travelTipsOpen = !travelTipsOpen; renderTab(); break;
-    case 'refill': LivingWorld.dispatch({type:'refill'}); break;
-    case 'claimOverflow': LivingWorld.dispatch({type:'claimOverflow'}); break;
-    case 'monsterCare': careMonster(+ds.id,+ds.idx); break;
+    case 'refill': refillTrough(); break;
     case 'toggleSpaceMode':
       S.spaceMode = (S.spaceMode === 'free') ? 'monster' : 'free';
       selectedToy = null;
@@ -2320,14 +2193,12 @@ document.addEventListener('click', e=>{
       save(); renderTab(); closeModal();
       break;
     case 'resetSave': {
-      saveSnapshot=undefined;storageConflict=false;
       if(!confirm('将删除无法读取的存档并从新进度开始，删除后无法恢复。确定继续？')) break;
       try{ localStorage.removeItem(SAVE_KEY); }catch(e){}
       location.reload();
       break;
     }
     case 'abyssSetup': openAbyssSetup(); break;
-    case 'abyssSweep': sweepAbyss(); break;
     case 'abyssSel': toggleAbyssSel(+ds.id); break;
     case 'abyssStart': {
       if(!abyssSetupSel.length) return;
@@ -2343,7 +2214,6 @@ document.addEventListener('click', e=>{
       S.abyssLevel = clamp((S.abyssLevel||1) - 1, 1, getAbyssUnlocked());
       const inp = document.getElementById('abyssLevelInput');
       if(inp) inp.value = S.abyssLevel;
-      syncAbyssPortal();
       save();
       break;
     }
@@ -2351,7 +2221,6 @@ document.addEventListener('click', e=>{
       S.abyssLevel = clamp((S.abyssLevel||1) + 1, 1, getAbyssUnlocked());
       const inp = document.getElementById('abyssLevelInput');
       if(inp) inp.value = S.abyssLevel;
-      syncAbyssPortal();
       save();
       break;
     }
@@ -2385,7 +2254,7 @@ document.addEventListener('click', e=>{
       cfg.text = ($('#miText').value || '').trim().slice(0,20);
       save();
       closeModal();
-      renderTab();
+      if(activeTab === 'space') renderTab();
       toast('道具按钮已更新', 'good');
       break;
     }
@@ -2399,7 +2268,6 @@ document.addEventListener('input', e=>{
     v=clamp(Math.floor(v),1,getAbyssUnlocked());
     e.target.value=v;
     S.abyssLevel = v;
-    syncAbyssPortal();
     save();
   }
 });
@@ -2507,25 +2375,17 @@ function recoverPlanTick(s){
     const st=Math.min(stMax,s.stamina+0.4*(1+traitBonus(s,'stam')));
     if(Math.abs(st-s.stamina)>0.01){s.stamina=st;changed=true;}
     if(s.mood<100){s.mood=Math.min(100,s.mood+0.1);changed=true;}
-    if(S.feedTrough>0 && s.stamina<stMax-5 && Math.random()<0.14){
+    if(S.feedTrough>0 && s.stamina<stMax-5 && LivingWorld.gameRandom(S)<0.14){
       S.feedTrough--;s.stamina=clamp(s.stamina+30,0,stMax);s.mood=clamp(s.mood+3,0,100);changed=true;
     }
   }
   return changed;
 }
 
-/* 当前派遣区域：未解锁的区域（旧档可能停在雪原）按草原结算 */
-function exploreRegionIndex(){ return regionUnlocked(S.exploreMapIndex) ? (S.exploreMapIndex||0) : 0; }
-/* 一次派遣行动。收益 = (15 + 2.5×等级) × 区域倍率 × 词条 × 天赋加成(≤+50%)，
-   经验 = (6 + 0.8×等级) × 区域经验倍率。在线计时器与离线结算共用，silent 时不弹提示、不存档。 */
-function runPlans(silent){
-  if(!S.started || storageConflict || S.saveVersion>=4) return null;
-  const gains = {coins:0, treasure:0, actions:0, exp:0};
-  const regionIndex = exploreRegionIndex();
-  const region = MAP_THEMES[regionIndex];
+function runPlans(silent=false){
+  if(!S.started||!canWrite()) return;
   let changed = false;
   for(const s of S.slimes){
-    if(LivingWorld.isBusy(S,s.id))continue;
     const plan = getPlan(s.id);
     if(!plan || plan.type !== 'explore') continue;
     if(plan.global && S.exploreTeam !== null && !S.exploreTeam.includes(s.id)) continue;
@@ -2538,48 +2398,40 @@ function runPlans(silent){
 
     s.stamina -= planActionCost(s);
     const mult = 1 + traitBonus(s,'all') + traitBonus(s,'explore');
-    const talentMul = 1 + Math.min(0.5, calcTalent(s) / 300);
-    const base = (15 + 2.5 * s.level) * region.coinMul * mult * talentMul;
-    let gain = Math.round(base);
-    let msgExtra = '';
-    const roll = Math.random();
-    if(roll < 0.02 * region.treasureMul){
-      gain += Math.round(base * 3);
+    const pwMult = 1 + slimePower(s) / 300;
+
+    let expGain = 45;
+    let extra = 0, msgExtra = '';
+    const luckTrigger = LivingWorld.gameRandom(S) < (s.luck||0) * 0.005;
+    const roll = LivingWorld.gameRandom(S);
+    if(roll < 0.02){
+      extra = Math.round(2400 * (1 + s.mag/100) * mult);
       msgExtra = ' 发现天材地宝！';
       S.bag.treasure++;
-      gains.treasure++;
     } else if(roll < 0.10){
-      gain += Math.round(base * 3);
+      extra = Math.round(1400 * (1 + s.mag/100) * mult);
       msgExtra = ' 意外收获！';
     } else if(roll < 0.35){
-      gain += Math.round(base);
+      extra = Math.round(600 * (1 + s.mag/100) * mult);
     }
-    s.mood = clamp(s.mood + rndInt(-5,8), 0, 100);
-    if(msgExtra && !silent) setTimeout(()=>toast(`🗺️ ${s.name}${msgExtra}`, 'good'), 100);
+    let gain = Math.round(120 * (1 + s.agi/100) * mult) + extra;
+    s.mood = clamp(s.mood + Math.floor(LivingWorld.gameRandom(S)*14)-5, 0, 100);
+    if(msgExtra&&!silent) setTimeout(()=>toast(`🗺️ ${s.name}${msgExtra}`, 'good'), 100);
 
-    if(Math.random() < (s.luck||0) * 0.005){
+    if(luckTrigger){
       const bonus = Math.round(gain * 0.5);
       gain += bonus;
-      if(!silent) setTimeout(()=>toast(`🍀 ${s.name} 触发幸运事件！额外 +${bonus} 晶币`, 'good'), 200);
+      if(!silent)setTimeout(()=>toast(`🍀 ${s.name} 触发幸运事件！额外 +${bonus} 晶币`, 'good'), 200);
     }
 
+    gain = Math.round(gain * pwMult);
+    expGain = Math.round(expGain * pwMult);
+
     S.coins += gain; S.totalEarned += gain;
-    gains.coins += gain; gains.actions++;
-    const xp = Math.round((6 + 0.8 * s.level) * region.expMul);
-    gains.exp += Math.round(xp * expRate(s));
-    addExp(s, xp, silent);
-    addTaskProgress('rent', 1, silent);
-    recordRegionExplore(regionIndex);
+    addExp(s, expGain);
+    addTaskProgress('rent', 1);
+    if(typeof recordRegionExplore==='function') recordRegionExplore(S.exploreMapIndex);
     changed = true;
   }
-  if(changed && !silent){ save(); renderTop(); if(activeTab==='travel') renderTab(); }
-  return gains;
-}
-
-
-function careMonster(id,idx){
- const s=S.monsters.find(s=>s.id===id),config=S.monItemConfigs[idx];if(!s||!config)return;
- s.mood=clamp(s.mood+(Number(config.mood)||0),0,100);
- if(config.text)toast(config.text);
- save();renderTab();
+  if(changed&&!silent){ save(); renderTop(); if(activeTab==='travel') renderTab(); }
 }

@@ -21,7 +21,7 @@ function check(name, fn) {
   try { fn(); results.push({name, status:'PASS'}); console.log('PASS ' + name); }
   catch (error) { results.push({name, status:'FAIL', error:error.message}); console.error('FAIL ' + name + ': ' + error.message); }
 }
-const {boot} = require('./lib/vm-harness.cjs').loadGame(file, code);
+const {boot,node}=require('./lib/vm-harness.cjs').loadGame(file,code);
 function namedFunction(source,name) {
   const start=source.indexOf('function '+name+'(');
   assert.ok(start>=0,'Missing '+name);
@@ -61,7 +61,7 @@ check('defeat: zero enemy kills grants zero coins, creature XP and summoner XP',
 });
 check('defeat: only defeated enemies contribute partial rewards, repeated settlement is inert',()=>{
   const h=boot(),b=h.battle();b.B.monsters[0].hp=0;b.B.allies.forEach(x=>x.hp=0);
-  const expected=Math.round(Math.floor((40+b.B.monsters[0].ref.level*30)*0.25)*2.5),before=h.state().coins;
+  const expected=Math.round(Math.floor((30+b.B.monsters[0].ref.level*10)*0.25)*2.5),before=h.state().coins;
   b.endBattle(false);assert.equal(h.state().coins-before,expected);
   const after=h.state().coins;b.endBattle(false);assert.equal(h.state().coins,after);
 });
@@ -80,17 +80,18 @@ check('abyss: direct attempt cannot start above the unlocked level',()=>{
   const b=h.context.__TEST__._battle;
   if(b){assert.ok(b.B.monsters.every(m=>m.ref.level<=1));assert.equal(h.state().abyssLevel,1);}
 });
-for(const stamina of [1,19])check(`collection: stamina ${stamina} enters rest and eventually resumes`,()=>{
- const h=boot(),s=h.slime({stamina,mood:100});Object.assign(h.state(),{started:true,slimes:[s]});
- h.run("S.world.familiar=['0:0'];S.world.stock.feed=10;LivingWorld.execute(S,{type:'depart',region:0,route:0,team:[S.slimes[0].id],mode:'offline',duration:300});advanceWorld(1,true);");
- assert.equal(h.state().world.trips[0].resting,true);let n=0;while(h.state().world.trips[0].resting&&n++<400)h.run('advanceWorld(1,true)');
- assert.equal(h.state().world.trips[0].resting,false);h.run('advanceWorld(12,true)');assert.ok(h.state().world.trips[0].coins>0);
+for(const stamina of [1,19])check(`exploration: stamina ${stamina} enters rest and eventually resumes`,()=>{
+  const h=boot();const s=h.slime({stamina,mood:100});Object.assign(h.state(),{started:true,globalPlan:'explore',slimes:[s]});
+  h.run('runPlans()');assert.equal(s.resting,true);
+  const coins=h.state().coins;
+  let n=0;while(s.resting&&n++<400)h.tick(1000);
+  assert.equal(s.resting,false,'Passive recovery must exit rest at a visible threshold');
+  assert.ok(s.stamina>=20);h.run('runPlans()');assert.ok(h.state().coins>coins,'Exploration resumes earning');
 });
-for(const mode of ['home','ball','stack'])check(`collection: another partner can stay in ${mode} while travel progresses`,()=>{
- const h=boot(),s=h.slime({stamina:100,mood:100}),home=h.slime();Object.assign(h.state(),{started:true,slimes:[s,home]});
- h.run("S.world.familiar=['0:0'];S.world.stock.feed=10;LivingWorld.execute(S,{type:'depart',region:0,route:0,team:[S.slimes[0].id],mode:'offline',duration:300});");
- if(mode!=='home')assert.equal(h.run("LivingWorld.reserve(S,[S.slimes[1].id],'play')"),true);
- h.run('advanceWorld(12,true)');assert.equal(s.stamina,80);assert.ok(h.state().world.trips[0].coins>0);
+for(const mode of ['space','ball','stack'])check(`exploration: dispatched team keeps progressing during ${mode}`,()=>{
+  const h=boot();const s=h.slime({stamina:100,mood:100});Object.assign(h.state(),{started:true,globalPlan:'explore',slimes:[s]});
+  h.run(`activeTab='space';${mode==='ball'?'ballGame={running:true};':mode==='stack'?'stackGame={running:true};':''}`);
+  const before=h.state().coins;h.run('runPlans()');assert.equal(s.stamina,80);assert.ok(h.state().coins>before);
 });
 check('growth: zero XP does not manufacture summoner XP',()=>{
   const h=boot(),s=h.slime({wit:0});const before=h.state().summonerExp;h.context.pet=s;
@@ -135,10 +136,8 @@ check('migration: legacy data gains one immutable backup and repeat loads preser
   assert.equal(h.run('load()'),true);assert.equal(h.storage.get('slimeSummonerSave_v1_backup'),raw);
   assert.equal(h.state().slimes[0].str,999);assert.equal(h.state().slimes[0].intimacy,123);
   assert.equal(h.run('getAbyssUnlocked()'),1,'Old selected level is not proof of earned victory');
-  // lastActive 是每次存档时写入的时间戳（离线收益用），不属于「已获得的进度」，比较时去掉
-  const stable=k=>{const d=JSON.parse(h.storage.get(k));assert.ok(d.lastActive>0);delete d.lastActive;return JSON.stringify(d);};
-  h.run('save()');const saved=stable('slimeSummonerSave');assert.equal(h.run('load()'),true);h.run('save()');
-  assert.equal(stable('slimeSummonerSave'),saved);assert.equal(h.storage.get('slimeSummonerSave_v1_backup'),raw);
+  h.run('save()');const saved=h.storage.get('slimeSummonerSave');assert.equal(h.run('load()'),true);h.run('save()');
+  assert.equal(h.storage.get('slimeSummonerSave'),saved);assert.equal(h.storage.get('slimeSummonerSave_v1_backup'),raw);
 });
 for(const corruption of ['coins','level','size','duplicateId'])check(`migration: invalid ${corruption} blocks writes without losing original data`,()=>{
   const seed=boot(),pet=seed.slime();const d=JSON.parse(seed.run('JSON.stringify(S)'));Object.assign(d,{started:true,slimes:[pet]});
@@ -212,20 +211,19 @@ check('rewards: captured defeated enemies remain in the immutable reward ledger'
   const h=boot(),b=h.battle();const enemy=b.B.monsters[0];enemy.hp=0;assert.ok(b.B.rewardMonsters.includes(enemy));
   // Equivalent roster mutation to capture; retained ledger must still settle this kill.
   b.B.monsters=b.B.monsters.filter(m=>m!==enemy);b.B.allies.forEach(a=>a.hp=0);const before=h.state().coins;b.endBattle(false);
-  // 第 1 层敌人经验 40+30×1=70，失败取 25% → 17，晶币 ×2.5 → 43
-  assert.equal(h.state().coins-before,43);assert.equal(b.B.result.defeatedCount,1);
+  assert.equal(h.state().coins-before,25);assert.equal(b.B.result.defeatedCount,1);
 });
 check('battle: repeated start while overlay exists cannot duplicate roster/sequence',()=>{
   const h=boot(),b=h.battle();const seq=h.state().seq;h.run('startAbyssBattle()');assert.equal(h.context.__TEST__._battle,b);assert.equal(h.state().seq,seq);
 });
 check('companion home: default tab, target navigation and themes in settings',()=>{
-  const h=boot();assert.equal(h.run('activeTab'),'home');const content=h.run('LivingWorld.render()');
-  assert.ok(content.includes('lw-map'));assert.ok(content.includes('data-page="summon"'));assert.ok(!content.includes('theme-row'));
+  const h=boot();assert.equal(h.run('activeTab'),'space');const content=h.run('renderSpace()');
+  assert.ok(content.includes('home-objective'));assert.ok(content.includes('data-act="goto"'));assert.ok(!content.includes('theme-row'));
   h.run('openModal=html=>window.__settingsHTML=html;openSettings()');assert.ok(h.context.__settingsHTML.includes('theme-row'));
 });
 check('companionship: affinity thresholds unlock visible existing-expression responses without battle',()=>{
   const h=boot(),s=h.slime({intimacy:0});h.context.pet=s;const initial=h.run('bondMilestone(pet)');s.intimacy=10000;const max=h.run('bondMilestone(pet)');
-  assert.ok(max.need>initial.need);assert.notEqual(max.name,initial.name);assert.ok(h.run('renderSpace()').includes('lw-map'));
+  assert.ok(max.need>initial.need);assert.notEqual(max.name,initial.name);assert.ok(h.run('renderSpace()').includes('home-objective'));
 });
 
 check('migration: missing individual legacy fields fill safely without replacing earned values or reusing IDs',()=>{
@@ -266,139 +264,6 @@ check('battle feedback: ordinary hit avoids whole-scene shake; critical hit gets
 check('scene structure: three regions use distinct local SVG landmarks',()=>{
   const h=boot();const svgs=[0,1,2].map(i=>h.run(`mapLandmarks(MAP_THEMES[${i}])`));
   assert.equal(new Set(svgs).size,3);svgs.forEach(svg=>{assert.ok(svg.includes('<svg'));assert.ok(svg.includes('landmark-front'));assert.ok(svg.includes('landmark-back'));assert.equal(/https?:\/\//.test(svg),false);});
-});
-
-check('combat: physical and magical attacks respond to the matching attribute and defense',()=>{
-  const h=boot(),s=h.slime({element:'火',str:10,mag:40,level:10});h.context.pet=s;
-  const before=h.run('attackPower(pet)');s.str=100;assert.equal(h.run('attackPower(pet)'),before);
-  s.mag=80;assert.ok(h.run('attackPower(pet)')>before);
-  s.element='岩';assert.equal(h.run('attackPower(pet)'),h.run('physAtk(pet)'));
-  const target=h.slime({str:20,mag:20});h.context.target=target;
-  const light=h.run('mitigation(pet,target)');target.str=200;assert.ok(h.run('mitigation(pet,target)')<light);
-  s.element='火';const magic=h.run('mitigation(pet,target)');target.mag=200;assert.ok(h.run('mitigation(pet,target)')<magic);
-});
-check('combat: speed ordering preserves formation and follow-up has an exact threshold with no element proc',()=>{
-  const h=boot(),b=h.battle(['火','水']);h.run('S.battleMode="interject";atkSpeed=s=>s.agi;');
-  const [a,c]=b.B.allies,t=b.B.monsters[0];a.ref.agi=129;c.ref.agi=200;t.ref.agi=100;
-  assert.deepEqual(b.bySpeed(b.B.allies).map(u=>u.ref.id),[c.ref.id,a.ref.id]);assert.equal(b.B.allies[0],a);
-  b.setDodgeRate(()=>0);b.setCritRate(()=>0);t.ref.element='水';t.hp=t.maxHp=10000;t.st.rockArmor=t.st.iceArmor=0;
-  b.tryFollowUp(a,t);assert.equal(t.hp,10000);
-  a.ref.agi=130;b.tryFollowUp(a,t);assert.ok(t.hp<10000);assert.equal(t.minis.length,0);assert.equal(t.st.burn,0);
-});
-check('combat: auto mode casts ready skills once, respects cooldown, and heals only when needed',()=>{
-  const h=boot(),b=h.battle(['火','水']),[fire,water]=b.B.allies;
-  b.setDodgeRate(()=>0);b.setCritRate(()=>0);
-  b.B.monsters.forEach(u=>{u.ref.element='火';u.hp=u.maxHp=10000;u.st.rockArmor=u.st.iceArmor=0;});
-  b.performAction(fire,'ally');assert.equal(fire.cd['火'],3);assert.equal(fire.acted,true);
-  const hp=b.B.monsters.map(u=>u.hp);b.performAction(fire,'ally');assert.deepEqual(b.B.monsters.map(u=>u.hp),hp);
-  assert.equal(b.autoCast(water),false);fire.hp=1;
-  assert.equal(b.autoCast(water),true);assert.ok(fire.hp>1);assert.equal(water.cd['水'],3);
-  water.acted=false;assert.equal(b.autoCast(water),false);
-});
-check('combat: healing teams finish without an endless full-health loop',()=>{
-  const h=boot(),b=h.battle(['水','水']);
-  b.B.allies.concat(b.B.monsters).forEach(u=>{u.ref.element='水';u.ref.skill='治疗';u.st.rockArmor=u.st.iceArmor=0;});
-  for(let i=0;i<200 && !b.B.ended;i++){b.nextTurn();h.flush(1e9);}
-  assert.ok(b.B.ended);assert.ok(b.B.turn<200);
-});
-check('boss: every fifth floor has one durable leader and keeps its escorts',()=>{
-  const h=boot();Object.assign(h.state(),{abyssLevel:25,abyssUnlocked:25});const b=h.battle();
-  assert.equal(b.B.monsters.length,4);assert.equal(b.B.monsters.filter(u=>u.ref.isBoss).length,1);
-  const boss=b.B.monsters[0];assert.equal(boss.maxHp,h.run('hpMax')(boss.ref)*3);
-  const normal=h.run('makeAbyssMonster(24,false)');assert.equal(normal.isBoss,undefined);
-  assert.equal(normal.str,h.run('growthStat')(normal.strPotential,24));
-});
-check('bonds: matching elements boost attacks and diverse teams boost current and maximum health',()=>{
-  const h=boot(),b=h.battle(['火','火','火','岩','水']);
-  assert.equal(b.B.allies[0].atkMul,1.2);assert.equal(b.B.allies[3].atkMul,1);
-  assert.equal(b.unitAttack(b.B.allies[0]),Math.round(h.run('attackPower')(b.B.allies[0].ref)*1.2));
-  b.closeBattle();h.state().slimes[1].element='风';h.state().slimes[2].element='草';
-  h.run('startAbyssBattle()');const next=h.context.__TEST__._battle;
-  next.B.allies.forEach(u=>{assert.equal(u.maxHp,Math.round(h.run('hpMax')(u.ref)*1.1));assert.equal(u.hp,u.maxHp);});
-});
-check('battle roster: resting explorers must be recalled, captured monsters and excess members stay out',()=>{
-  const h=boot(),S=h.state(),s=h.slime({resting:true,stamina:1});Object.assign(S,{started:true,globalPlan:'explore',slimes:[s]});
-  h.run('abyssSetupSel=[S.slimes[0].id];startAbyssBattle()');assert.equal(h.context.__TEST__._battle,undefined);
-  S.globalPlan=null;S.slimes=Array.from({length:7},()=>h.slime());S.monsters=[h.slime({isMonster:true})];
-  h.run('abyssSetupSel=[...S.slimes,...S.monsters].map(s=>s.id);startAbyssBattle()');
-  const b=h.context.__TEST__._battle;assert.equal(b.B.allies.length,5);assert.ok(b.B.allies.every(u=>!u.ref.isMonster));
-});
-check('rewards: boss first-clear loot is once only and repeat victory is discounted',()=>{
-  const h=boot();Object.assign(h.state(),{abyssLevel:5,abyssUnlocked:5});let b=h.battle();
-  const before=h.state().bag.treasure;b.B.monsters.forEach(u=>u.hp=0);b.endBattle(true);
-  assert.equal(h.state().bag.treasure,before+1);assert.equal(h.state().abyssUnlocked,6);
-  const reward=b.B.result.totalExp;b.closeBattle();
-  h.run('abyssSetupSel=S.slimes.map(s=>s.id);startAbyssBattle()');b=h.context.__TEST__._battle;
-  b.B.monsters.forEach(u=>u.hp=0);b.endBattle(true);
-  assert.equal(h.state().bag.treasure,before+1);assert.equal(b.B.result.totalExp,Math.floor(reward*0.2));
-});
-check('sweep: requires a real clear, caps at three, persists usage, and resets with the day',()=>{
-  const h=boot(),S=h.state();S.slimes=[h.slime()];assert.equal(h.run('sweepAbyss()'),false);
-  h.run('ensureProgress().abyssClears[5]=true;S.abyssUnlocked=6;');
-  const treasure=S.bag.treasure;
-  for(let i=0;i<3;i++)assert.equal(h.run('sweepAbyss()'),true);
-  const coins=S.coins;assert.equal(h.run('sweepAbyss()'),false);assert.equal(S.coins,coins);
-  assert.equal(S.bag.treasure,treasure);assert.equal(S.abyssUnlocked,6);
-  const reloaded=boot(Object.fromEntries(h.storage));assert.equal(reloaded.run('load()'),true);
-  assert.equal(reloaded.run('sweepAbyss()'),false);
-  reloaded.state().taskDate='2000-01-01';assert.equal(reloaded.run('sweepAbyss()'),true);
-  assert.equal(reloaded.state().sweepUsed,1);
-});
-check('summon: empty roster is free, insufficient funds/full roster do not consume pity, and tenth draw is rare',()=>{
-  const h=boot(),S=h.state();S.coins=0;h.run('doSummon();clearSummonReveal()');assert.equal(S.slimes.length,1);assert.equal(S.coins,0);
-  const pity=S.summonPity,seq=S.seq;h.run('doSummon()');assert.equal(S.seq,seq);assert.equal(S.summonPity,pity);
-  S.coins=10000;S.summonPity=9;const price=h.run('summonCost()');h.run('doSummon();clearSummonReveal()');
-  assert.equal(S.coins,10000-price);assert.ok(h.run('RARE_ELEMENTS').includes(S.slimes[1].element));assert.equal(S.summonPity,0);
-  const snapshot=h.run('JSON.stringify(S)');h.run('doSummon()');assert.equal(h.run('JSON.stringify(S)'),snapshot);
-});
-check('regions: unlock at cleared floors 10 and 25 and locked legacy selection earns grass rewards',()=>{
-  const h=boot();assert.equal(h.run('regionUnlocked(1)'),false);h.state().abyssUnlocked=11;
-  assert.equal(h.run('regionUnlocked(1)'),true);assert.equal(h.run('regionUnlocked(2)'),false);
-  h.state().abyssUnlocked=26;assert.equal(h.run('regionUnlocked(2)'),true);
-  h.state().abyssUnlocked=1;h.state().exploreMapIndex=2;assert.equal(h.run('exploreRegionIndex()'),0);
-});
-check('potions: experience scales with level and benefits the selected partner',()=>{
-  const h=boot(),s=h.slime({level:30,wit:0});h.state().slimes=[s];h.state().bag.expPotion=1;
-  const amount=h.run('potionExp')(s);assert.equal(amount,h.run('slimeExpNeed(30)')*0.5);
-  h.run('useItem("expPotion",S.slimes[0].id)');assert.equal(s.exp,amount);assert.equal(h.state().bag.expPotion,0);
-});
-function exploringHarness(){
-  const h=boot({}, {now:Date.parse('2026-10-27T04:00:00Z')});
-  Object.assign(h.state(),{started:true,slimes:[h.slime({stamina:1,mood:100})]});
-  h.run("S.world.familiar=['0:0'];S.world.stock.feed=1000;LivingWorld.execute(S,{type:'depart',region:0,route:0,team:[S.slimes[0].id],mode:'offline',duration:300,repeat:true});");
-  h.run('checkDailyReset(true)');return h;
-}
-check('offline: collection earnings, growth and activity equal live ticking',()=>{
-  const online=exploringHarness(),off=exploringHarness();
-  for(let i=0;i<3600;i++)online.tick(1000);
-  const r=off.run('settleOffline(3600000)');assert.ok(r.actions>0);assert.ok(r.exp>0);
-  for(const key of ['coins','totalEarned','bag','slimes','tasks','points','world'])assert.equal(JSON.stringify(off.state()[key]),JSON.stringify(online.state()[key]),key);
-  assert.equal(off.storage.size,0,'Offline simulation must not save a partially applied result');
-});
-check('offline: twelve-hour cap, clock rollback, and diagnostic isolation',()=>{
-  const a=exploringHarness(),b=exploringHarness();
-  const r=a.run('settleOffline(24*3600000)'),s=b.run('settleOffline(12*3600000)');
-  assert.equal(r.seconds,43200);assert.equal(JSON.stringify(r),JSON.stringify(s));assert.equal(a.state().coins,b.state().coins);
-  const before=a.run('JSON.stringify(S)');assert.equal(a.run('settleOffline(-10000)').seconds,0);assert.equal(a.run('JSON.stringify(S)'),before);
-  const diagnostic=boot({}, {search:'?gallery=1'});diagnostic.state().started=true;diagnostic.state().slimes=[diagnostic.slime()];
-  const snapshot=diagnostic.run('JSON.stringify(S)');assert.equal(diagnostic.run('settleOffline(7200000)').actions,0);assert.equal(diagnostic.run('JSON.stringify(S)'),snapshot);
-});
-check('clock: delayed callbacks account for elapsed seconds once and resume collection after reload',()=>{
- const h=exploringHarness();h.elapse(4000);h.run('tickWorld()');assert.equal(h.state().world.trips[0].phase,4);
- h.run('tickWorld()');assert.equal(h.state().world.trips[0].phase,4);h.elapse(19000);h.run('tickWorld();save()');assert.equal(h.state().world.trips[0].phase,23);
- const reload=boot(Object.fromEntries(h.storage),{now:Date.parse('2026-10-27T04:00:23Z')});assert.equal(reload.run('load()'),true);assert.equal(reload.state().world.trips[0].phase,23);reload.tick(1000);assert.equal(reload.state().world.trips[0].phase,24);
-});
-check('migration: old same-day saves acquire new counters and task keys without losing earned stats',()=>{
-  const h=exploringHarness();h.state().slimes[0].str=999;h.state().tasks={rent:2,summon:1,feed:0};
-  const legacy=JSON.parse(h.run('JSON.stringify(S)'));for(const key of ['lastActive','summonPity','sweepUsed','planClock'])delete legacy[key];
-  const reload=boot({slimeSummonerSave:JSON.stringify(legacy)},{now:Date.parse('2026-10-27T04:00:00Z')});
-  assert.equal(reload.run('load()'),true);reload.run('checkDailyReset()');
-  assert.equal(reload.state().slimes[0].str,999);assert.equal(reload.state().tasks.rent,2);assert.equal(reload.state().tasks.abyss,0);assert.equal(reload.state().tasks.pet,0);
-  for(const key of ['lastActive','summonPity','sweepUsed','planClock'])assert.equal(reload.state()[key],0);
-});
-for(const [key,value] of [['lastActive',-1],['summonPity',0.5],['sweepUsed','3'],['planClock',12]])check(`migration: invalid ${key} keeps raw save protected`,()=>{
-  const h=exploringHarness(),data=JSON.parse(h.run('JSON.stringify(S)'));data[key]=value;
-  const raw=JSON.stringify(data),load=boot({slimeSummonerSave:raw});assert.equal(load.run('load()'),false);load.run('save()');assert.equal(load.storage.get('slimeSummonerSave'),raw);
 });
 
 if(require.main===module){

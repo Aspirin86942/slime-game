@@ -1,11 +1,10 @@
-/* 美术素材共用工具：等距坐标、立方体三面着色、夜间压暗。所有素材包只通过这里取坐标和颜色，保证光照方向一致。
-   坐标原点 = 物件锚点格子的顶角向下 10 像素（与地图里的 transform 一致）。
-   u 沿地图 x 轴（屏幕右下），v 沿地图 y 轴（屏幕左下），h 为离地高度（向上为正）。一格 = 46×30 像素的菱形。 */
+/* 俯视地面使用正交坐标，离地高度向屏幕上方延伸。
+   一格为 48×48 像素；建筑立面与统一阴影保留体积感。 */
 export const TW=23,TH=15;
 const r=(n:number)=>Math.round(n*10)/10;
 export type Pt=[number,number];
 /** 格子坐标 (u,v) 加高度 h → 屏幕坐标。 */
-export const pt=(u:number,v:number,h=0):Pt=>[r(TW*(u-v)),r(TH*(u+v)-10-h)];
+export const pt=(u:number,v:number,h=0):Pt=>[r(48*u),r(48*v-10-h)];
 /** 多边形路径。 */
 export const poly=(pts:Pt[]):string=>'M'+pts.map(([x,y])=>`${x} ${y}`).join('L')+'Z';
 /** 折线路径（不闭合），用于描边细节。 */
@@ -16,7 +15,7 @@ export function mix(a:string,b:string,t:number):string{const n=(h:string)=>[1,3,
 export const dusk=(c:string,lit:boolean):string=>lit?mix(c,'#2a2c5e',.38):c;
 /** 统一光照：顶面最亮、左前面（朝 +v）次亮、右前面（朝 +u）最暗。传入顶面颜色即可得到三面。 */
 export const faces=(c:string)=>({top:c,left:mix(c,'#1b1c3a',.14),right:mix(c,'#1b1c3a',.3)});
-/** 等距立方体：占据 [u0,u1]×[v0,v1]，高度 h0→h1。只画看得见的顶面、左前面、右前面。 */
+/** 带正面立面的立方体：占据 [u0,u1]×[v0,v1]，高度 h0→h1。只画看得见的顶面、左前面、右前面。 */
 export function box(u0:number,v0:number,u1:number,v1:number,h0:number,h1:number,c:{top:string;left:string;right:string}):string{
  return `<path d="${poly([pt(u0,v1,h0),pt(u1,v1,h0),pt(u1,v1,h1),pt(u0,v1,h1)])}" fill="${c.left}"/>`+
   `<path d="${poly([pt(u1,v0,h0),pt(u1,v1,h0),pt(u1,v1,h1),pt(u1,v0,h1)])}" fill="${c.right}"/>`+
@@ -36,7 +35,7 @@ export function gable(u0:number,v0:number,u1:number,v1:number,h0:number,h1:numbe
 }
 /** 落地阴影：覆盖整个占地，略向右下偏移。 */
 export function shadow(a:number,b:number):string{
- const k=.06;return `<path d="${poly([pt(-k,-k),pt(a+k,-k),pt(a+k,b+k),pt(-k,b+k)])}" transform="translate(3 3)" fill="#1d2440" opacity=".2"/>`;
+ return `<ellipse cx="${a*24+5}" cy="${b*35-8}" rx="${a*25}" ry="${b*17}" fill="#344d35" opacity=".17"/>`;
 }
 /** 固定伪随机数：同一个种子每次得到同一个值，用于草叶、石子的位置。 */
 export const jitter=(n:number,k:number):number=>{const v=Math.sin(n*127.1+k*311.7)*43758.5453;return v-Math.floor(v);};

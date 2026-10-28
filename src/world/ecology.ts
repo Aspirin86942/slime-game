@@ -1,3 +1,4 @@
+import {biomeAt,mapWidth} from './map.ts';
 import {BUILDINGS,DECORATIONS,PLANTS,VISITORS} from './content.ts';
 import {workerPresent} from './life.ts';
 import type {World,Slime,Environment,Placement} from './types.ts';
@@ -11,8 +12,8 @@ export function level(w:World,id:string):number {return Math.max(0,...w.placemen
 export function bounds(p:Placement):[number,number] {const d=BUILDINGS.find(b=>b.id===p.def);const s=d?.size??[1,1];return p.rotation%2?[s[1],s[0]]:[s[0],s[1]];}
 export function environment(w:World,zone:number,x=6,y=6,slimes:Slime[]=[]):Environment {
  const s=season(w),e:Environment={light:60,moisture:45,fertility:45,quality:45,temperature:[22,29,18,8][s],reasons:[`${SEASONS[s]}季基础温度 ${[22,29,18,8][s]}°` ]};
- if(zone===2){e.light-=15;e.moisture+=15;e.reasons.push('林间树冠：光照 −15，湿度 +15');}
- if(zone===3){e.moisture+=25;e.quality+=10;e.reasons.push('湿地水网：湿度 +25，水质 +10');}
+ if((w.version===5?biomeAt(w,x,y):zone)===2){e.light-=15;e.moisture+=15;e.reasons.push('林间树冠：光照 −15，湿度 +15');}
+ if((w.version===5?biomeAt(w,x,y):zone)===3){e.moisture+=25;e.quality+=10;e.reasons.push('湿地水网：湿度 +25，水质 +10');}
  if(w.weather===1){e.moisture+=20;e.quality+=5;e.reasons.push('细雨：湿度 +20，水质 +5');}
  if(w.weather===2){e.light-=10;e.moisture+=10;e.reasons.push('薄雾：光照 −10，湿度 +10');}
  if(w.weather===3){e.temperature-=2;e.reasons.push('微风：温度 −2°');}
@@ -27,7 +28,7 @@ export function environment(w:World,zone:number,x=6,y=6,slimes:Slime[]=[]):Envir
   if(d?.service==='quality'||d?.service==='aquatic'){e.quality+=10*p.level;e.reasons.push(`${d.name}：改善水质`);}
   const dec=DECORATIONS.find(d=>d.id===p.def);if(dec){if(dec.group===1)shades+=3;if(dec.group===2)lights+=4;if(dec.group===6||dec.group===4)comfort+=3;}
   for(const job of w.workers.filter(j=>j.building===p.id)){
-   if(w.version===4&&!workerPresent(w,job.slimeId,p.id))continue;
+   if(w.version>=4&&!workerPresent(w,job.slimeId,p.id))continue;
    const el=slimes.find(s=>s.id===job.slimeId)?.element;
    if(el==='水'){e.moisture+=10;e.reasons.push('水伙伴：湿度 +10');}
    if(el==='草'){e.fertility+=10;e.reasons.push('草伙伴：肥力 +10');}
@@ -48,7 +49,7 @@ export function environment(w:World,zone:number,x=6,y=6,slimes:Slime[]=[]):Envir
 }
 export function refreshVisitors(w:World,slimes:Slime[]):void {
  for(const v of VISITORS){
-  const crops=w.crops.filter(c=>c.zone===v.zone), env=environment(w,v.zone,6,6,slimes);
+  const crops=w.crops.filter(c=>w.version===5?biomeAt(w,c.x,c.y)===v.zone:c.zone===v.zone), env=environment(w,w.version===5?0:v.zone,w.version===5?(v.zone%3)*12+6:6,w.version===5?Math.floor(v.zone/3)*12+6:6,slimes);
   const flower=crops.filter(c=>c.progress>=.7&&PLANTS.find(p=>p.id===w.cultivars.find(x=>x.id===c.cultivar)?.species)?.family===0).length;
   let ok=w.unlocked.includes(v.zone)&&crops.length>=v.plants&&env.moisture>=v.humidity-level(w,'insects')*5-(level(w,'memorial')===3?3:0)&&env.quality>=v.quality;
   if(v.id==='visitor-0')ok=ok&&flower>=2;

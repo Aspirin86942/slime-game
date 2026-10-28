@@ -1,44 +1,350 @@
 {
+  "date": "2026-10-29",
   "product": "史莱姆.html",
-  "sha256": "74321074a957cc7691b547bf654957f4c4019d0d5db9abcb62ced9367bbd7671",
+  "saveVersion": 5,
+  "bytes": 820149,
+  "sha256": "5e3802a62b6d74c33d331972a64ce3386ed65b2b5e5bc272bec4ddd34704ae28",
+  "syncedCommit": "914f49c52ba8fb4e5d30d00862a42b673ee44f65",
+  "legacyBaseline": "ae243d94a451c4ee16e258e5b6a2a39e2421a16a",
   "baseline_sha256": "60a7b01f21ac6707a399bcb461b233016e9cbae5bfedff20aa36352bf864d6f4",
+  "backup": {
+    "path": "backup/史莱姆-20261028-pre-single-home.html",
+    "bytes": 945330,
+    "sha256": "7726d31241d133be8cf3fec281664b6d3f841add227e12a475319938526f04c2",
+    "matchesSyncedCommit": true
+  },
   "checks": {
     "typescript": "PASS",
-    "world_rules": "31/31",
-    "legacy_rules": "68/68",
-    "integration": "7/7",
-    "growth": "PASS",
-    "balance_battles": 26400,
-    "balance": "PASS",
-    "world_browser": "21/21",
-    "legacy_browser": "17/17",
-    "art": "39/39",
-    "touch": "25/25",
-    "migration": "16/16",
-    "browser_selftest": "42/42"
+    "build": "PASS",
+    "worldAndMigration": "72/72",
+    "legacyRules": "48/48",
+    "mergeGrowth": "PASS",
+    "browser": "40/40",
+    "browserExceptions": 0
+  },
+  "environment": {
+    "os": "win32 10.0.26200",
+    "node": "v26.5.1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36",
+    "renderer": "ANGLE (AMD, AMD Radeon(TM) Graphics (0x00001636) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "cpuThreads": 16,
+    "headless": true,
+    "isolatedProfile": true,
+    "touchEmulated": true,
+    "realMobileTested": false
   },
   "performance": {
-    "combat_fx_on_fps": 58.5,
-    "combat_fx_off_fps": 60.1,
-    "combat_stress_fps": 41.8,
-    "garden_fps": 60,
-    "full_garden_fps": 60,
-    "full_garden_plants": 138,
-    "full_garden_companions": 12,
-    "renderer": "software; garden uses ANGLE SwiftShader",
-    "real_mobile_tested": false
+    "sampling": "One 2.5-second requestAnimationFrame sample per scene, 1440x900, DPR 1. Desktop GPU; this is not a mobile benchmark.",
+    "ordinary": {
+      "fps": 143.59219815723344,
+      "frames": 360,
+      "p95": 7.399999999999636
+    },
+    "dense": {
+      "fps": 139.76887818303663,
+      "frames": 350,
+      "p95": 7.400000000001455
+    },
+    "densePlants": 300,
+    "ordinaryTargetFps": 55,
+    "denseTargetFps": 30
   },
   "content": {
-    "districts": 6,
+    "maps": 1,
+    "width": 36,
+    "height": 24,
     "facilities": 24,
-    "decorations": 48,
-    "plants": 54,
+    "decorations": 42,
+    "pathStyles": 6,
+    "plants": 55,
+    "recipes": 17,
     "visitors": 18,
-    "routes": 18,
-    "exploration_events": 72,
-    "fixed_chapters": 48,
-    "personality_chains": 42,
-    "relationship_events": 24,
-    "new_minigames": 3
+    "legacyMinigames": [
+      "ball",
+      "stack"
+    ]
+  },
+  "viewports": [
+    [
+      320,
+      568
+    ],
+    [
+      390,
+      844
+    ],
+    [
+      844,
+      390
+    ],
+    [
+      1440,
+      900
+    ],
+    [
+      1920,
+      1080
+    ]
+  ],
+  "browserChecks": [
+    {
+      "name": "single fullscreen map, old navigation and no letterbox",
+      "ok": true
+    },
+    {
+      "name": "mouse places rotated facility",
+      "ok": true
+    },
+    {
+      "name": "drag moves facility and keeps its ID",
+      "ok": true
+    },
+    {
+      "name": "stored item returns through the catalog",
+      "ok": true
+    },
+    {
+      "name": "one dragged stroke crosses both former district seams",
+      "ok": true
+    },
+    {
+      "name": "cancelled touch stroke does not change the saved roads",
+      "ok": true
+    },
+    {
+      "name": "drag pans map",
+      "ok": true
+    },
+    {
+      "name": "wheel zoom changes the camera",
+      "ok": true
+    },
+    {
+      "name": "pinch zoom and two-finger pan work",
+      "ok": true
+    },
+    {
+      "name": "seed catalog plants by tapping the ground",
+      "ok": true
+    },
+    {
+      "name": "open crafting panel updates ready state",
+      "ok": true
+    },
+    {
+      "name": "craft output is collected once",
+      "ok": true
+    },
+    {
+      "name": "ecology layer renders across the continuous map",
+      "ok": true
+    },
+    {
+      "name": "home launches original ball game",
+      "ok": true
+    },
+    {
+      "name": "ball releases companions on exit",
+      "ok": true
+    },
+    {
+      "name": "home launches original stack game",
+      "ok": true
+    },
+    {
+      "name": "stack releases companions on exit",
+      "ok": true
+    },
+    {
+      "name": "viewport 1440x900 fills screen and keeps controls visible",
+      "ok": true,
+      "detail": {
+        "width": 1440,
+        "height": 900,
+        "navBottom": 892,
+        "toolLeft": 544.5,
+        "toolRight": 895.5,
+        "scroll": 1440,
+        "inner": 1440
+      }
+    },
+    {
+      "name": "catalog fits 1440x900",
+      "ok": true,
+      "detail": {
+        "left": 1062,
+        "right": 1422,
+        "top": 88,
+        "bottom": 750
+      }
+    },
+    {
+      "name": "viewport 1920x1080 fills screen and keeps controls visible",
+      "ok": true,
+      "detail": {
+        "width": 1920,
+        "height": 1080,
+        "navBottom": 1072,
+        "toolLeft": 784.5,
+        "toolRight": 1135.5,
+        "scroll": 1920,
+        "inner": 1920
+      }
+    },
+    {
+      "name": "catalog fits 1920x1080",
+      "ok": true,
+      "detail": {
+        "left": 1542,
+        "right": 1902,
+        "top": 88,
+        "bottom": 930
+      }
+    },
+    {
+      "name": "viewport 390x844 fills screen and keeps controls visible",
+      "ok": true,
+      "detail": {
+        "width": 390,
+        "height": 844,
+        "navBottom": 836,
+        "toolLeft": 51,
+        "toolRight": 339,
+        "scroll": 390,
+        "inner": 390
+      }
+    },
+    {
+      "name": "catalog fits 390x844",
+      "ok": true,
+      "detail": {
+        "left": 10,
+        "right": 380,
+        "top": 293.890625,
+        "bottom": 699
+      }
+    },
+    {
+      "name": "viewport 320x568 fills screen and keeps controls visible",
+      "ok": true,
+      "detail": {
+        "width": 320,
+        "height": 568,
+        "navBottom": 560,
+        "toolLeft": 25,
+        "toolRight": 295,
+        "scroll": 320,
+        "inner": 320
+      }
+    },
+    {
+      "name": "catalog fits 320x568",
+      "ok": true,
+      "detail": {
+        "left": 10,
+        "right": 310,
+        "top": 150.375,
+        "bottom": 423
+      }
+    },
+    {
+      "name": "viewport 844x390 fills screen and keeps controls visible",
+      "ok": true,
+      "detail": {
+        "width": 844,
+        "height": 390,
+        "navBottom": 382,
+        "toolLeft": 16,
+        "toolRight": 367,
+        "scroll": 844,
+        "inner": 844
+      }
+    },
+    {
+      "name": "catalog fits 844x390",
+      "ok": true,
+      "detail": {
+        "left": 492,
+        "right": 832,
+        "top": 82,
+        "bottom": 310
+      }
+    },
+    {
+      "name": "phone touch drag pans without selecting objects",
+      "ok": true
+    },
+    {
+      "name": "night colors and dark controls render",
+      "ok": true
+    },
+    {
+      "name": "ordinary home reaches 55 FPS",
+      "ok": true,
+      "detail": {
+        "fps": 143.59219815723344,
+        "frames": 360,
+        "p95": 7.399999999999636
+      }
+    },
+    {
+      "name": "300 plants reach 30 FPS",
+      "ok": true,
+      "detail": {
+        "fps": 139.76887818303663,
+        "frames": 350,
+        "p95": 7.400000000001455
+      }
+    },
+    {
+      "name": "offline normal reload retains identities, layout and all stock",
+      "ok": true
+    },
+    {
+      "name": "old page opens: space",
+      "ok": true
+    },
+    {
+      "name": "old page opens: summon",
+      "ok": true
+    },
+    {
+      "name": "old page opens: travel",
+      "ok": true
+    },
+    {
+      "name": "old page opens: bag",
+      "ok": true
+    },
+    {
+      "name": "old page opens: status",
+      "ok": true
+    },
+    {
+      "name": "old page opens: home",
+      "ok": true
+    },
+    {
+      "name": "conflicting tab freezes writes and shows recovery action",
+      "ok": true
+    },
+    {
+      "name": "no browser exceptions",
+      "ok": true,
+      "detail": []
+    }
+  ],
+  "reports": {
+    "rules": "tools/out/home-final-tests.log",
+    "browser": "tools/out/home-v5/results.json",
+    "screenshots": "tools/out/home-v5/"
+  },
+  "limits": [
+    "Physical phones and browsers other than Chromium were not tested.",
+    "Migration uses synthetic saves and the repository V3 fixture, not private player data.",
+    "Performance numbers are short desktop samples, not a sustained-load benchmark."
+  ],
+  "delivery": {
+    "contents": ["source", "standalone HTML", "documentation", "acceptance records"]
   }
 }

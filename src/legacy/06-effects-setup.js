@@ -1,10 +1,10 @@
 const FX = {
   field: null, log: [], _txt: 0, _part: 0,
-  _merge: null, _flashes: new WeakMap(), _shakeRank: 0, _shakeKind: '', _shakeRaf: 0, _shakePulse: null,
+  _merge: null, _shakeRank: 0, _shakeKind: '', _shakeRaf: 0,
 
   /* 记录演出容器（.battle-field） */
   bindField(el){
-    this.field = el || null;this._merge=null;
+    this.field = el || null;
     return this.field;
   },
   /* 高速档压缩演出时长 */
@@ -29,37 +29,28 @@ const FX = {
     this._shakeRaf = requestAnimationFrame(()=>{
       this._shakeRaf = 0;
       const key = this._shakeKind || 'light';
-      const strength = this._shakeRank;
       this._shakeRank = 0; this._shakeKind = '';
       const el = this._host();
       if(!el || el === document.body) return;
-      // Merge same-strength camera pulses within 500 ms; a stronger impact still interrupts.
-      const now=performance.now();
-      if(this._shakePulse?.el===el && now-this._shakePulse.at<500 && this._shakePulse.strength>=strength)return;
-      const pulse={el,strength,at:now};this._shakePulse=pulse;
       el.classList.remove('field-shake');
       void el.offsetWidth;
       el.setAttribute('data-k', key);
       el.classList.add('field-shake');
       this._record('shake', key, '', 'shake');
-      setTimeout(()=>{if(this._shakePulse===pulse)el.classList.remove('field-shake');}, 220);
+      setTimeout(()=>el.classList.remove('field-shake'), 220);
     });
   },
 
   /* 命中闪白：打在 .breath 上，暴击额外放大描边 */
   flash(el, isCrit){
     if(!el) return;
-    const now=performance.now(),previous=this._flashes.get(el);
-    if(previous&&now-previous.at<80&&(!isCrit||previous.crit))return;
-    const pulse={at:now,crit:!!isCrit};this._flashes.set(el,pulse);
-    if(typeof matchMedia==='function'){const r=el.getBoundingClientRect();LivingWorld.impact(r.left+r.width/2,r.top+r.height/2,'#ffe2ad',isCrit);}
     const tb = (el.querySelector && el.querySelector('.breath')) || el;
     if(!tb || !tb.classList) return;
     tb.classList.remove('hit-flash', 'crit');
     void tb.offsetWidth;
     tb.classList.add('hit-flash');
     if(isCrit) tb.classList.add('crit');
-    setTimeout(()=>{if(this._flashes.get(el)===pulse)tb.classList.remove('hit-flash', 'crit');}, isCrit ? 280 : 200);
+    setTimeout(()=>tb.classList.remove('hit-flash', 'crit'), isCrit ? 280 : 200);
   },
 
   /* 飘字：同目标 250ms 内同 cls 的纯数字合并累加 */
@@ -74,9 +65,7 @@ const FX = {
     const num = mm ? parseInt(mm[1], 10) : null;
     const suffix = mm ? mm[2] : '';
     const now = performance.now();
-    if(!(this._merge instanceof WeakMap))this._merge=new WeakMap();
-    let target=this._merge.get(el);if(!target){target=new Map();this._merge.set(el,target);}
-    const mergeKey=cls+'|'+suffix,m=target.get(mergeKey);
+    const m = this._merge;
     if(num !== null && m && m.suffix === suffix && m.el === el && m.cls === cls && (now - m.t) < 250 && m.node && m.node.isConnected){
       m.sum += num;
       m.t = now;
@@ -113,7 +102,7 @@ const FX = {
     node._born = now;
     setTimeout(()=>node.remove(), dur + 60);
     this._trimFloat(field);
-    target.set(mergeKey,{ el, cls, t: now, node, sum: num === null ? 0 : num, suffix, count: 1 });
+    this._merge = { el, cls, t: now, node, sum: num === null ? 0 : num, suffix, count: 1 };
     this._record('float', icon + raw, cls, 'float');
     return node;
   },
@@ -145,8 +134,7 @@ const FX = {
   burst(el, color, count){
     if(!el) return;
     const field = this._host();
-    const n = Math.min(Math.max(1, Math.min(40, count || 10)),60-field.querySelectorAll('.fx-part').length);
-    if(n<=0)return;
+    const n = Math.max(1, Math.min(40, count || 10));
     const fr = field.getBoundingClientRect();
     const tr = (el.querySelector ? (el.querySelector('.slime') || el) : el).getBoundingClientRect();
     const cx = tr.left - fr.left + tr.width / 2;
@@ -258,119 +246,32 @@ function enemyIntentText(unit){
   return (controlled?'受控待取消 · ':'预告 · ')+q.name+power+suffix;
 }
 
-/* ==================== 深渊数值：敌人、首领、羁绊、结算 ==================== */
-/* 敌人与伙伴共用 growthStat，固定每层编制，避免靠重开刷到一只首领就越层。
-   潜力保留随机差异；数值由 tests/balance-sim.cjs 校准。 */
-const ABYSS_POT_MIN = 8, ABYSS_POT_MAX = 16;
-const BOSS_HP_MUL = 3, BOSS_ATK_MUL = 1.5, BOSS_EXP_MUL = 2.5;
-const REPEAT_REWARD_MUL = 0.2;
-const SWEEP_PER_DAY = 3;
-const FOLLOW_UP_SPEED = 1.3, FOLLOW_UP_MULT = 0.5;
-function isBossFloor(floor){ return floor % 5 === 0; }
-/* 编制随进度为 2/3/4/5 只；每五层第一只升级为首领，保留其余护卫。 */
-function abyssEnemyCount(floor){
-  return floor < 10 ? 2 : floor < 20 ? 3 : floor < 35 ? 4 : 5;
-}
-function makeAbyssMonster(level, boss){
-  const m = createSlime(true);
-  for(const key of ['strPotential','agiPotential','magPotential']) m[key] = gameInt(ABYSS_POT_MIN, ABYSS_POT_MAX);
-  m.level = level;
-  m.str = growthStat(m.strPotential, level);
-  m.agi = growthStat(m.agiPotential, level);
-  m.mag = growthStat(m.magPotential, level);
-  m.size = +(m.size + (level-1)*0.0016).toFixed(3);
-  if(boss){ m.isBoss = true; m.name = `首领·${m.element}魔物`; }
-  else m.name = `${m.element}魔物${m.id}`;
-  m.hp = hpMax(m);
-  return m;
-}
-function abyssFloorCleared(floor){ return !!ensureProgress().abyssClears[String(floor)]; }
-function highestClearedFloor(){
-  return Object.keys(ensureProgress().abyssClears).reduce((max,k)=>Number.isInteger(+k) && +k>=1 && +k<=50 && abyssFloorCleared(+k) ? Math.max(max, +k) : max, 0);
-}
-/* 元素羁绊：同元素 2 只攻击 +10%、3 只及以上 +20%；4 种及以上元素全队生命 +10% */
-function teamBond(refs){
-  const count = {};
-  refs.forEach(r=>{ if(r && ELEMENTS[r.element]) count[r.element] = (count[r.element]||0) + 1; });
-  const atk = {};
-  Object.keys(count).forEach(el=>{ if(count[el] >= 3) atk[el] = 1.2; else if(count[el] >= 2) atk[el] = 1.1; });
-  return {atk, hp: Object.keys(count).length >= 4 ? 1.1 : 1, count};
-}
-function bondText(refs){
-  const b = teamBond(refs);
-  const parts = Object.keys(b.atk).map(el=>`${el}×${b.count[el]} 攻击+${Math.round((b.atk[el]-1)*100)}%`);
-  if(b.hp > 1) parts.push(`${Object.keys(b.count).length} 种元素 全队生命+10%`);
-  return parts.length ? parts.join(' · ') : '暂无（同元素 2 只或 4 种不同元素可激活）';
-}
-/* 首通奖励：首领层额外给天材地宝、捕捉网、积分，每 10 层再给词条券 */
-function firstClearBonus(floor){
-  if(!isBossFloor(floor)) return null;
-  return {treasure:1, net:1, points:5, ticket: floor % 10 === 0 ? 1 : 0};
-}
-function bonusText(b){
-  if(!b) return '';
-  return [b.treasure&&`天材地宝×${b.treasure}`, b.net&&`捕捉网×${b.net}`, b.ticket&&`词条券×${b.ticket}`, b.points&&`积分+${b.points}`].filter(Boolean).join(' ');
-}
-
-/* Pure reward calculation: snapshot before post-battle healing.
-   每只敌人经验 = (40 + 30×等级) × 首领 2.5；胜利全额，失败只算已击败的 25%；
-   已通关层的重复挑战再 ×0.2，主要收益来自首通、派遣和每日扫荡。 */
-function enemyExp(ref){ return Math.round((40 + 30 * (Number(ref.level)||1)) * (ref.isBoss ? BOSS_EXP_MUL : 1)); }
+/* Pure reward calculation: snapshot before post-battle healing. */
 function calculateBattleRewards(battle,win,level){
   const enemies=battle.rewardMonsters || battle.monsters || [], participants=battle.allies || [];
   const defeated=enemies.filter(m=>m.hp<=0);
   const survivors=participants.filter(a=>a.hp>0);
   const recipients=survivors.length ? survivors.slice() : participants.slice();
-  if(battle.training) return {totalExp:0,coinGain:0,defeatedCount:defeated.length,recipients:[],survivorCount:survivors.length,repeat:false};
-  const base=(win ? enemies : defeated).reduce((sum,m)=>sum+enemyExp(m.ref),0);
-  let totalExp=win ? base : Math.floor(base*0.25);
-  if(battle.floorCleared) totalExp=Math.floor(totalExp*REPEAT_REWARD_MUL);
-  return {totalExp,coinGain:Math.round(totalExp*2.5),defeatedCount:defeated.length,recipients,survivorCount:survivors.length,repeat:!!battle.floorCleared};
-}
-/* 扫荡（参考爬塔类游戏）：对最高已通关层直接结算一场 3 只敌人的胜利，每日 3 次 */
-function sweepAbyss(){
-  if(storageConflict || persistenceBlocked || saveRetryNeeded)return false;
-  checkDailyReset();
-  const floor = highestClearedFloor();
-  if(!floor){ toast('先通关至少一层深渊才能扫荡'); return false; }
-  if((S.sweepUsed||0) >= SWEEP_PER_DAY){ toast('今日扫荡次数已用完，明天再来'); return false; }
-  const ids = new Set(S.lastAbyssSel || []);
-  const available=S.slimes.filter(s=>!hasExplorePlan(s)&&!LivingWorld.isBusy(S,s.id));
-  let team = available.filter(s=>ids.has(s.id)).slice(0,5);
-  if(!team.length) team = available.slice(0, 5);
-  if(!team.length){ toast('请先让伙伴回家，再参加扫荡'); return false; }
-  if(!LivingWorld.reserve(S,team.map(s=>s.id),'battle'))return false;
-  const fake = {
-    monsters: [0,1,2].map(()=>({hp:0, ref:{level:floor}})),
-    allies: team.map(s=>({hp:1, ref:s}))
-  };
-  const r = calculateBattleRewards(fake, true, floor);
-  S.sweepUsed = (S.sweepUsed||0) + 1;
-  S.coins += r.coinGain;
-  S.totalEarned += r.coinGain;
-  const each = Math.floor(r.totalExp / team.length);
-  team.forEach(s=>addExp(s, each));
-  LivingWorld.finishBattle(S,team.map(s=>s.id),true,`深渊第${floor}层扫荡`);
-  save(); renderTop(); renderTab();
-  toast(`扫荡第 ${floor} 层完成\n晶币 +${r.coinGain} · 每只伙伴经验 +${each}\n今日剩余 ${SWEEP_PER_DAY - S.sweepUsed} 次`, 'good');
-  return true;
+  if(battle.training) return {totalExp:0,coinGain:0,defeatedCount:defeated.length,recipients:[],survivorCount:survivors.length};
+  const mLevel=clamp(Math.floor(Number(level || battle.mLevel)||1),1,50);
+  const levelMul=1+(mLevel-1)*0.25;
+  const base=(win ? enemies : defeated).reduce((sum,m)=>sum+Math.round((30+(Number(m.ref.level)||1)*10)*levelMul),0);
+  const totalExp=win ? base : Math.floor(base*0.25);
+  return {totalExp,coinGain:Math.round(totalExp*2.5),defeatedCount:defeated.length,recipients,survivorCount:survivors.length};
 }
 /* ==================== 深渊对战 ==================== */
 let abyssSetupSel = [];
 
 function openAbyssSetup(){
-  checkDailyReset();
   getAbyssLevel();
-  const available = S.slimes.filter(s => !hasExplorePlan(s) && !LivingWorld.isBusy(S,s.id));
+  const available = S.slimes.filter(s => !isDispatched(s));
   if(!available.length){ toast('所有史莱姆都在野外探险中，请先召回后再进入深渊'); return; }
   const validIds = new Set(available.map(s=>s.id));
   abyssSetupSel = (S.lastAbyssSel || []).filter(id => validIds.has(id)).slice(0,5);
   openModal(`
     <button class="close" data-act="close">✕</button>
     <h3 style="text-align:center;margin:0 0 6px;color:var(--accent2);">深渊冒险 · 选择出战史莱姆</h3>
-    <p class="muted small" style="text-align:center;">第 ${S.abyssLevel} 层${isBossFloor(S.abyssLevel)?' · 首领挑战':''} · 最多 5 只，速度快的先行动<br>正在野外探险的伙伴需要先召回</p>
-    <p class="muted small">${abyssFloorCleared(S.abyssLevel)?'本层已通关，重复挑战收益为首通的 20%。':`首通：全额晶币与经验${firstClearBonus(S.abyssLevel)?'，'+bonusText(firstClearBonus(S.abyssLevel)):''}`}</p>
-    <p class="small" id="abyssBond" aria-live="polite">羁绊：${bondText(available.filter(s=>abyssSetupSel.includes(s.id)))}</p>
+    <p class="muted small" style="text-align:center;">最多选择 5 只，先选先上场 · 怪物等级 ${S.abyssLevel}<br>（正在野外探险的史莱姆无法参战）</p>
     <div class="minigrid merge-list" style="margin-top:14px;">
       ${available.map(s=>`
         <div class="minicard ${abyssSetupSel.includes(s.id)?'on':''}" data-act="abyssSel" data-id="${s.id}">
@@ -394,8 +295,6 @@ function toggleAbyssSel(id){
   });
   const btn = document.querySelector('[data-act="abyssStart"]');
   if(btn) btn.disabled = abyssSetupSel.length === 0;
-  const bond = document.getElementById('abyssBond');
-  if(bond) bond.textContent = '羁绊：' + bondText(S.slimes.filter(s=>abyssSetupSel.includes(s.id)));
 }
 
 function openTeamSetup(){

@@ -10,8 +10,7 @@ const S = {
   feedTrough:0, totalEarned:0, seq:1, nameSeq:0,
   theme:'sunset', globalPlan:null, customPlans:{},
   monItemConfigs: defaultMonItems(),
-  saveVersion:4, world:LivingWorld.createWorld(), spaceMode:'free', abyssLevel:1, abyssUnlocked:1,
-  summonPity:0, sweepUsed:0, lastActive:0, planClock:0,
+  saveVersion:5, world:LivingWorld.createWorld(), lastActive:0, planClock:0, spaceMode:'free', abyssLevel:1, abyssUnlocked:1,
   lastAbyssSel:[],
   exploreMapIndex:0,
   exploreTeam: null,
@@ -20,7 +19,7 @@ const S = {
   battleMode: 'auto'
 };
 LivingWorld.ensure(S);
-let activeTab='home';
+let activeTab='space';
 let plSlimes=[];
 let travelTipsOpen = false;
 let summonBoost = {};
@@ -57,18 +56,11 @@ let exploreLastT = 0;
 let exploreItems = [];
 let exploreLayer = null;
 
-function getSlots(){
-  // Story residents and home-raised companions keep the original summon allowance available.
-  const residentIds=new Set(S.world?Object.values(S.world.recruited):[]);
-  if(S.world)Object.values(S.world.companions).forEach(c=>{if(c.memories.some(m=>m.id.startsWith('childhood-')))residentIds.add(c.slimeId);});
-  const residents=S.slimes.filter(s=>residentIds.has(s.id)).length;
-  return 2 + Math.floor(S.level / 10) + residents;
-}
+function getSlots(){ return 2 + Math.floor(S.level / 10); }
 function summonerNeed(lv){ return 10 + lv * 6; }
 function staminaMax(s){ return Math.round(80 + (s.size || 1) * 40); }
 
-/* 魔物与伙伴共用属性公式；取消原来叠加在敌人成长上的 ×2，修正高层数值失衡。 */
-function monMul(s){ return 1; }
+function monMul(s){ return s.isMonster ? 2 : 1; }
 
 function hpMax(s){
   const m = monMul(s);
@@ -107,26 +99,13 @@ function manaMax(s){
   const bonus = 1 + traitBonus(s,'bmana') + traitBonus(s,'ball');
   return Math.round(s.mag * 10 * monMul(s) * bonus);
 }
-/* 攻击类型（参考《宝可梦》物理/特殊分离）：物理系用物攻打防御，其余元素用魔攻打抗性。 */
-const PHYSICAL_ELEMENTS = ['岩','风','草','暗'];
-function damageType(s){ return PHYSICAL_ELEMENTS.includes(s && s.element) ? 'phys' : 'mag'; }
-function attackPower(s){ return damageType(s) === 'phys' ? physAtk(s) : magAtk(s); }
-function defense(s){ return Math.round((Number(s.str)||0) * 0.6 + (Number(s.level)||1) * 3); }
-function resist(s){ return Math.round((Number(s.mag)||0) * 0.6 + (Number(s.level)||1) * 3); }
-/* 减伤：常数随攻击者等级增长，
-   这样同级对战的减伤比例在 1–50 级都稳定在 40% 左右，不会高等级时刮痧。 */
-function mitigation(attacker, target){
-  const def = damageType(attacker) === 'phys' ? defense(target) : resist(target);
-  const k = 40 + 8 * (Number(attacker.level)||1);
-  return k / (k + Math.max(0, def));
-}
 function loadCap(s){ return s.str * 5; }
 function expRate(s){ return 1 + (s.wit||0) * 0.02; }
 function skillApt(s){ return s.wit||0; }
 
 function slimePower(s){
   return Math.round(
-    physAtk(s) + magAtk(s) + hpMax(s) * 0.5 + atkSpeed(s) * 0.3 + (defense(s) + resist(s)) * 0.5 +
+    physAtk(s) + magAtk(s) + hpMax(s) * 0.5 + atkSpeed(s) * 0.3 +
     dodgeRate(s) * 2 + critRate(s) * 2 + manaMax(s) * 0.1
   );
 }

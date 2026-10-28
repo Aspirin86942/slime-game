@@ -10,14 +10,14 @@ import {scene} from '../src/world/art.ts';
 import {ZONES} from '../src/world/content.ts';
 import {environment} from '../src/world/ecology.ts';
 const pet=(id,element='草')=>({id,name:'小芽'+id,personality:'胆小',element,size:1,level:5,mood:70,stamina:100,intimacy:0});
-const fresh=()=>({started:true,saveVersion:4,lastActive:0,slimes:[pet(1),pet(2,'水'),pet(3,'火')],world:createWorld(987)});
+const fresh=()=>({started:true,saveVersion:4,lastActive:0,slimes:[pet(1),pet(2,'水'),pet(3,'火')],world:createWorld(987,4)});
 const go=(s,c)=>{const r=execute(s,c);assert.equal(r.ok,true,r.message);return r;};
 const reload=s=>{const t=JSON.parse(JSON.stringify(s));assert.ok(validWorld(t.world,t.slimes.map(p=>p.id)));prepareWorld(t.world);return t;};
 
 test('stories randomly cast an available partner once and keep that identity after reload',()=>{
  const casts=new Set();
  for(let seed=1;seed<=16;seed++){
-  let s=fresh();s.world=createWorld((seed*0x9e3779b1)>>>0);s.world.activities[1]={kind:'battle'};
+  let s=fresh();s.world=createWorld((seed*0x9e3779b1)>>>0,4);s.world.activities[1]={kind:'battle'};
   go(s,{type:'storyStart',definition:'world:sprout',actor:1});
   const id=s.world.stories['world:sprout'].participants[0];assert.ok([2,3].includes(id));casts.add(id);
   s=reload(s);assert.deepEqual(s.world.stories['world:sprout'].participants,[id]);

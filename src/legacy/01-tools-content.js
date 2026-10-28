@@ -20,16 +20,10 @@ const THEMES = [
 ];
 
 const MAP_THEMES = [
-  {id:'grass', name:'草原', unlock:0, coinMul:1, expMul:1, treasureMul:1, sky1:'#87CEEB', sky2:'#B0E0E6', grass1:'#4CAF50', grass2:'#388E3C', soil1:'#8D6E63', soil2:'#5D4037'},
-  {id:'dusk', name:'黄昏', unlock:10, coinMul:1.6, expMul:1.25, treasureMul:1.5, sky1:'#FFB74D', sky2:'#FFCC80', grass1:'#8D6E63', grass2:'#5D4037', soil1:'#4E342E', soil2:'#3E2723'},
-  {id:'snow', name:'雪原', unlock:25, coinMul:2.5, expMul:1.5, treasureMul:2, sky1:'#E1F5FE', sky2:'#B3E5FC', grass1:'#E0F2F1', grass2:'#B2DFDB', soil1:'#CFD8DC', soil2:'#90A4AE'}
+  {id:'grass', name:'草原', sky1:'#87CEEB', sky2:'#B0E0E6', grass1:'#4CAF50', grass2:'#388E3C', soil1:'#8D6E63', soil2:'#5D4037'},
+  {id:'dusk', name:'黄昏', sky1:'#FFB74D', sky2:'#FFCC80', grass1:'#8D6E63', grass2:'#5D4037', soil1:'#4E342E', soil2:'#3E2723'},
+  {id:'snow', name:'雪原', sky1:'#E1F5FE', sky2:'#B3E5FC', grass1:'#E0F2F1', grass2:'#B2DFDB', soil1:'#CFD8DC', soil2:'#90A4AE'}
 ];
-
-/* 区域按深渊进度开放（通关第 unlock 层后），收益倍率更高，成为中后期收入增长的主要来源 */
-function regionUnlocked(i){
-  const map = MAP_THEMES[i];
-  return !!map && getAbyssUnlocked() > map.unlock;
-}
 
 const ELEMENTS = {
   '岩':{h:32,  sat:.72, icon:'🪨'},
@@ -96,11 +90,6 @@ const ELEMENT_WEIGHTS = {
   '光':2,  '暗':2,
   '空间':0.8, '时间':0.8
 };
-// Persist gameplay randomness independently of decorative effects.
-function gameRandom(){return S.saveVersion>=4?LivingWorld.gameRandom(S):Math.random();}
-const gameRange=(a,b)=>a+gameRandom()*(b-a);
-const gameInt=(a,b)=>Math.floor(gameRange(a,b+1));
-const gamePick=a=>a[Math.floor(gameRandom()*a.length)];
 function pickElement(boost){
   const weights = {...ELEMENT_WEIGHTS};
   if(boost){
@@ -110,23 +99,10 @@ function pickElement(boost){
   }
   const entries = Object.entries(weights);
   const total = entries.reduce((a,[,v])=>a+v,0);
-  let r = gameRandom()*total;
+  let r = Math.random()*total;
   for(const [k,v] of entries){ r -= v; if(r <= 0) return k; }
   return entries[0][0];
 }
-
-/* 稀有元素 = 权重 ≤2 的光/暗/空间/时间；保底召唤只在这里面按原权重抽 */
-const RARE_ELEMENTS = ELEMENT_KEYS.filter(k=>ELEMENT_WEIGHTS[k] <= 2);
-function pickRareElement(boost){
-  const pool = RARE_ELEMENTS.map(k=>[k, ELEMENT_WEIGHTS[k] + ((boost && boost[k]) || 0)]);
-  let r = gameRandom() * pool.reduce((a,[,v])=>a+v, 0);
-  for(const [k,v] of pool){ r -= v; if(r <= 0) return k; }
-  return pool[0][0];
-}
-/* 召唤收费（伙伴为空时免费，避免没有伙伴又没钱时卡死）；连续 9 次未出稀有，第 10 次必出 */
-const SUMMON_PITY = 10;
-function summonCost(){ return S.slimes.length ? 500 + 100 * S.level : 0; }
-function summonPityLeft(){ return Math.max(1, SUMMON_PITY - (S.summonPity||0)); }
 
 const PERSONALITIES = ['天真','勇敢','温柔','安静','沉稳','乖巧','调皮','胆小','傲娇','活泼','黏人','冷漠','懒惰','腹黑'];
 
@@ -208,10 +184,10 @@ function refreshTraitDesc(t){
 }
 
 const ITEMS = {
-  food:     {icon:'🍖', name:'史莱姆饲料', desc:'恢复体力+30，心情+5。可放入空间饲料槽', price:150},
-  treasure: {icon:'💎', name:'天材地宝',  desc:'投喂提升潜力，也可在召唤时献祭提升对应属性概率', price:3000},
+  food:     {icon:'🍖', name:'史莱姆饲料', desc:'恢复体力+30，心情+5。可放入空间饲料槽', price:200},
+  treasure: {icon:'💎', name:'天材地宝',  desc:'投喂提升潜力，也可在召唤时献祭提升对应属性概率', price:1500},
   ticket:   {icon:'🎫', name:'词条抽取券', desc:'为史莱姆抽取随机系统词条（仅限系统积分购买）', price:50},
-  expPotion:{icon:'🧪', name:'经验药水',  desc:'获得本级升级所需经验的 50%，购买后自动用于等级最低的伙伴', price:2500},
+  expPotion:{icon:'🧪', name:'经验药水',  desc:'给史莱姆饮用，获得 100 经验', price:1000},
   net:      {icon:'🕸️', name:'捕捉网',    desc:'在深渊战斗中捕捉血量归零的怪物史莱姆', price:1000}
 };
 
@@ -251,10 +227,7 @@ function skillOf(s){
 const TASK_DEFS = {
   rent:   {name:'探险达人', need:3, reward:10, desc:'完成3次探险'},
   summon: {name:'初次召唤', need:1, reward:10, desc:'召唤1只史莱姆'},
-  feed:   {name:'投喂小能手', need:1, reward:5,  desc:'投喂1次饲料'},
-  abyss:  {name:'深渊试炼', need:1, reward:10, desc:'赢得1场深渊战斗'},
-  pet:    {name:'亲密时光', need:3, reward:5,  desc:'抚摸伙伴3次'},
-  grow:   {name:'精心培养', need:1, reward:10, desc:'合体或喂天材地宝1次'}
+  feed:   {name:'投喂小能手', need:1, reward:5,  desc:'投喂1次饲料'}
 };
 
 const MON_MOODS = [

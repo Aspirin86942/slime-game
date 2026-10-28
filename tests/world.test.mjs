@@ -9,7 +9,7 @@ import {record} from '../src/world/life.ts';
 import {startStory,storyId} from '../src/world/stories.ts';
 import {comboFor,COMBOS} from '../src/world/combat.ts';
 const slime=(id,element='草')=>({id,name:'伙伴'+id,element,personality:'温柔',intimacy:20,mood:80,stamina:120,level:10});
-const state=()=>({started:true,saveVersion:4,lastActive:0,slimes:[slime(1),slime(2,'水')],world:createWorld(491)});
+const state=()=>({started:true,saveVersion:4,lastActive:0,slimes:[slime(1),slime(2,'水')],world:createWorld(491,4)});
 const run=(s,c)=>{const r=execute(s,c);assert.equal(r.ok,true,r.message);return r;};
 const fill=s=>{for(const k of ['wood','stone','dew','food','petal','herb','fruit','mushroom','algae','plank','dye','stardust'])s.world.stock[k]=500;};
 const build=(s,def,x=0,y=6)=>{run(s,{type:'build',def,zone:0,x,y});return s.world.placements.at(-1).id;};

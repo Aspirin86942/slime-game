@@ -1,17 +1,17 @@
 import type {Host,GameCommand,GameState,Slime,World} from './types.ts';
 import {createWorld,execute,advance,companion,occupied,random} from './engine.ts';
-import {render as view,mount as mountView,handleClick as click,navigate as navigateView,paintResidents,recentlyInteracted,redraw} from './view.ts';
+import {render as view,mount as mountView,handleClick as click,navigate as navigateView,paintResidents,recentlyInteracted,redraw} from './home-view.ts';
 export {createWorld,execute,advance,occupied} from './engine.ts';
 export {validWorld} from './storage.ts';
 export {comboFor,COMBOS} from './combat.ts';
 export {BUILDINGS,PLANTS,VISITORS} from './content.ts';
-import {prepareWorld,upgradeWorld} from './migration.ts';
+import {prepareWorld,upgradeWorld,upgradeHome} from './migration.ts';
 import {attachLegacyInventory} from './inventory.ts';
 import {activity,resident,record} from './life.ts';
 import {advanceLegacy} from './legacy-time.ts';
-export {advanceLegacy,upgradeWorld,attachLegacyInventory};
+export {advanceLegacy,upgradeWorld,upgradeHome,attachLegacyInventory};
 export {activity} from './life.ts';
-export {paintResidents} from './view.ts';
+export {paintResidents} from './home-view.ts';
 let host:Host|null=null;
 export function connect(h:Host):void {host=h;}
 export function ensure(s:GameState):World {s.world??=createWorld();prepareWorld(s.world);if(s.saveVersion>=4)attachLegacyInventory(s as unknown as Record<string,any>);return s.world;}
@@ -20,7 +20,7 @@ export function tick(s:GameState,seconds:number):{coins:number;treasure:number;a
  const gains={coins:0,treasure:0,actions:0,exp:0,changed:false};if(!s.started||!Number.isFinite(seconds)||seconds<=0)return gains;
  const w=ensure(s),coins=w.trips.reduce((n,t)=>n+(t.coins??0),0),treasure=(w.stock.treasure??0)+w.trips.reduce((n,t)=>n+(t.bag.treasure??0),0);
  const progress=(events:import('./types.ts').GameEvent[])=>{for(const e of events){if(e.type==='income')gains.coins+=e.amount??0;if(e.type==='collection')gains.actions+=e.amount??0;if(e.type==='experience')for(const id of e.participants??[])gains.exp+=Math.round((e.amount??0)*(1+(s.slimes.find(p=>p.id===id)?.wit??0)*.02));}host?.progress?.(events);};
- if(w.payments.length)progress(w.payments.splice(0));advance(w,seconds,s.slimes,progress);
+ if(w.payments.length)progress(w.payments.splice(0));advance(w,seconds,s.slimes,progress,id=>!host||host.state()!==s||host.available(id));
  gains.coins+=w.trips.reduce((n,t)=>n+(t.coins??0),0)-coins;gains.treasure=(w.stock.treasure??0)+w.trips.reduce((n,t)=>n+(t.bag.treasure??0),0)-treasure;gains.changed=true;return gains;
 }
 export function render():string {if(!host)return '';const s=host.state(),w=ensure(s);for(const pet of s.slimes)resident(w,pet);return view(host,dispatch);}
@@ -30,7 +30,7 @@ export function refresh():void {
  const container=document.getElementById('content')!,scroll=container.scrollTop;
  const controls=[...container.querySelectorAll<HTMLInputElement|HTMLSelectElement>('input,select')].map(e=>({id:e.id,name:e.getAttribute('name'),value:e.value,checked:e instanceof HTMLInputElement?e.checked:false}));
  const disclosures=[...container.querySelectorAll('details')].map(d=>d.open);
- host.render();container.scrollTop=scroll;
+ redraw(()=>host!.render());container.scrollTop=scroll;
  for(const c of controls){const el=c.id?document.getElementById(c.id) as HTMLInputElement|HTMLSelectElement|null:[...container.querySelectorAll<HTMLInputElement>('input')].find(e=>e.name===c.name&&e.value===c.value);if(el){el.value=c.value;if(el instanceof HTMLInputElement)el.checked=c.checked;}}
  [...container.querySelectorAll('details')].forEach((d,i)=>d.open=disclosures[i]??false);
 }
@@ -106,3 +106,5 @@ import {esc} from './art.ts';
 export function prepareLegacy(s:GameState):void {if(s.world)prepareWorld(s.world);}
 
 export function gameRandom(s:GameState):number {return random(s.world??ensure(s));}
+
+export function flushPayments(s:GameState):void {const w=ensure(s);host?.progress?.(w.payments.splice(0));}
