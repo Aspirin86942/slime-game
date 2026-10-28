@@ -9,6 +9,7 @@
 - 阅读 `docs/living-world/SPEC.md`、`PLAN.md`、`QA.md`。先 SPEC 后 PLAN 的顺序已经完成。
 - `npm test`：类型检查、单文件构建、新规则与内容、原 68 项、合体成长、原生接口集成。
 - `npm run test:browser`：新系统正常模式、触屏拖放、刷新、断网、迁移、失败保护。`node tests/world-performance.cjs`：家园密集场景帧率，报告会记录实际渲染器。
+- 素材包在 `src/world/art/`：`kit.ts` 统一等距坐标、光照和夜间压暗，`facilities.ts`、`decor.ts`、`plants.ts`、`creatures.ts`（材料图标、访客）、`regions.ts`（远行地区横幅、家园地面点缀）各管一类。新增或修改素材先读 `docs/art-2026-10-27/美术规范.md`；物件以未旋转占地绘制，旋转时由 `art.ts` 左右镜像。
 - 原始基线仍禁止修改。负责人已经授权果冻质感与攻击表现升级，新增材质层在 `src/world/style.css`；旧造型函数和基础 CSS 块保留。
 - 本次详情见根目录 README；不自动提交、推送或发布。
 

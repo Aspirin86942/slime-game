@@ -2,6 +2,11 @@ import {activity,resident} from './life.ts';
 import type {World,Slime,Crop,Placement,Element} from './types.ts';
 import {BUILDINGS,DECORATIONS,PLANTS,ZONES,VISITORS} from './content.ts';
 import {bounds,environment,night} from './ecology.ts';
+import {facilityArt} from './art/facilities.ts';
+import {decorArt} from './art/decor.ts';
+import {plantArt} from './art/plants.ts';
+import {visitorArt,FLYING_VISITORS} from './art/creatures.ts';
+import {zoneDressing} from './art/regions.ts';
 export const esc=(x:unknown):string=>String(x).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]!));
 export const elementHue=(element:Element):number=>({岩:35,火:20,水:195,风:145,草:105,冰:180,雷:55,幻:280,光:45,暗:260,时间:245,空间:280}[element]);
 /* 地图画布尺寸。界面把指针坐标换算成画布坐标时也用这两个值，改画布高度不会让拖放错位。 */
@@ -12,27 +17,10 @@ export function cellFromPoint(x:number,y:number):[number,number]{const dx=(x-300
 function mix(a:string,b:string,t:number):string{const n=(h:string)=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));const [x,y]=[n(a),n(b)];return '#'+x.map((v,i)=>Math.round(v+(y[i]-v)*t).toString(16).padStart(2,'0')).join('');}
 /* 昼夜两套天色：白天是淡紫晴空、双月隐约可见；夜里双月发光，水母和萤火出现。 */
 const SKY={day:['#a9b8e6','#d4cdef','#f2e2df'],night:['#15123a','#26205a','#3b3270']};
-function decorationArt(group:number,variant:number,lit:boolean):string {
+/* 旧版「小径」物件：现在小径改为拖动铺设，这里只为存档里已经摆放的旧物件保留原画法。 */
+function legacySlab(variant:number,lit:boolean):string {
  const tone=['#bb9ca5','#98b3a1','#c4b38b','#a6b8cc','#b0a0c6','#d8a78c'][variant]??'#a6b8cc',accent=lit?mix(tone,'#292453',.35):tone;
- const wood='#a7886c',light='#f6e6bf',leaf='#83ac84';
- const lamp=[
-  `<path d="M-13-34L0-42l13 8-2 22H-11Z" fill="${accent}"/><path d="M-8-30H8v15H-8Z" fill="#ffe4a0"/><path d="M0-30v15M-10-34h20" stroke="${light}" stroke-width="2"/>`,
-  `<ellipse cy="-27" rx="14" ry="16" fill="${accent}"/><ellipse cy="-27" rx="11" ry="13" fill="#d8e9ad"/><path d="M-8-42H8M-8-12H8" stroke="${wood}" stroke-width="3"/><g fill="#fff9cb"><circle cx="-4" cy="-31" r="2"/><circle cx="5" cy="-25" r="2.5"/><circle cx="-3" cy="-20" r="1.5"/></g>`,
-  `<path d="M-5-24v21q5 4 10 0v-21" fill="${light}"/><path d="M-24-23q0-36 48 0Z" fill="${accent}"/><ellipse cy="-23" rx="24" ry="6" fill="#ffe7a5"/><g fill="#fff1ce"><ellipse cx="-9" cy="-33" rx="4" ry="3"/><ellipse cx="7" cy="-38" rx="4" ry="3"/></g>`,
-  `<path d="M0-49l14 21L0-7-14-21Z" fill="${accent}"/><path d="M0-49v42l14-21Z" fill="#e1f4e8" fill-opacity=".8"/><path d="M-14-28h28M0-49l-5 21L0-7" fill="none" stroke="#f0f9e5" stroke-width="1.5"/>`,
-  `<path d="M0-48l6 13 15 2-11 10 3 15L0-15-13-8l3-15-11-10 15-2Z" fill="${accent}" stroke="${light}" stroke-width="2"/><path d="M0-40l4 9 10 1-8 7 2 9-8-5-8 5 2-9-8-7 10-1Z" fill="#ffe4a0"/>`,
-  `<path d="M-17-35h34l4 25h-42Z" fill="${accent}"/><path d="M-11-30h22v16h-22Z" fill="#6b554d"/><path d="M-7-16q-4-8 4-14 0 6 5 7 4-6 5-8 7 14-1 17Z" fill="#f5c58d"/><path d="M-22-9h44M-12-38h24" stroke="${wood}" stroke-width="4" stroke-linecap="round"/>`
- ][variant]??'';
- return [
-  `<path d="M0-12l31 19L0 26-31-19Z" fill="${accent}"/><path d="M0-8l25 15L0 22-25-15ZM-12 0l25 15M12 0L-13 15" fill="none" stroke="#f6eed8" stroke-opacity=".45" stroke-width="2"/>`,
-  `<path d="M-27 10v-38M0 24v-38M27 10v-38" stroke="${wood}" stroke-width="6" stroke-linecap="round"/><path d="M-27-20L0-6 27-20M-27-7L0 7 27-7" fill="none" stroke="${accent}" stroke-width="5" stroke-linejoin="round"/><path d="M-24-18L0-5 24-18" fill="none" stroke="${light}" stroke-opacity=".55"/>`,
-  `<ellipse cy="-17" rx="22" ry="26" fill="#f8d98b" opacity=".12"/><path d="M0 12v-24M-9 13h18" stroke="${wood}" stroke-width="4" stroke-linecap="round"/>${lamp}`,
-  `<path d="M-27 6v15M11 21v12M29 9v13" stroke="${wood}" stroke-width="5"/><path d="M-31-1L-11-12 31 8 11 20Z" fill="${accent}"/><path d="M-28-4v-21L12-5v21" fill="${wood}"/><path d="M-25-20L9-3M-25-12L9 5" stroke="${light}" stroke-opacity=".55" stroke-width="2"/><path d="M-28 0l39 18 18-10" fill="none" stroke="${light}" stroke-opacity=".5"/>`,
-  `<path d="M-18-4l5 25H14L20-4Z" fill="${accent}"/><ellipse cy="-4" rx="20" ry="8" fill="${light}"/><ellipse cy="-5" rx="16" ry="5" fill="#76644e"/><path d="M0-6v-32M0-15l-13-10M0-20l14-12" stroke="${leaf}" stroke-width="3"/><ellipse cx="-11" cy="-25" rx="9" ry="4" fill="${leaf}" transform="rotate(25 -11 -25)"/><ellipse cx="12" cy="-32" rx="9" ry="4" fill="#a5c89c" transform="rotate(-30 12 -32)"/><g fill="${light}"><circle cy="-40" r="5"/><circle cx="-6" cy="-35" r="5"/><circle cx="6" cy="-35" r="5"/></g><circle cy="-35" r="4" fill="#e2ad73"/>`,
-  `<path d="M0 20v-55" stroke="${wood}" stroke-width="5"/><path d="M-25-36h43l10 10-10 10H-25Z" fill="${accent}"/><path d="M-18-28H12M-18-22H3" stroke="${light}" stroke-width="2" stroke-linecap="round"/><path d="M-10 21h20" stroke="${wood}" stroke-width="4"/>`,
-  `<ellipse cy="10" rx="30" ry="13" fill="${leaf}"/><path d="M-18 9v-22L3-21 21-10V9L0 19Z" fill="${wood}"/><ellipse cy="-13" rx="21" ry="10" fill="${accent}"/><ellipse cy="-13" rx="12" ry="5" fill="${light}"/><path d="M-10 9v-7M9 12V1" stroke="#675a4a" stroke-width="2"/><path d="M-25 8q-12-14 2-17M21 6q16-15 8-20" fill="none" stroke="${leaf}" stroke-width="4"/>`,
-  `<path d="M-22-31h44v47h-44Z" fill="${wood}"/><path d="M-18-27h36v39h-36Z" fill="${light}"/><path d="M-14-23h28V8h-28Z" fill="${accent}"/><path d="M0-17l3 7 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1Z" fill="${light}"/><path d="M-24 18h48" stroke="${wood}" stroke-width="5" stroke-linecap="round"/>`
- ][group]??'';
+ return `<ellipse cy="4" rx="23" ry="14" fill="#1d2440" opacity=".22"/><path d="M0-12l31 19L0 26-31-19Z" fill="${accent}"/><path d="M0-8l25 15L0 22-25-15ZM-12 0l25 15M12 0L-13 15" fill="none" stroke="#f6eed8" stroke-opacity=".45" stroke-width="2"/>`;
 }
 /* 六种路面材质的底色、路缘和纹理色，顺序与 PATH_STYLES 一致。 */
 export const PATH_TONES=[
@@ -74,38 +62,28 @@ export function roadMap(w:World,zone:number):Map<number,number>{return new Map((
 export function roadPreview(style:number):string {
  return `<svg viewBox="244 54 136 92" aria-hidden="true" focusable="false"><path d="${poly([[-.15,-.15],[3.15,-.15],[3.15,2.15],[-.15,2.15]])}" fill="#a9c49c" opacity=".6"/>${roadCells(new Map([0,1,2,14].map(n=>[n,style])),false)}</svg>`;
 }
+/* 设施和装饰画在自己未旋转的占地上；旋转 90° 时左右镜像，正好落在交换长宽后的占地上（围栏因此能沿另一条边摆放）。 */
 function building(p:Placement,selected:boolean,lit:boolean,preview=false):string {
- const d=BUILDINGS.find(d=>d.id===p.def),dec=DECORATIONS.find(d=>d.id===p.def),point=xy(p.x,p.y),[a,b]=bounds(p),width=(a+b)*19;
- const n=(c:string)=>lit?mix(c,'#2a2c5e',.38):c,roof=n(['#c98a6a','#7fae8c','#6c9eae','#c99a6f','#86aac4','#a08fc9'][d?.zone??p.zone]);
- const base=`<ellipse cy="4" rx="${width*.6}" ry="14" fill="#1d2440" opacity=".22"/>`;
- const glow=lit?'<circle cx="16" cy="10" r="22" fill="url(#lw-window)"/>':'';
- let art='';
- if(!d)art=decorationArt(dec?.group??0,Number(p.def.split('-')[2])||0,lit);
- else if(d.id==='trough')art=`<path d="M-25-5l40-8 13 12-41 10Z" fill="${n('#d7b58a')}"/><path d="M-25-5v13l12 10 41-9V-1l-41 10Z" fill="${n('#92724f')}"/><path d="M-18-4l29-6 10 8-31 6Z" fill="#61513c"/><ellipse cx="2" cy="-2" rx="13" ry="4" fill="#d8b379"/>`;
- else if(d.id==='toys')art=`<path d="M-28 8l28-16 30 16L0 24Z" fill="${n('#bdaab4')}"/><path d="M-17 3v-16l13-7 12 7v15L-4 10Z" fill="#91bec9"/><path d="M-16-13l12 7 12-7" fill="none" stroke="#e7f1e5" stroke-width="2"/><circle cx="18" cy="2" r="11" fill="#e1a079"/><path d="M12-7q14 13 0 17M7 2h21" fill="none" stroke="#fff3cf" stroke-width="2"/>`;
- else if(d.id==='table')art=`<path d="M-23 3v17M23 3v17M0 17v14" stroke="#876949" stroke-width="5"/><path d="M-32 0l32-18 32 18L0 19Z" fill="${n('#d8b789')}"/><ellipse cy="-2" rx="9" ry="5" fill="#f0e3bd"/>`;
- else if(d.id==='kitchen')art=`<path d="M-28-7v30L0 37V7Z" fill="${n('#ede0c5')}"/><path d="M0 7v30l29-16V-9Z" fill="${n('#c6b39a')}"/><path d="M-34-9L0-35 34-10 0 10Z" fill="${roof}"/><path d="M13-26v-17h9v20" fill="${n('#bca68e')}"/><path d="M17-45q-7-5-1-9" fill="none" stroke="#e7ded4" stroke-width="3" stroke-linecap="round" opacity=".65"/><path d="M-22 8h14v15l-14-7Z" fill="#625345"/><path d="M-18 15l3-5 3 8" fill="#f4be80"/><ellipse cx="13" cy="10" rx="9" ry="4" fill="#8c7772"/><path d="M4 10v8q9 9 18 0v-8" fill="#8c7772"/><ellipse cx="13" cy="10" rx="7" ry="2.5" fill="#e9c38c"/>`;
- else if(d.id==='greenhouse')art=`<path d="M-30-8L0-35 32-8V24L0 40-30 24Z" fill="${n('#b7d5c1')}" fill-opacity=".8"/><path d="M0 8v32l32-16V-8Z" fill="${n('#75a999')}" fill-opacity=".5"/><path d="M-30-8L0 8 32-8M0-35V8M-30 24L0 40 32 24M-15-22L16-1v32M16-22L-15-1v32M0 8v32" fill="none" stroke="${n('#e5e3ca')}" stroke-width="2"/><path d="M-23 7l10 6M8 18l14-7" stroke="#f2ffed" stroke-opacity=".65" stroke-width="3"/><path d="M-16 25v-9M13 26v-12" stroke="#729772" stroke-width="3"/><ellipse cx="-19" cy="16" rx="6" ry="3" fill="#94b880"/><ellipse cx="16" cy="14" rx="6" ry="3" fill="#a2c888"/>`;
- else if(d.id==='woodshop'||d.id==='alchemy')art=`<path d="M-27 2v24M7 20v19M29 8v18" stroke="${n('#8d6e57')}" stroke-width="5"/><path d="M-33-5L-9-19 34 3 9 19Z" fill="${n('#cfae82')}"/><path d="M-33-5v7L9 25v-6Z" fill="${n('#9c795c')}"/>${d.id==='woodshop'?'<path d="M-24-6l12-6L19 3 8 9Z" fill="#e6c69a"/><path d="M3-17l16-9 10 6L13-7Z" fill="#a7b8c2"/><path d="M19-26l9-6 7 5-7 7Z" fill="#866b56"/>':'<path d="M-14-16v-12h8v12L2-4q-7 7-18 0Z" fill="#c8abdd"/><path d="M-14-7h13l3 4q-7 7-18 0Z" fill="#a389c2"/><path d="M12-8v-14h7v14l5 9q-8 5-16 0Z" fill="#b4d9cc"/><path d="M12-22h7" stroke="#e6ddc3" stroke-width="4"/><circle cx="-7" cy="-8" r="2" fill="#ece4f6"/>'}`;
- else if(d.id==='observe')art=`<path d="M0-8L-19 27M0-8L19 24M0-8v42" stroke="${n('#a78f77')}" stroke-width="4" stroke-linecap="round"/><path d="M-20-11l35-27 11 14L-10 3Z" fill="${n('#b5a5c2')}"/><path d="M-20-11l6-4 11 14-7 4Z" fill="#8b7d9d"/><ellipse cx="21" cy="-31" rx="6" ry="9" transform="rotate(-35 21 -31)" fill="#d4eee5" stroke="#e7ddc6" stroke-width="2"/>`;
- else if(d.id==='expedition')art=`<path d="M-36 12L-5-33 35 10 2 31Z" fill="${roof}"/><path d="M-5-33L2 31l33-21Z" fill="${n('#ece0bf')}"/><path d="M-5-15L-20 19 3 30Z" fill="#6b737b"/><path d="M-5-33v-16" stroke="#b99e7d" stroke-width="3"/><path d="M-4-49l21 7-21 7Z" fill="#e6bd8c"/><path d="M-35 13l-7 8M35 10l7 8" stroke="#c3b08b" stroke-width="2"/>`;
- else if(d.id==='seedbank')art=`<path d="M-25-26L0-36 25-24V22L0 34-25 21Z" fill="${n('#aa8c6d')}"/><path d="M-21-22L0-30v54l-21-9Z" fill="#e5d5ae"/><path d="M3-30l18 8v38L3 25Z" fill="#7e9b84"/><path d="M-21-5L0 5M-21 10L0 20M3-12l18 8M3 6l18 8" stroke="#b79e79" stroke-width="3"/><g fill="#b3c89e"><path d="M-17-19l11 5v8l-11-5Z"/><path d="M-17 0l11 5v8l-11-5Z"/></g><path d="M7-24l10 4v8l-10-4Z" fill="#e3c592"/>`;
- else if(['pond','spa','filter','waterbed'].includes(d.id))art=`<ellipse cy="-4" rx="32" ry="20" fill="${n('#c9c4b4')}"/><ellipse cy="-6" rx="29" ry="17" fill="${n('#a49f90')}"/><ellipse cy="-8" rx="27" ry="15" fill="url(#lw-water)"/><path d="M-14-9q10-8 24 0M-10-2q12-5 22 0" fill="none" stroke="#effbf6" stroke-opacity=".8" stroke-width="2" stroke-linecap="round"/>${lit?'<ellipse cx="6" cy="-10" rx="9" ry="3" fill="#f6e3b0" opacity=".55"/>':''}`;
- else if(['bed','grove','compost','channel'].includes(d.id))art=`<path d="M-28-6L0-22 30-6 0 12Z" fill="${n('#b08766')}"/><path d="M-28-6v10L0 21V12Z" fill="${n('#8a6d55')}"/><path d="M0 21l30-16V-6L0 12Z" fill="${n('#735a47')}"/><path d="M-17-5L0-15 20-5 0 6Z" fill="#5d5340"/><path d="M-11-6v-15m20 19v-23" stroke="#7fb574" stroke-width="4" stroke-linecap="round"/><ellipse cx="-16" cy="-19" rx="7" ry="4" fill="#b6e0a4"/><ellipse cx="14" cy="-24" rx="8" ry="5" fill="#c4e19a"/><ellipse cx="-2" cy="-14" rx="5" ry="3" fill="#a6d48f"/>`;
- else if(['resonance','stars','insects'].includes(d.id))art=`<path d="M-18 0l18-45 20 39L0 8Z" fill="${roof}"/><path d="M0-45v53L20-6Z" fill="#f2ead8" opacity=".55"/><circle cy="-27" r="9" fill="url(#lw-window)" opacity="${lit?1:.5}"/><circle cy="-27" r="4.5" fill="#fff6d2"/>`;
- else art=`<path d="M-28-10v29L0 34V4Z" fill="${n('#efe2c6')}"/><path d="M0 4v30l30-16V-12Z" fill="${n('#c8b99d')}"/><path d="M-35-11L0-39 36-12 0 8Z" fill="${roof}"/><path d="M0-39V8l36-20Z" fill="#1b2140" opacity=".2"/><path d="M-33-11L0 8 34-12" fill="none" stroke="#fff3dc" stroke-opacity=".7" stroke-width="2" stroke-linejoin="round"/><path d="M-18 6v15l10 6V11Z" fill="${n('#6f6658')}"/><path d="M11 9v8l10-6V3Z" fill="${lit?'#ffd98a':'#fff0c4'}"/><path d="M22-27v-9h6v12" fill="${n('#b9a68a')}"/>${glow}`;
- if(preview)return `<g>${base}${art}</g>`;
- return `<g class="lw-object ${selected?'lw-selected':''}" data-lw-object="${p.id}" role="button" tabindex="0" aria-label="${esc(d?.name??dec?.name)}，等级 ${p.level}" transform="translate(${point.x} ${point.y+10})"><rect x="-36" y="-44" width="72" height="88" fill="transparent"/>${base}${art}<title>${esc(d?.name??dec?.name)} · ${p.level} 级</title>${d?`<text y="47" text-anchor="middle" class="lw-map-label">${esc(d.name)}</text>`:''}</g>`;
+ const d=BUILDINGS.find(d=>d.id===p.def),dec=DECORATIONS.find(d=>d.id===p.def),point=xy(p.x,p.y),[a,b]=bounds(p);
+ const legacy=!d&&p.def.startsWith('decor-0-'),raw=d?facilityArt(d.id,lit,p.level):legacy?legacySlab(Number(p.def.split('-')[2])||0,lit):decorArt(p.def,lit);
+ const art=p.rotation%2&&!legacy?`<g transform="scale(-1 1)">${raw}</g>`:raw;
+ if(preview)return art;
+ // 选中时在占地上铺一层金色菱形，比只给阴影换色更容易看清占了哪几格。
+ // 点击区域只取占地菱形，画面本身也能点中；不再用高矩形，免得挡住身后格子的点击。
+ const foot=`M0 -10L${23*a} ${15*a-10}L${23*(a-b)} ${15*(a+b)-10}L${-23*b} ${15*b-10}Z`,ring=selected?`<path d="${foot}" fill="#f3d485" fill-opacity=".45" stroke="#f3d485" stroke-width="2"/>`:'';
+ const name=d?.name??dec?.name;
+ return `<g class="lw-object ${selected?'lw-selected':''}" data-lw-object="${p.id}" role="button" tabindex="0" aria-label="${esc(name)}，等级 ${p.level}" transform="translate(${point.x} ${point.y+10})">${legacy?'<rect x="-36" y="-44" width="72" height="88" fill="transparent"/>':`<path d="${foot}" fill="transparent"/>`}${ring}${art}<title>${esc(name)} · ${p.level} 级</title>${d?`<text x="${11.5*(a-b)}" y="${15*(a+b)+3}" text-anchor="middle" class="lw-map-label">${esc(d.name)}</text>`:''}</g>`;
 }
 export function buildingPreview(def:string):string {
+ const d=BUILDINGS.find(d=>d.id===def),[a,b]=d?.size??[1,1];
  const art=building({id:0,def,zone:0,x:0,y:0,rotation:0,level:1,stored:false},false,false,true).replace(/url\(#lw-water\)/g,'#8dcbd0').replace(/url\(#lw-window\)/g,'#ffe6a3');
- return `<svg viewBox="-65 -58 130 108" aria-hidden="true" focusable="false">${art}</svg>`;
+ const box=def.startsWith('decor-0-')?'-65 -58 130 108':d?`${-23*b-8} -100 ${23*(a+b)+16} ${15*(a+b)+96}`:'-36 -86 72 110';
+ return `<svg viewBox="${box}" aria-hidden="true" focusable="false">${art}</svg>`;
 }
-function cropArt(w:World,c:Crop):string {
- const v=w.cultivars.find(v=>v.id===c.cultivar)!,d=PLANTS.find(p=>p.id===v.species)!,p=xy(c.x+.5,c.y+.5),s=(.45+Math.min(1,c.progress)*.7)*(.82+v.genes.form*.09),fill=`hsl(${v.genes.color} 62% 74%)`;
- let art=(d.id==='glowflower'&&c.progress>=1?'<ellipse cy="-24" rx="27" ry="31" fill="#f7ef95" opacity=".22"/><circle cy="-26" r="20" fill="#fff5ad" opacity=".25"/>':'')+`<path d="M0 0v-25M0-10q-17-15-15-5 0 8 15 5M0-15q17-15 15-5 0 8-15 5" fill="#7cb98e" stroke="#4a8a6c" stroke-width="2" stroke-linejoin="round"/>`;
- if(c.progress>=.7)art+=d.family===4?`<path d="M-15-20q0-26 30 0Z" fill="${fill}"/><circle cx="-5" cy="-25" r="2" fill="#fff6df"/>`:d.family===3?`<circle cy="-30" r="17" fill="#6fa47c"/><circle cx="-5" cy="-36" r="7" fill="#8cc095" opacity=".7"/><circle cx="7" cy="-31" r="5" fill="${fill}"/><circle cx="-8" cy="-25" r="5" fill="${fill}"/>`:`<g transform="translate(0 -26)"><circle cx="-7" r="7" fill="${fill}"/><circle cx="7" r="7" fill="${fill}"/><circle cy="-7" r="7" fill="${fill}"/><circle cy="7" r="7" fill="${fill}"/><circle r="4" fill="#f9e3a4"/></g>`;
- return `<g class="lw-crop ${c.progress>=1?'lw-ripe':''}" data-lw-crop="${c.id}" role="button" tabindex="0" aria-label="${esc(v.name)}，${Math.round(c.progress*100)}%" transform="translate(${p.x} ${p.y+8})"><rect x="-22" y="-40" width="44" height="54" fill="transparent"/><ellipse rx="13" ry="6" fill="#5a4636" opacity=".32"/><g transform="scale(${s})">${art}</g>${c.progress>=1?'<circle cy="-42" r="7" fill="url(#lw-window)"/><circle cy="-42" r="3.5" fill="#ffefb8"/>':''}${c.water<=0?'<text y="-40" text-anchor="middle" fill="#7fb6e3" font-size="12">水</text>':''}<title>${esc(v.name)} · ${Math.round(c.progress*100)}%</title></g>`;
+function cropArt(w:World,c:Crop,lit:boolean):string {
+ const v=w.cultivars.find(v=>v.id===c.cultivar)!,d=PLANTS.find(p=>p.id===v.species)!,p=xy(c.x+.5,c.y+.5),top=d.family===3?-70:-58;
+ // 原点就是格子中心的落地点；成熟标记和缺水提示放在植物最高处上方，果树更高。
+ return `<g class="lw-crop ${c.progress>=1?'lw-ripe':''}" data-lw-crop="${c.id}" role="button" tabindex="0" aria-label="${esc(v.name)}，${Math.round(c.progress*100)}%" transform="translate(${p.x} ${p.y})"><rect x="-20" y="${top+18}" width="40" height="${-2-top}" fill="transparent"/>${plantArt(d,v.genes.color,v.genes.form,c.progress,lit)}${c.progress>=1?`<circle cy="${top+4}" r="7" fill="url(#lw-window)"/><circle cy="${top+4}" r="3.5" fill="#ffefb8"/>`:''}${c.water<=0?`<text y="${top+8}" text-anchor="middle" fill="#7fb6e3" font-size="12">水</text>`:''}<title>${esc(v.name)} · ${Math.round(c.progress*100)}%</title></g>`;
 }
 /* 果冻伙伴：保留原来的轮廓与表情，补上底部反光、第二个高光点和腮红，读起来更像半透明的软糖。 */
 export function jelly(color:number,label:string):string {
@@ -138,10 +116,12 @@ export function scene(w:World,zone:number,slimes:Slime[],selected:number,overlay
  let cells='';for(let y=0;y<12;y++)for(let x=0;x<12;x++){const p=xy(x,y),e=overlay?environment(w,zone,x,y,slimes):null,val=e?e[overlay as 'light'|'moisture'|'fertility'|'quality']:0;
   const fill=overlay?`hsl(${Math.round(val*1.3)} 45% ${68-val*.18}%)`:(x+y)%2===0?tileA:tileB;cells+=`<path data-lw-cell="${x},${y}" d="M${p.x} ${p.y}l23 15-23 15-23-15Z" fill="${fill}" stroke="${mix(tone,'#1f2a2a',.35)}" stroke-opacity=".22"/>`;
  }
+ // 地面点缀只落在空格子：避开路面、物件占地和植物。
+ const used=new Set([...roads.keys(),...w.placements.filter(p=>p.zone===zone&&!p.stored).flatMap(p=>{const[a,b]=bounds(p);return Array.from({length:a*b},(_,i)=>(p.y+Math.floor(i/a))*12+p.x+i%a);}),...w.crops.filter(c=>c.zone===zone).map(c=>c.y*12+c.x)]);
  const moonlight=`<path d="M300 62L576 242 300 422 24 242Z" fill="url(#lw-moonlight)"/>`;
- const p=w.placements.filter(p=>p.zone===zone&&!p.stored).map(p=>({depth:p.x+p.y,art:building(p,selected===p.id,dark)}));
- const c=w.crops.filter(c=>c.zone===zone).map(c=>({depth:c.x+c.y+.6,art:cropArt(w,c)}));
- const visitors=VISITORS.filter(v=>v.zone===zone&&w.visitors[v.id]).map((v,i)=>{const p=xy(2+i*2%10,4+i%5);return `<g transform="translate(${p.x} ${p.y-30})"><g class="lw-wander" style="--wander:12px;--delay:${i}s"><ellipse cx="-4" rx="5" ry="3" fill="#fff0b2"/><ellipse cx="4" rx="5" ry="3" fill="#edd2a2"/><path d="M0-3v7" stroke="#667753" stroke-width="2"/><title>${v.name} · ${v.service}</title></g></g>`;}).join('');
+ const p=w.placements.filter(p=>p.zone===zone&&!p.stored).map(p=>{const[a,b]=bounds(p);return{depth:p.x+p.y+(a+b)/2-1,art:building(p,selected===p.id,dark)};});
+ const c=w.crops.filter(c=>c.zone===zone).map(c=>({depth:c.x+c.y+.6,art:cropArt(w,c,dark)}));
+ const visitors=VISITORS.filter(v=>v.zone===zone&&w.visitors[v.id]).map((v,i)=>{const x=2+i*2%10,y=4+i%5,p=xy(x+.5,y+.5),art=visitorArt(v.id,dark);return{depth:x+y+.7,art:`<g transform="translate(${p.x} ${p.y})">${FLYING_VISITORS.has(v.id)?`<g class="lw-wander" style="--wander:12px;--delay:${i}s">${art}</g>`:art}<title>${v.name} · ${v.service}</title></g>`};});
  const creatures=slimes.filter(s=>{const a=activity(w,s.id);return(a.kind==='home'||a.kind==='work'||a.kind==='trip'&&a.phase==='resting')&&resident(w,s).zone===zone;}).map(s=>{const r=resident(w,s),a=xy(r.x,r.y);return{depth:r.x+r.y+.8,art:`<g class="lw-resident" data-resident="${s.id}" role="button" tabindex="0" aria-label="${esc(s.name)}，${esc(r.pose)}" style="transform:translate(${a.x}px,${a.y}px)"><foreignObject x="-36" y="-60" width="72" height="72"><div xmlns="http://www.w3.org/1999/xhtml" class="lw-original-slime">${renderSlime?renderSlime(s):''}</div></foreignObject><text y="21" class="lw-map-label" text-anchor="middle">${esc(s.name.length>8?s.name.slice(0,7)+'…':s.name)}</text><text y="34" class="lw-map-label lw-map-sub" text-anchor="middle">${r.blocked?'道路暂时不通':esc(r.pose)}</text></g>`};});
  const memorials=w.memorials.filter(m=>m.zone===zone).slice(-5).map((m,i)=>{const p=xy(i*2,11);return `<g data-memorial="${esc(m.id)}" transform="translate(${p.x} ${p.y-14})"><path d="M-8 8v-20h16V8" fill="#b397c9" stroke="#f5dba6"/><text y="2" text-anchor="middle" fill="#fff">♡</text><title>${esc(m.title+'：'+m.text)}</title></g>`;}).join('');
  const fireflies=dark?[[120,250],[210,300],[388,214],[450,330],[300,180],[256,372],[520,262],[74,276]].map(([x,y],i)=>`<circle class="lw-firefly" cx="${x}" cy="${y}" r="2.2" fill="#f7ec9f" style="--delay:${-i*.8}s"/>`).join(''):'';
@@ -154,5 +134,5 @@ export function scene(w:World,zone:number,slimes:Slime[],selected:number,overlay
  <radialGradient id="lw-moonlight" cx=".72" cy=".1" r=".9"><stop stop-color="#fff2cf" stop-opacity="${dark?.2:.28}"/><stop offset=".6" stop-color="#fff2cf" stop-opacity="0"/></radialGradient>
  <linearGradient id="lw-water" x2="0" y2="1"><stop stop-color="#9fdde0"/><stop offset="1" stop-color="#5aa6b4"/></linearGradient>
  <linearGradient id="lw-rock" x2="0" y2="1"><stop stop-color="${dark?'#3e3660':'#6e6496'}"/><stop offset=".6" stop-color="${dark?'#28224a':'#4d4578'}"/><stop offset="1" stop-color="${dark?'#1a172c':'#3b3462'}" stop-opacity="0"/></linearGradient></defs>`;
- return `<svg class="lw-map ${dark?'is-night':'is-day'}" viewBox="0 0 ${MAP_W} ${MAP_H}" aria-label="${ZONES[zone].name}，12 乘 12 自由布置地图" role="img">${defs}${sky(dark)}${islandBody(dark,tone)}<g>${cells}</g>${overlay?'':roadCells(roads,dark)+moonlight}${[...p,...c,...creatures].sort((a,b)=>a.depth-b.depth).map(o=>o.art).join('')}${memorials}${visitors}${fireflies}<text x="26" y="${MAP_H-18}" class="lw-map-hint">${overlay?'环境图层：数值越高，颜色越深':'点击物件查看，布置模式可拖动'}</text></svg>`;
+ return `<svg class="lw-map ${dark?'is-night':'is-day'}" viewBox="0 0 ${MAP_W} ${MAP_H}" aria-label="${ZONES[zone].name}，12 乘 12 自由布置地图" role="img">${defs}${sky(dark)}${islandBody(dark,tone)}<g>${cells}</g>${overlay?'':zoneDressing(zone,n=>!used.has(n),dark)+roadCells(roads,dark)+moonlight}${[...p,...c,...visitors,...creatures].sort((a,b)=>a.depth-b.depth).map(o=>o.art).join('')}${memorials}${fireflies}<text x="26" y="${MAP_H-18}" class="lw-map-hint">${overlay?'环境图层：数值越高，颜色越深':'点击物件查看，布置模式可拖动'}</text></svg>`;
 }

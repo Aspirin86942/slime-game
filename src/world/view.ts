@@ -7,6 +7,9 @@ import {chapterReady,occupied,afford,companion,placementError} from './engine.ts
 import {environment,level,season,day,night,SEASONS,WEATHER} from './ecology.ts';
 import {scene,esc,jelly,buildingPreview,roadPreview,roadMap,cellFromPoint,elementHue,MAP_W,MAP_H,PATH_TONES} from './art.ts';
 import {COMBOS} from './combat.ts';
+import {materialIcon} from './art/creatures.ts';
+import {regionArt} from './art/regions.ts';
+import {plantArt} from './art/plants.ts';
 export const ui={tab:'home',zone:0,build:'',pathStyle:0,buildKind:'facilities',buildGroup:0,plant:0,selected:0,crop:0,overlay:'',zoom:1,rotate:0,edit:false,person:0,family:0,region:0};
 let lastInteraction=0;
 export const recentlyInteracted=()=>Date.now()-lastInteraction<2500;
@@ -20,7 +23,7 @@ const options=(values:{id:string|number;name:string}[],selected:string|number)=>
 const select=(id:string,label:string,values:{id:string|number;name:string}[],selected:string|number='')=>`<label class="lw-field">${label}<select id="${id}">${options(values,selected)}</select></label>`;
 const freeSlimes=(w:World):Slime[]=>host.state().slimes.filter(s=>host.available(s.id)&&!occupied(w,s.id));
 function resources(w:World):string {
- return `<div class="lw-stock" aria-label="家园材料">${['wood','stone','ingredient','feed'].map(k=>`<span data-mat="${k}"><small>${MATERIALS[k]}</small><b>${Math.floor(w.stock[k]??0)}</b></span>`).join('')}</div>`;
+ return `<div class="lw-stock" aria-label="家园材料">${['wood','stone','ingredient','feed'].map(k=>`<span data-mat="${k}">${materialIcon(k)}<small>${MATERIALS[k]}</small><b>${Math.floor(w.stock[k]??0)}</b></span>`).join('')}</div>`;
 }
 function buildCatalog(w:World):string {
  const stored=w.placements.filter(p=>p.stored),decor=ui.buildKind==='decor';
@@ -58,13 +61,13 @@ function home(w:World):string {
  <div class="lw-actions">${cmd(w.clock-w.lastGather>=300?'采集物资':`${Math.ceil((300-w.clock+w.lastGather)/60)} 分后可采集`,{type:'gather'},w.clock-w.lastGather<300)}${cmd('全部收获',{type:'harvestAll'},!w.crops.some(c=>c.progress>=1))}${cmd('批量补水',{type:'careAll'})}</div>
  ${buildCatalog(w)}
  <details><summary>这一片土地的环境</summary><div class="lw-environment-summary"><span>光照 ${Math.round(e.light)}</span><span>湿度 ${Math.round(e.moisture)}</span><span>肥力 ${Math.round(e.fertility)}</span><span>水质 ${Math.round(e.quality)}</span></div></details>`}
- <details class="lw-disclosure"><summary>物资仓库 · ${Object.keys(w.stock).length} 类</summary><div class="lw-inventory">${Object.entries(w.stock).map(([k,v])=>`<span>${esc(k.startsWith('seed:')?(w.cultivars.find(c=>c.id===Number(k.slice(5)))?.name??'种子'):(MATERIALS[k]??k))}<b>${Math.floor(v)}</b></span>`).join('')}</div>${Object.values(w.pending).some(v=>v>0)?note(`仓满物资保留：${cost(w.pending)}`)+cmd('领取能放下的物资',{type:'claimOverflow'}):''}</details>`;
+ <details class="lw-disclosure"><summary>物资仓库 · ${Object.keys(w.stock).length} 类</summary><div class="lw-inventory">${Object.entries(w.stock).map(([k,v])=>`<span>${materialIcon(k.startsWith('seed:')?'seed':k)}<em>${esc(k.startsWith('seed:')?(w.cultivars.find(c=>c.id===Number(k.slice(5)))?.name??'种子'):(MATERIALS[k]??k))}</em><b>${Math.floor(v)}</b></span>`).join('')}</div>${Object.values(w.pending).some(v=>v>0)?note(`仓满物资保留：${cost(w.pending)}`)+cmd('领取能放下的物资',{type:'claimOverflow'}):''}</details>`;
 }
 function nursery(w:World):string {
  const cv=w.cultivars.find(v=>v.id===ui.plant)??w.cultivars[0],d=PLANTS.find(p=>p.id===cv.species)!,plants=w.cultivars.filter(v=>PLANTS.find(p=>p.id===v.species)?.family===ui.family);
  return `${heading('苗圃','保存喜欢的品系，陪幼体长大。每次照料都会留下记录。')}
  <div class="lw-actions">${FAMILIES.map((f,i)=>button(f,'family',`data-family="${i}" class="${ui.family===i?'is-active':''}"`)).join('')}</div><div class="lw-inline-form">${select('lw-cultivar','选择品系',plants.map(v=>({id:v.id,name:`${v.protected?'♡ ':''}${v.name} · ${v.seeds} 粒`})),cv.id)}${button('查看品系','choose-cultivar')}</div>
- <section class="lw-plant-profile"><svg viewBox="0 0 90 85" width="85" height="85" aria-hidden="true"><path d="M45 70V27M45 55Q8 19 27 53M45 45Q80 8 63 42" fill="#91b49b" stroke="#6e9175" stroke-width="3"/><circle cx="45" cy="24" r="17" fill="hsl(${cv.genes.color} 60% 73%)"/><circle cx="45" cy="24" r="7" fill="#f6dea5"/></svg><div><small>${FAMILIES[d.family]} · ${d.parents?'杂交品种':'基础植物'}</small><h3>${esc(cv.name)}</h3><p>${d.use}</p><small>成熟 ${d.minutes} 分钟 · 喜光 ${d.light} / 湿度 ${d.moisture} / ${d.temp}°</small></div></section>
+ <section class="lw-plant-profile"><svg viewBox="${d.family===3?'-32 -68 64 78':'-24 -50 48 58'}" width="85" height="85" aria-hidden="true">${plantArt(d,cv.genes.color,cv.genes.form,1,false).replace(/url\(#lw-(water|window)\)/g,(_,k)=>k==='water'?'#8dcbd0':'#ffe6a3')}</svg><div><small>${FAMILIES[d.family]} · ${d.parents?'杂交品种':'基础植物'}</small><h3>${esc(cv.name)}</h3><p>${d.use}</p><small>成熟 ${d.minutes} 分钟 · 喜光 ${d.light} / 湿度 ${d.moisture} / ${d.temp}°</small></div></section>
  <div class="lw-gene-row">${(['form','yield','speed','adapt'] as const).map((k,i)=>`<span>${['株型','产量','速度','适应'][i]}<b>${cv.genes[k]}/5</b></span>`).join('')}</div>${note(cv.parents.length?`亲本：${cv.parents.join(' × ')}`:'基础品系；可以与同类开花植物交叉授粉。')}
  <div class="lw-actions">${button('选择地块播种','prepare-plant',`data-id="${cv.id}"`,cv.seeds<=0)}${cmd('批量播种 6 株',{type:'sow',cultivar:cv.id,zone:ui.zone},cv.seeds<=0||cv.protected)}${cmd(cv.protected?'取消收藏':'收藏品系',{type:'cultivar',id:cv.id,protect:!cv.protected})}${cmd('复制留种',{type:'clone',id:cv.id},!level(w,'seedbank'))}</div>
  <div class="lw-inline-form"><label class="lw-field">品系名称<input id="lw-cultivar-name" maxlength="24" value="${esc(cv.name)}"></label>${button('保存名字','name-cultivar',`data-id="${cv.id}"`)}</div>
@@ -81,7 +84,7 @@ function ecology(w:World):string {
 function exploration(w:World):string {
  const free=freeSlimes(w),z=ZONES[ui.region],preset=host.state().legacyTeamPreset??[];
  return `${heading('一起把发现带回家','选择地点，再决定这次怎样出发。')}
- <div class="lw-world-map">${ZONES.map(r=>button(`<b>${r.area}</b><small>${w.discoveries.length>=r.threshold?'已发现路线入口':`还需${r.threshold-w.discoveries.length}项发现`}</small>`,'region',`data-region="${r.id}" class="${r.id===ui.region?'is-active':''}"`)).join('')}</div>
+ <div class="lw-world-map">${ZONES.map(r=>button(`${regionArt(r.id,w.discoveries.length>=r.threshold,night(w))}<b>${r.area}</b><small>${w.discoveries.length>=r.threshold?'已发现路线入口':`还需${r.threshold-w.discoveries.length}项发现`}</small>`,'region',`data-region="${r.id}" class="${r.id===ui.region?'is-active':''}"`)).join('')}</div>
  <section class="lw-detail"><h3>${z.area}</h3><p>${z.story}</p>${note('能带回：木材、石材、食材、种子与研究笔记。同行伙伴会用自己的方式回应沿途的相遇。')}${note('同行机会：'+([...new Set(EVENTS.filter(e=>e.region===z.id).flatMap(e=>e.choices.map(c=>c.requires?.element).filter(Boolean)))].map(e=>e+'伙伴的能力').join('、')||'所有元素都能发现新线索'))}${ui.region===1?note('带有发光种子愿望的伙伴同行，可以把一束光带回家。'):''}
  <input type="hidden" id="lw-region" value="${ui.region}">${select('lw-route','路线',[{id:0,name:'采集小路'},{id:1,name:'调查小路'},{id:2,name:'挑战小路'}],0)}
  <div class="lw-team">${free.map((s,i)=>`<label><input type="checkbox" name="lw-team" value="${s.id}" ${(preset.length?preset.includes(s.id):i===0)?'checked':''}>${esc(s.name)} · ${s.element} · 体力${Math.floor(s.stamina)}</label>`).join('')||note('先让一位伙伴回家，或在伙伴页召唤。')}</div>

@@ -277,3 +277,9 @@
 @keyframes arrival-reveal{from{opacity:0;transform:translateY(12px) scale(.93)}to{opacity:1;transform:translateY(0) scale(1)}}
 @media(max-height:700px){.story-arrival #storyStage{margin:18px 0 16px}.arrival-orbit{height:115px}.story-arrival .story-action{margin-top:20px}}
 @media(prefers-reduced-motion:reduce){.story-arrival *{animation:none!important;transition:none!important}}
+/* 素材包：材料图标、地区横幅。材料栏原来的小色块由图标代替。 */
+.lw-mat-icon{width:22px;height:22px;flex:0 0 auto;display:block}
+.lw-stock span{gap:1px}.lw-stock small::before{display:none}.lw-stock .lw-mat-icon{width:26px;height:26px}
+.lw-inventory span{align-items:center;gap:7px}.lw-inventory em{flex:1;font-style:normal;min-width:0}
+.lw-world-map button{padding:0 0 9px;overflow:hidden;gap:2px}.lw-world-map button>b,.lw-world-map button>small{padding:0 11px}
+.lw-region-art{display:block;width:100%;height:62px;margin:0 0 6px;border-bottom:1px solid var(--lw-line)}
