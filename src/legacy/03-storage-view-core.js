@@ -567,85 +567,41 @@ function updateExploreItems(dt){
 
 /* ==================== 剧情 ==================== */
 const STORY_STEPS = [
-  {t:`「……喂，醒醒。」\n\n你猛地睁开眼。\n\n头顶是深紫色的夜空，两轮月亮静静地悬着。远处的浮空岛屿缓缓飘动，成群发光的水母从云层间掠过。\n\n这里是……哪里？`},
-  {t:`记忆像被搅碎的水面。\n\n你只记得自己在深夜赶完了一份报告，然后眼皮越来越沉……然后，就没有然后了。\n\n就在这时，一道冰冷的机械音在脑海里炸响——`},
-  {t:`【叮！检测到异世界灵魂波动……】\n\n【最强召唤师系统 · 激活成功】`,highlight:true},
-  {t:`金色的符文从你脚下升起，在空气中排列成一行行发光的小字。\n\n【宿主状态：未觉醒】\n【即将进行：天赋觉醒仪式】\n【请做好准备】`,highlight:true},
-  {t:`白光吞没了视野。\n\n你听见无数声音在耳边低语，像是在等待一个答案。\n\n然后——\n\n【觉醒完成！】\n【宿主天赋：史莱姆召唤师（SSS级 · 唯一）】`,highlight:true},
-  {t:`……史莱姆？\n\n你低下头，看见一只圆滚滚、软乎乎的小东西正歪着脑袋看你，眼睛一眨一眨的。\n\n【提示：请不要小看它。这世上最强的召唤师，都是从一只史莱姆开始的。】`},
-  {t:`系统界面在你面前缓缓展开，一个空白的角色栏位闪烁着微光。\n\n【请为宿主录入姓名】`,input:'name'},
-  {t:`录入完成。\n\n【检测到宿主尚未设定系统形象】\n【请自定义您的系统化身——它将常伴您左右】`,input:'sys'},
-  {t:`一切准备就绪。\n\n远处的城镇亮起了灯火，而你在这个魔法世界的旅途，正式开始了。\n\n【新手礼包已发放：晶币 ×2000、系统积分 ×200、饲料 ×5、天材地宝 ×2、词条抽取券 ×1】`,highlight:true}
+  {title:'月光把你带到这里',t:()=>`两轮月亮挂在夜空，浮岛轻轻晃动。<br>你是<b>${esc(S.name)}</b>，刚刚醒来的史莱姆召唤师。`,next:'跟着微光走'},
+  {title:'从此，有个小小的同行者',t:()=>`<b>${esc(S.sysName)}</b>从月光里探出脑袋，轻轻碰了碰你的手。<br>“我会陪着你。我们去找一个家吧。”`,next:'一起去看看'},
+  {title:'把这座浮岛，慢慢变成家',t:()=>`种一朵花，遇见新的伙伴，听一段沿途的故事。<br>行囊已经备好，生活从这一刻开始。`,next:'一起回家'}
 ];
-
 let storyStep = 0;
 let blocking = false;
 
-function renderStory(){
-  if(storyStep >= STORY_STEPS.length){ finishStory(); return; }
-  const st = STORY_STEPS[storyStep];
-  const stage = $('#storyStage'), text = $('#storyText'), action = $('#storyAction'), hint = $('#storyHint');
-  const screen = $('#storyScreen');
-  if(!screen.querySelector('.story-sky')) screen.insertAdjacentHTML('afterbegin', skyArt('story'));
-  stage.innerHTML=''; action.innerHTML=''; hint.style.display='block';
-  text.innerHTML = st.t.split('\n').join('<br>');
-  text.classList.toggle('hl', !!st.highlight);
-  text.style.opacity = 0;
-  requestAnimationFrame(()=>{ text.style.transition='opacity .35s'; text.style.opacity=1; });
-
-  if(st.input === 'name'){
-    blocking = true; hint.style.display='none';
-    action.innerHTML = `
-      <input id="nameInput" class="story-input" placeholder="输入你的名字" maxlength="8" value="${esc(S.name||'')}">
-      <button class="btn gold full" id="nameOk">确 定</button>`;
-    const inp = $('#nameInput');
-    setTimeout(()=>inp.focus(),150);
-    $('#nameOk').onclick = ()=>{
-      const v = inp.value.trim();
-      if(!v){ inp.value=''; inp.placeholder='名字不能为空哦'; return; }
-      S.name = v; blocking=false; storyStep++; renderStory(); save();
-    };
-    inp.addEventListener('keydown',e=>{ if(e.key==='Enter') $('#nameOk').click(); });
+function assignStoryRole(){
+  if(persistenceBlocked) return;
+  let changed=false;
+  if(!S.name){S.name=['星野','月白','青禾','云岚','林夕','沐风','初晴','知秋'][Math.floor(Math.random()*8)];changed=true;}
+  if(!S.sysName){
+    const guide=[['团子',200],['小满',150],['糯米',42],['云朵',260],['桃桃',330],['青芽',100]][Math.floor(Math.random()*6)];
+    S.sysName=guide[0];S.sysLook={h:guide[1],s:66,l:70,eh:guide[1],es:48,el:25};changed=true;
   }
-  else if(st.input === 'sys'){
-    blocking = true; hint.style.display='none';
-    buildSysCustom();
-  }
+  if(changed)save();
 }
-
-function buildSysCustom(){
-  const stage = $('#storyStage'), action = $('#storyAction');
-  const render = ()=>{ stage.innerHTML = lookHTML(S.sysLook,{mood:'idle'}); };
-  render();
-  const mk = (key,label,max)=>`
-    <label>${label}<input type="range" min="0" max="${max}" value="${S.sysLook[key]}" data-look="${key}">
-    <span data-out="${key}">${S.sysLook[key]}</span></label>`;
-  action.innerHTML = `
-    <div class="custom-panel">
-      <div style="font-size:11.5px;color:var(--muted);letter-spacing:1px;">—— 身体 ——</div>
-      ${mk('h','身体 色相',360)}${mk('s','身体 饱和',100)}${mk('l','身体 明度',100)}
-      <div style="font-size:11.5px;color:var(--muted);letter-spacing:1px;margin-top:4px;">—— 眼睛 ——</div>
-      ${mk('eh','眼睛 色相',360)}${mk('es','眼睛 饱和',100)}${mk('el','眼睛 明度',100)}
-      <input id="sysNameInput" class="story-input" placeholder="为系统起个昵称" maxlength="8" value="${esc(S.sysName||'团子')}">
-      <button class="btn gold full" id="sysOk">完 成 绑 定</button>
-    </div>`;
-  action.querySelectorAll('[data-look]').forEach(inp=>{
-    inp.addEventListener('input',()=>{
-      const k = inp.dataset.look;
-      S.sysLook[k] = +inp.value;
-      action.querySelector(`[data-out="${k}"]`).textContent = inp.value;
-      render();
-    });
-  });
-  $('#sysOk').onclick = ()=>{
-    const v = $('#sysNameInput').value.trim();
-    S.sysName = v || '团子';
-    blocking = false; storyStep++; renderStory(); save();
-  };
+function renderStory(){
+  assignStoryRole();
+  if(storyStep >= STORY_STEPS.length){ finishStory(); return; }
+  const st=STORY_STEPS[storyStep],stage=$('#storyStage'),text=$('#storyText'),action=$('#storyAction'),screen=$('#storyScreen');
+  if(!screen.querySelector('.story-sky'))screen.insertAdjacentHTML('afterbegin',skyArt('story'));
+  screen.classList.add('story-arrival');
+  stage.innerHTML=`<div class="arrival-orbit">${lookHTML(S.sysLook,{mood:'happy'})}</div><span class="arrival-guide">${esc(S.sysName)} · 你的向导</span>`;
+  text.classList.remove('hl');
+  text.innerHTML=`<div class="arrival-progress" aria-label="序章 ${storyStep+1} / ${STORY_STEPS.length}">${STORY_STEPS.map((_,i)=>`<i class="${i<=storyStep?'is-read':''}"></i>`).join('')}</div><h1>${st.title}</h1><p>${st.t()}</p>`;
+  action.innerHTML=`<button class="btn gold full arrival-next" id="storyNext">${st.next}<span aria-hidden="true">→</span></button>`;
+  $('#storyNext').onclick=()=>{storyStep++;renderStory();};
+  $('#storyHint').textContent='你的身份已确定，故事就此开始';
+  blocking=false;
 }
 
 function finishStory(){
   if(persistenceBlocked){ toast('请先恢复存档；原始数据仍受保护'); return; }
+  assignStoryRole();
   if(!S.started && !S.starterGiftClaimed){S.points += 200;S.starterGiftClaimed=true;}
   S.started = true;
   save();

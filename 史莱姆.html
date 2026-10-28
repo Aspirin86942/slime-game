@@ -1584,6 +1584,80 @@ body{background:#05060c;color:#e8e9f3;}
 
 .battle-field{contain:layout paint}
 .fx-float,.fx-part{will-change:transform,opacity}
+
+/* Clickable illustrated objects share their artwork with the island. */
+.lw-build-catalog{margin:18px 0 22px;border:1px solid var(--lw-line);border-radius:22px;background:linear-gradient(145deg,var(--lw-gold-soft),transparent 42%),var(--lw-surface);overflow:hidden;box-shadow:inset 0 1px 0 var(--lw-edge)}
+.lw-build-catalog>summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:19px 17px;cursor:pointer;font-family:var(--font-display,serif);font-size:22px;line-height:1.4}
+.lw-build-catalog>summary::-webkit-details-marker{display:none}
+.lw-build-catalog>summary small{display:block;font-family:inherit;font-size:11px;letter-spacing:.02em;margin-top:4px}
+.lw-catalog-toggle{display:grid;place-items:center;width:30px;height:30px;border:1px solid var(--lw-line);border-radius:50%;font:18px sans-serif;color:var(--lw-gold);transition:transform .25s}
+.lw-build-catalog[open] .lw-catalog-toggle{transform:rotate(45deg)}
+.lw-build-tabs{display:flex;margin:0 14px;padding:4px;gap:3px;border-radius:13px;background:var(--lw-raise)}
+.lw-build-tabs .lw-button{flex:1;min-width:0;min-height:44px;border:0;border-radius:10px;box-shadow:none;color:var(--lw-muted);background:transparent}
+.lw{--lw-on-gold:#18142c;--lw-selection:var(--lw-gold)}
+#app:is([data-theme="light"],[data-theme="peach"],[data-theme="mint"],[data-theme="lavender"],[data-theme="sky"]) .lw{--lw-on-gold:#fff;--lw-selection:var(--lw-ink)}
+.lw-build-tabs .is-active{background:var(--lw-selection);color:var(--lw-on-gold);font-weight:700;box-shadow:0 3px 9px #0001}
+.lw-build-groups{display:flex;overflow-x:auto;scrollbar-width:none;gap:4px;margin:10px 14px 0;padding-bottom:8px}
+.lw-build-groups::-webkit-scrollbar{display:none}
+.lw-build-groups .lw-button{flex:none;min-height:44px;padding:8px 10px;border:0;border-radius:8px;background:transparent;box-shadow:none;font-size:12px;color:var(--lw-muted);white-space:nowrap}
+.lw-build-groups .is-active{color:var(--lw-gold);background:var(--lw-gold-soft)}
+.lw-build-items{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-flow:dense;gap:10px;padding:6px 14px 14px;max-height:clamp(190px,calc(100dvh - 470px),438px);overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:var(--lw-line) transparent}
+.lw-build-item.lw-button{display:flex;flex-direction:column;align-items:stretch;justify-content:flex-start;gap:0;padding:0 11px 12px;position:relative;min-width:0;border-radius:16px;overflow:hidden;text-align:left;background:linear-gradient(155deg,var(--lw-raise),transparent 85%);border:1px solid var(--lw-line);box-shadow:none;transition:border-color .2s,background .2s,transform .18s}
+.lw-build-item.lw-button.is-active{border-color:var(--lw-gold);background:linear-gradient(160deg,var(--lw-gold-soft),var(--lw-raise));color:var(--lw-ink);box-shadow:inset 0 0 0 1px var(--lw-gold)}
+.lw-build-art{display:block;position:relative;height:94px;margin:0 -11px 4px;background:radial-gradient(ellipse at 50% 90%,var(--lw-gold-soft),transparent 72%)}
+.lw-build-art svg{display:block;width:100%;height:100%;filter:drop-shadow(0 8px 8px #100c2520);transition:transform .5s cubic-bezier(.2,.7,.2,1)}
+.lw-build-item.is-active .lw-build-art svg{transform:translateY(-2px) scale(1.05)}
+.lw-build-check{position:absolute;top:9px;right:9px;display:grid;place-items:center;width:23px;height:23px;border-radius:50%;background:var(--lw-raise);border:1px solid var(--lw-line);font:13px sans-serif;color:var(--lw-muted)}
+.lw-build-item.is-active .lw-build-check{background:var(--lw-selection);color:var(--lw-on-gold);border-color:var(--lw-selection)}
+.lw-build-title{display:flex;justify-content:space-between;align-items:center;gap:4px;font-weight:650;font-size:13px;line-height:1.6;white-space:nowrap}
+.lw-build-title small{display:inline;width:auto;font-size:10px;font-weight:400;color:var(--lw-muted)}
+.lw-build-price{display:block;margin-top:4px;color:var(--lw-muted);font-size:11px;font-weight:400;line-height:1.5}
+.lw-build-availability{display:block;margin-top:5px;color:var(--lw-muted);font-size:10px;font-weight:400;line-height:1.4}
+.lw-build-item[aria-disabled="true"] .lw-build-art{opacity:.55}
+.lw-build-item[aria-disabled="true"] .lw-build-check{display:none}
+.lw-build-price.is-short,.lw-build-item[aria-disabled="true"] .lw-build-availability{color:var(--lw-gold)}
+.lw-build-footer{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 14px;padding:12px 0;border-top:1px solid var(--lw-line);font-size:11px;color:var(--lw-muted)}
+.lw-build-footer b{color:var(--lw-ink);font-variant-numeric:tabular-nums;font-weight:500}
+.lw-build-footer .lw-button{font-size:11px;min-height:44px;padding:7px 10px;background:transparent}
+.lw-build-description{padding:0 16px 13px;font-size:12px}.lw-build-description p{margin:3px 0 0;font-size:11px;color:var(--lw-muted)}
+.lw-storage-empty{grid-column:1/-1;display:grid;justify-items:center;padding:10px 0 24px;text-align:center}
+.lw-storage-empty svg{width:120px;height:90px;opacity:.6}.lw-storage-empty b{font-size:13px;font-weight:500}.lw-storage-empty p{font-size:11px;color:var(--lw-muted)}
+.lw-placement-hint{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;margin:0 0 14px;border:1px solid var(--lw-gold);border-radius:14px;background:var(--lw-gold-soft)}
+.lw-placement-hint b{display:block;font-size:14px}.lw-placement-hint span{font-size:11px;color:var(--lw-muted)}.lw-placement-hint .lw-button{min-height:44px}
+.lw-companion-bar{flex-wrap:nowrap;overflow-x:auto;gap:8px;padding:4px 1px 9px;margin:0 0 8px;scrollbar-width:none}
+.lw-companion-chip.lw-button{display:flex;align-items:center;justify-content:flex-start;flex-wrap:nowrap;flex:0 0 auto;min-width:118px;max-width:200px;min-height:60px;padding:6px 12px 6px 6px;gap:6px;border-radius:16px;background:var(--lw-surface);box-shadow:none}
+.lw-companion-chip.is-active{background:var(--lw-gold-soft)}
+.lw-companion-portrait{width:43px;height:43px;position:relative;display:grid;place-items:center;overflow:hidden;flex:none}
+.lw-companion-portrait .slime{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(.27);margin:0}
+.lw-companion-name{min-width:0;text-align:left}.lw-companion-name b{display:block;max-width:128px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px}.lw-companion-name small{font-size:10px;font-weight:400;margin-top:2px}
+.lw-story{padding:20px 18px 16px;margin:14px 0;background:radial-gradient(ellipse at 100% 0,var(--lw-gold-soft),transparent 70%),var(--lw-surface)}
+.lw-disclosure>.lw-story{padding:20px 18px 16px;border-bottom:0}
+.lw-story-byline{display:flex;justify-content:space-between;gap:12px;align-items:center;font-size:11px;color:var(--lw-gold)}
+.lw-story-byline span{overflow-wrap:anywhere}.lw-story h4{font-family:var(--font-display,serif);font-size:21px;font-weight:600;line-height:1.5;margin:10px 0 8px}
+.lw-story p{font-size:14px;line-height:1.9}.lw-story>.lw-button{min-height:46px;margin:17px 0 8px;background:var(--lw-gold-soft);border-color:var(--lw-gold-soft);color:var(--lw-gold)}
+.lw-story>details{font-size:11px;color:var(--lw-muted);padding-top:10px}.lw-story>details summary{cursor:pointer;min-height:36px}
+.lw-story-invitation{padding:14px 0}.lw-story-invitation p{font-family:var(--font-display,serif);color:var(--lw-muted);margin-bottom:14px}
+@media(hover:hover){.lw-build-item:hover .lw-build-art svg{transform:translateY(-3px) scale(1.06)}.lw-build-item:hover{border-color:var(--lw-gold)}.lw-companion-chip:hover{border-color:var(--lw-gold)}}
+@media(max-width:350px){.lw-build-items{gap:8px;padding:6px 10px 12px}.lw-build-title{font-size:12px}.lw-build-title small{font-size:9px}.lw-build-art{height:82px}.lw-build-price{font-size:10px}.lw-build-groups,.lw-build-tabs{margin-left:10px;margin-right:10px}}
+
+/* The opening reveals an assigned identity with one clear next action. */
+#storyScreen.story-arrival{padding:30px 24px 24px;justify-content:center;gap:0;overflow-y:auto}
+.story-arrival #storyStage{display:flex;flex-direction:column;min-height:0;margin:52px 0 24px;gap:8px}
+.arrival-orbit{position:relative;display:grid;place-items:center;width:166px;height:144px;background:radial-gradient(ellipse at 50% 75%,#d3b4eb30,transparent 67%)}
+.arrival-orbit::after{content:'';position:absolute;bottom:3px;width:112px;height:23px;border:1px solid #dcc1fa38;border-radius:50%;box-shadow:0 0 22px #d0b4f512}
+.arrival-guide{font-size:11px;color:#c4bada;letter-spacing:.12em}
+.story-arrival .story-text{width:100%;max-width:432px;padding:0;margin:0;background:transparent!important;border:0;box-shadow:none;backdrop-filter:none;text-align:left}
+.arrival-progress{display:flex;gap:5px;margin-bottom:14px}.arrival-progress i{display:block;width:17px;height:3px;border-radius:4px;background:#ffffff26}.arrival-progress .is-read{background:#f0d39a}
+.story-arrival h1{font-family:var(--font-display,serif);font-size:clamp(23px,6.6vw,30px);line-height:1.45;letter-spacing:.015em;font-weight:600;max-width:432px;margin:0 0 14px;color:#fff3de;text-wrap:balance}
+.story-arrival .story-text p{font-size:14px;line-height:1.95;letter-spacing:.015em;color:#d0c5e0;margin:0}.story-arrival .story-text b{font-weight:500;color:#f0d39a}
+.story-arrival .story-action{margin-top:27px;width:100%;max-width:432px}
+.arrival-next.btn{display:flex;align-items:center;justify-content:space-between;min-height:52px;padding:14px 18px;border-radius:14px;background:#f0d39a;color:#261d3b;box-shadow:0 8px 22px #08031530;font-size:14px;font-weight:600;letter-spacing:.04em}
+.arrival-next span{font-size:20px;font-weight:400;transition:transform .2s}.arrival-next:hover span{transform:translateX(3px)}
+.story-arrival .story-hint{margin-top:14px;font-size:10px;color:#b5a8cf;letter-spacing:.04em}
+.story-arrival .arrival-orbit{animation:arrival-reveal .65s ease-out both}
+@keyframes arrival-reveal{from{opacity:0;transform:translateY(12px) scale(.93)}to{opacity:1;transform:translateY(0) scale(1)}}
+@media(max-height:700px){.story-arrival #storyStage{margin:18px 0 16px}.arrival-orbit{height:115px}.story-arrival .story-action{margin-top:20px}}
+@media(prefers-reduced-motion:reduce){.story-arrival *{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
@@ -2470,6 +2544,20 @@ var LivingWorld = (() => {
   function storyId(definition, participants) {
     return definition.startsWith("personal:") || definition.startsWith("pair:") || definition === "wish" ? `${definition}:${participants.slice().sort((a, b) => a - b).join(":")}` : definition;
   }
+  function storyCasts(w, slimes, definition) {
+    const [kind, key] = definition.split(":"), free = slimes.filter((s) => activity(w, s.id).kind === "home");
+    const pool = kind === "personal" ? free.filter((s) => PERSONAL_CHAINS.some((c) => c.id === key && c.personality === s.personality)) : free;
+    const teams = kind === "pair" ? pool.flatMap((a, index) => pool.slice(index + 1).map((b) => [a.id, b.id])) : pool.map((s) => [s.id]);
+    return teams.filter((ids) => {
+      const old = w.stories[storyId(definition, ids)];
+      return !old || old.legacy && old.status === "active" && !old.participants.length;
+    });
+  }
+  function automaticChoice(w, team, choices) {
+    const eligible = choices.map((choice, index) => ({ choice, index })).filter(({ choice }) => !choiceProblem(w, team, choice) && !Object.values(choice.requires?.cost ?? {}).some((n) => n > 0));
+    need(eligible.length, "\u8FD9\u6BB5\u7ECF\u5386\u6682\u65F6\u65E0\u6CD5\u7EE7\u7EED");
+    return eligible[Math.floor(random(w) * eligible.length)].index;
+  }
   function startStory(w, slimes, definition, ids) {
     need(ids.length > 0 && ids.length <= 3 && new Set(ids).size === ids.length, "\u8BF7\u9009\u62E91\u20133\u4F4D\u4E0D\u540C\u7684\u53C2\u4E0E\u8005");
     const team = ids.map((id3) => slimes.find((s) => s.id === id3));
@@ -2499,7 +2587,7 @@ var LivingWorld = (() => {
   }
   function storyRequirement(w, i) {
     if (i.status !== "active") return i.status === "completed" ? "\u8FD9\u6BB5\u6545\u4E8B\u5DF2\u5B8C\u6210" : "\u8FD9\u6BB5\u6545\u4E8B\u5DF2\u5F52\u6863";
-    if (!i.participants.length) return "\u9009\u62E9\u4F19\u4F34\u7EE7\u7EED\u4F59\u4E0B\u7684\u6545\u4E8B";
+    if (!i.participants.length) return "\u7B49\u5F85\u4F19\u4F34\u63A5\u7EED\u8FD9\u6BB5\u6545\u4E8B";
     if (i.participants.some((id2) => !w.companions[id2])) return "\u53C2\u4E0E\u8005\u5DF2\u79BB\u5F00\uFF0C\u56DE\u5FC6\u4FDD\u7559\u5728\u6863\u6848\u4E2D";
     const action = i.kind === "world" ? actions[i.stage] : i.kind === "personal" ? ["care", "trip", "meal"][i.stage] : i.kind === "pair" ? "together" : i.kind === "region" ? ["trip", "craft", "care"][i.stage] : ["plant", "trip", "bloom"][i.stage];
     if ((i.kind === "pair" ? shared(w, i.participants) : counter(w, i.participants, action)) <= (i.baseline[action] ?? 0)) return labels[action];
@@ -2517,7 +2605,7 @@ var LivingWorld = (() => {
     if (i.kind === "world") {
       const ch = CHARACTERS.find((c) => c.id === key);
       const scene2 = ch.chapters[Math.min(5, i.stage)];
-      return { text: `\u6765\u8BBF\u8005${ch.name}\u5E26\u6765\u4E00\u4E2A\u8BF7\u6C42\u3002\u4F60\u9009\u62E9\u7684\u4F19\u4F34\u4E0E\u4F60\u4E00\u8D77\u53C2\u4E0E\uFF1A${scene2.text}`, choices: scene2.choices.map((c) => ({ ...c, result: c.result.replace(ch.name + "\u548C\u4F60", "\u540C\u884C\u4F19\u4F34\u4E0E\u4F60") })) };
+      return { text: `\u6765\u8BBF\u8005${ch.name}\u5E26\u6765\u4E00\u4E2A\u8BF7\u6C42\u3002\u540C\u884C\u4F19\u4F34\u966A\u4F60\u4E00\u8D77\u542C\u5B83\u8BB2\u8FF0\uFF1A${scene2.text}`, choices: scene2.choices.map((c) => ({ ...c, result: c.result.replace(ch.name + "\u548C\u4F60", "\u540C\u884C\u4F19\u4F34\u4E0E\u4F60") })) };
     }
     if (i.kind === "personal") {
       const chain = PERSONAL_CHAINS.find((c) => c.id === key);
@@ -3011,9 +3099,29 @@ var LivingWorld = (() => {
     try {
       switch (command.type) {
         case "storyStart": {
-          command.participants.forEach(free);
-          const i = startStory(w, slimes, command.definition, command.participants);
-          message = "\u53C2\u4E0E\u8005\u5DF2\u8BB0\u4E0B\uFF1A" + i.participants.map((id2) => slimes.find((s) => s.id === id2).name).join("\u3001");
+          const casts = storyCasts(w, slimes.filter((s) => available(s.id)), command.definition), ids = command.participants ?? casts[Math.floor(random(w) * casts.length)];
+          requireThat(ids?.length, "\u7B49\u4E00\u4F4D\u5408\u9002\u7684\u4F19\u4F34\u56DE\u5BB6\uFF0C\u5C31\u80FD\u5F00\u59CB\u6545\u4E8B");
+          ids.forEach(free);
+          const i = startStory(w, slimes, command.definition, ids);
+          message = i.participants.map((id2) => slimes.find((s) => s.id === id2).name).join("\u3001") + "\u8D70\u8FDB\u4E86\u8FD9\u6BB5\u6545\u4E8B";
+          break;
+        }
+        case "storyEncounter": {
+          requireThat(["world", "personal", "pair"].includes(command.kind), "\u6545\u4E8B\u7C7B\u578B\u65E0\u6548");
+          requireThat(!Object.values(w.stories).some((i2) => i2.kind === command.kind && i2.status === "active" && i2.participants.length), "\u5148\u7EE7\u7EED\u6B63\u5728\u53D1\u751F\u7684\u6545\u4E8B");
+          const definitions = command.kind === "world" ? CHARACTERS.map((c) => "world:" + c.id) : command.kind === "personal" ? PERSONAL_CHAINS.map((c) => "personal:" + c.id) : PAIR_EVENTS.map((c) => "pair:" + c.id);
+          const pool = definitions.map((definition) => ({ definition, casts: storyCasts(w, slimes.filter((s) => available(s.id)), definition) })).filter((item) => item.casts.length);
+          requireThat(pool.length, "\u7B49\u4F19\u4F34\u56DE\u5BB6\uFF0C\u6216\u8FCE\u6765\u65B0\u4F19\u4F34\u540E\uFF0C\u4F1A\u6709\u65B0\u7684\u6545\u4E8B");
+          const picked = pool[Math.floor(random(w) * pool.length)];
+          const i = startStory(w, slimes, picked.definition, picked.casts[Math.floor(random(w) * picked.casts.length)]);
+          message = i.participants.map((id2) => slimes.find((s) => s.id === id2).name).join("\u3001") + "\u8D70\u8FDB\u4E86\u8FD9\u6BB5\u6545\u4E8B";
+          break;
+        }
+        case "storyContinue": {
+          const i = w.stories[command.id];
+          requireThat(i && i.status === "active" && i.stage === command.stage, "\u8FD9\u4E00\u6BB5\u5DF2\u7ECF\u8BFB\u8FC7\u4E86");
+          i.participants.forEach(free);
+          message = finishStoryChoice(w, slimes, i, automaticChoice(w, slimes.filter((s) => i.participants.includes(s.id)), storyScene(i, slimes, w).choices));
           break;
         }
         case "storyChoice": {
@@ -3279,14 +3387,17 @@ var LivingWorld = (() => {
           message = "\u8FD9\u6B21\u966A\u4F34\u5DF2\u7ECF\u8BB0\u4E0B";
           break;
         }
+        case "babyContinue":
         case "babyChoice": {
           const b = baby(command.id);
-          requireThat(b.active && [0, 1].includes(command.choice), "\u8BF7\u5B89\u7F6E\u5E7C\u4F53\u5E76\u9009\u62E9\u56DE\u5E94\u3002");
+          if (command.type === "babyContinue") requireThat(b.stage === command.stage && b.choices.length === command.chapter, "\u8FD9\u4E00\u6BB5\u5DF2\u7ECF\u8BFB\u8FC7\u4E86");
+          const choice = command.type === "babyContinue" ? Math.floor(random(w) * 2) : command.choice;
+          requireThat(b.active && [0, 1].includes(choice), "\u8BF7\u5B89\u7F6E\u5E7C\u4F53\u5E76\u9009\u62E9\u56DE\u5E94\u3002");
           const personal = `${b.stage}:personal`, element = `${b.stage}:element`;
           const key = b.choices.includes(element) ? personal : element;
           requireThat(!b.choices.includes(key), "\u8FD9\u4E2A\u9636\u6BB5\u7684\u6210\u957F\u4E8B\u4EF6\u5DF2\u7ECF\u5B8C\u6210\u3002");
           b.choices.push(key);
-          const text = key === element ? BABY_EVENTS.find((e) => e.element === b.element).choices[command.choice] : BABY_PERSONAL_EVENTS[b.id % 24].choices[command.choice];
+          const text = key === element ? BABY_EVENTS.find((e) => e.element === b.element).choices[choice] : BABY_PERSONAL_EVENTS[b.id % 24].choices[choice];
           b.traits.push(text);
           message = text;
           break;
@@ -3387,7 +3498,7 @@ var LivingWorld = (() => {
           const t = { id: next(w), region: z.id, route: command.route, team: command.team.slice(), mode: command.mode, duration: command.duration, nextAt: w.clock + command.duration / 4, node: 0, events: selected, pending: null, bag: {}, log: [`${command.team.map((id2) => slimes.find((s) => s.id === id2).name).join("\u3001")}\u4ECE\u5BB6\u56ED\u51FA\u53D1\u3002`], ready: false, phase: 0, repeat: !!command.repeat, coins: 0, experience: {}, actions: 0 };
           w.trips.push(t);
           tripAccount(w, t);
-          message = command.mode === "active" ? "\u4E00\u8D77\u51FA\u53D1\uFF0C\u91CD\u8981\u9009\u62E9\u4F1A\u7B49\u5F85\u4F60" : "\u59D4\u6258\u5DF2\u51FA\u53D1\uFF0C\u6CBF\u719F\u6089\u7684\u8DEF\u7EBF\u91C7\u96C6";
+          message = command.mode === "active" ? "\u4E00\u8D77\u51FA\u53D1\uFF0C\u6CBF\u9014\u7684\u6545\u4E8B\u4F1A\u7B49\u4F60\u7FFB\u9605" : "\u59D4\u6258\u5DF2\u51FA\u53D1\uFF0C\u6CBF\u719F\u6089\u7684\u8DEF\u7EBF\u91C7\u96C6";
           break;
         }
         case "step": {
@@ -3410,20 +3521,25 @@ var LivingWorld = (() => {
           message = "\u961F\u4F0D\u4F11\u6574\u597D\u4E86";
           break;
         }
+        case "tripContinue":
         case "tripChoice": {
           const t = trip(command.id), ev = tripScene(w, t, slimes);
-          requireThat(ev && [0, 1].includes(command.choice), "\u4E8B\u4EF6\u5DF2\u5B8C\u6210\u6216\u9009\u9879\u65E0\u6548\u3002");
-          const ch = ev.choices[command.choice];
+          requireThat(ev, "\u4E8B\u4EF6\u5DF2\u5B8C\u6210");
+          const team = slimes.filter((s) => t.team.includes(s.id));
+          if (command.type === "tripContinue") requireThat(t.pending === command.event, "\u8FD9\u4E00\u6BB5\u5DF2\u7ECF\u8BFB\u8FC7\u4E86");
+          const choice = command.type === "tripContinue" ? ev.kind === "\u6311\u6218" && team.reduce((n, s) => n + s.level, 0) < t.region * 3 + 1 ? 1 : automaticChoice(w, team, ev.choices) : command.choice;
+          requireThat([0, 1].includes(choice), "\u4E8B\u4EF6\u5DF2\u5B8C\u6210\u6216\u9009\u9879\u65E0\u6548\u3002");
+          const ch = ev.choices[choice];
           const issue2 = choiceProblem(w, slimes.filter((s) => t.team.includes(s.id)), ch);
           requireThat(!issue2, issue2 ?? "");
           if (ch.requires?.cost) pay(w, ch.requires.cost);
           let won = true;
           if (ev.kind === "\u6311\u6218") {
             const power = t.team.reduce((n, id2) => n + (slimes.find((s) => s.id === id2)?.level ?? 1), 0);
-            won = command.choice === 1 || power >= t.region * 3 + 1;
+            won = choice === 1 || power >= t.region * 3 + 1;
           }
           if (won) {
-            rememberHollow(w, slimes, t, command.choice);
+            rememberHollow(w, slimes, t, choice);
             for (const [k, v] of Object.entries(ch.reward)) t.bag[k] = (t.bag[k] ?? 0) + Math.round(v * (1 + t.duration / 10800) * (1 + level(w, "expedition") * 0.05));
             if (w.visitors["visitor-5"]) t.bag.stardust = (t.bag.stardust ?? 0) + 1;
             if (w.visitors["visitor-4"] || level(w, "observe") === 3) t.bag.notes = (t.bag.notes ?? 0) + 1;
@@ -3432,7 +3548,7 @@ var LivingWorld = (() => {
           discover(w, ev.id);
           if (won && ch.flag) discover(w, ch.flag);
           if (won && ev.kind === "\u6551\u52A9" && !w.flags.includes(ev.id)) {
-            addJuvenile(w, ELEMENTS[(t.region * 2 + command.choice) % 12]);
+            addJuvenile(w, ELEMENTS[(t.region * 2 + choice) % 12]);
             w.flags.push(ev.id);
             t.log.push("\u4E00\u53EA\u5E7C\u4F53\u83B7\u6551\uFF0C\u5DF2\u9001\u56DE\u5BB6\u56ED\u5B89\u5168\u5B89\u7F6E\u3002");
           }
@@ -3449,7 +3565,7 @@ var LivingWorld = (() => {
           }
           finishNode(w, t);
           if (!won) t.ready = true;
-          message = won ? "\u9009\u62E9\u4E0E\u53D1\u73B0\u5DF2\u4FDD\u5B58" : "\u961F\u4F0D\u5B89\u5168\u8FD4\u7A0B";
+          message = won ? "\u65C5\u9014\u7ECF\u5386\u5DF2\u8BB0\u4E0B" : "\u961F\u4F0D\u5B89\u5168\u8FD4\u7A0B";
           break;
         }
         case "recall": {
@@ -3669,21 +3785,54 @@ var LivingWorld = (() => {
     return "#" + x.map((v, i) => Math.round(v + (y[i] - v) * t).toString(16).padStart(2, "0")).join("");
   }
   var SKY = { day: ["#a9b8e6", "#d4cdef", "#f2e2df"], night: ["#15123a", "#26205a", "#3b3270"] };
-  function building(p, selected, lit) {
+  function decorationArt(group, variant, lit) {
+    const tone = ["#bb9ca5", "#98b3a1", "#c4b38b", "#a6b8cc", "#b0a0c6", "#d8a78c"][variant] ?? "#a6b8cc", accent = lit ? mix(tone, "#292453", 0.35) : tone;
+    const wood = "#a7886c", light = "#f6e6bf", leaf = "#83ac84";
+    const lamp = [
+      `<path d="M-13-34L0-42l13 8-2 22H-11Z" fill="${accent}"/><path d="M-8-30H8v15H-8Z" fill="#ffe4a0"/><path d="M0-30v15M-10-34h20" stroke="${light}" stroke-width="2"/>`,
+      `<ellipse cy="-27" rx="14" ry="16" fill="${accent}"/><ellipse cy="-27" rx="11" ry="13" fill="#d8e9ad"/><path d="M-8-42H8M-8-12H8" stroke="${wood}" stroke-width="3"/><g fill="#fff9cb"><circle cx="-4" cy="-31" r="2"/><circle cx="5" cy="-25" r="2.5"/><circle cx="-3" cy="-20" r="1.5"/></g>`,
+      `<path d="M-5-24v21q5 4 10 0v-21" fill="${light}"/><path d="M-24-23q0-36 48 0Z" fill="${accent}"/><ellipse cy="-23" rx="24" ry="6" fill="#ffe7a5"/><g fill="#fff1ce"><ellipse cx="-9" cy="-33" rx="4" ry="3"/><ellipse cx="7" cy="-38" rx="4" ry="3"/></g>`,
+      `<path d="M0-49l14 21L0-7-14-21Z" fill="${accent}"/><path d="M0-49v42l14-21Z" fill="#e1f4e8" fill-opacity=".8"/><path d="M-14-28h28M0-49l-5 21L0-7" fill="none" stroke="#f0f9e5" stroke-width="1.5"/>`,
+      `<path d="M0-48l6 13 15 2-11 10 3 15L0-15-13-8l3-15-11-10 15-2Z" fill="${accent}" stroke="${light}" stroke-width="2"/><path d="M0-40l4 9 10 1-8 7 2 9-8-5-8 5 2-9-8-7 10-1Z" fill="#ffe4a0"/>`,
+      `<path d="M-17-35h34l4 25h-42Z" fill="${accent}"/><path d="M-11-30h22v16h-22Z" fill="#6b554d"/><path d="M-7-16q-4-8 4-14 0 6 5 7 4-6 5-8 7 14-1 17Z" fill="#f5c58d"/><path d="M-22-9h44M-12-38h24" stroke="${wood}" stroke-width="4" stroke-linecap="round"/>`
+    ][variant] ?? "";
+    return [
+      `<path d="M0-12l31 19L0 26-31-19Z" fill="${accent}"/><path d="M0-8l25 15L0 22-25-15ZM-12 0l25 15M12 0L-13 15" fill="none" stroke="#f6eed8" stroke-opacity=".45" stroke-width="2"/>`,
+      `<path d="M-27 10v-38M0 24v-38M27 10v-38" stroke="${wood}" stroke-width="6" stroke-linecap="round"/><path d="M-27-20L0-6 27-20M-27-7L0 7 27-7" fill="none" stroke="${accent}" stroke-width="5" stroke-linejoin="round"/><path d="M-24-18L0-5 24-18" fill="none" stroke="${light}" stroke-opacity=".55"/>`,
+      `<ellipse cy="-17" rx="22" ry="26" fill="#f8d98b" opacity=".12"/><path d="M0 12v-24M-9 13h18" stroke="${wood}" stroke-width="4" stroke-linecap="round"/>${lamp}`,
+      `<path d="M-27 6v15M11 21v12M29 9v13" stroke="${wood}" stroke-width="5"/><path d="M-31-1L-11-12 31 8 11 20Z" fill="${accent}"/><path d="M-28-4v-21L12-5v21" fill="${wood}"/><path d="M-25-20L9-3M-25-12L9 5" stroke="${light}" stroke-opacity=".55" stroke-width="2"/><path d="M-28 0l39 18 18-10" fill="none" stroke="${light}" stroke-opacity=".5"/>`,
+      `<path d="M-18-4l5 25H14L20-4Z" fill="${accent}"/><ellipse cy="-4" rx="20" ry="8" fill="${light}"/><ellipse cy="-5" rx="16" ry="5" fill="#76644e"/><path d="M0-6v-32M0-15l-13-10M0-20l14-12" stroke="${leaf}" stroke-width="3"/><ellipse cx="-11" cy="-25" rx="9" ry="4" fill="${leaf}" transform="rotate(25 -11 -25)"/><ellipse cx="12" cy="-32" rx="9" ry="4" fill="#a5c89c" transform="rotate(-30 12 -32)"/><g fill="${light}"><circle cy="-40" r="5"/><circle cx="-6" cy="-35" r="5"/><circle cx="6" cy="-35" r="5"/></g><circle cy="-35" r="4" fill="#e2ad73"/>`,
+      `<path d="M0 20v-55" stroke="${wood}" stroke-width="5"/><path d="M-25-36h43l10 10-10 10H-25Z" fill="${accent}"/><path d="M-18-28H12M-18-22H3" stroke="${light}" stroke-width="2" stroke-linecap="round"/><path d="M-10 21h20" stroke="${wood}" stroke-width="4"/>`,
+      `<ellipse cy="10" rx="30" ry="13" fill="${leaf}"/><path d="M-18 9v-22L3-21 21-10V9L0 19Z" fill="${wood}"/><ellipse cy="-13" rx="21" ry="10" fill="${accent}"/><ellipse cy="-13" rx="12" ry="5" fill="${light}"/><path d="M-10 9v-7M9 12V1" stroke="#675a4a" stroke-width="2"/><path d="M-25 8q-12-14 2-17M21 6q16-15 8-20" fill="none" stroke="${leaf}" stroke-width="4"/>`,
+      `<path d="M-22-31h44v47h-44Z" fill="${wood}"/><path d="M-18-27h36v39h-36Z" fill="${light}"/><path d="M-14-23h28V8h-28Z" fill="${accent}"/><path d="M0-17l3 7 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1Z" fill="${light}"/><path d="M-24 18h48" stroke="${wood}" stroke-width="5" stroke-linecap="round"/>`
+    ][group] ?? "";
+  }
+  function building(p, selected, lit, preview = false) {
     const d = BUILDINGS.find((d2) => d2.id === p.def), dec = DECORATIONS.find((d2) => d2.id === p.def), point = xy(p.x, p.y), [a, b] = bounds(p), width = (a + b) * 19;
     const n = (c) => lit ? mix(c, "#2a2c5e", 0.38) : c, roof = n(["#c98a6a", "#7fae8c", "#6c9eae", "#c99a6f", "#86aac4", "#a08fc9"][d?.zone ?? p.zone]);
     const base = `<ellipse cy="4" rx="${width * 0.6}" ry="14" fill="#1d2440" opacity=".22"/>`;
     const glow = lit ? '<circle cx="16" cy="10" r="22" fill="url(#lw-window)"/>' : "";
     let art = "";
-    if (!d) art = dec?.group === 0 ? `<path d="M0 0l23 15-23 15-23-15Z" fill="${n("#e3d6b6")}"/><path d="M0 4l15 10-15 10-15-10Z" fill="${n("#cdbf9e")}" opacity=".6"/>` : `<path d="M-12 0v-17h24V0" fill="${roof}"/><path d="M-12-17h24" stroke="#fff" stroke-opacity=".35" stroke-width="1.5"/><path d="M0-17v-18" stroke="#d9bd92" stroke-width="3" stroke-linecap="round"/><text y="-20" text-anchor="middle" font-size="22" fill="#fff3ce">${esc(dec?.icon)}</text>`;
+    if (!d) art = decorationArt(dec?.group ?? 0, Number(p.def.split("-")[2]) || 0, lit);
     else if (d.id === "trough") art = `<path d="M-25-5l40-8 13 12-41 10Z" fill="${n("#d7b58a")}"/><path d="M-25-5v13l12 10 41-9V-1l-41 10Z" fill="${n("#92724f")}"/><path d="M-18-4l29-6 10 8-31 6Z" fill="#61513c"/><ellipse cx="2" cy="-2" rx="13" ry="4" fill="#d8b379"/>`;
     else if (d.id === "toys") art = `<path d="M-28 8l28-16 30 16L0 24Z" fill="${n("#bdaab4")}"/><path d="M-17 3v-16l13-7 12 7v15L-4 10Z" fill="#91bec9"/><path d="M-16-13l12 7 12-7" fill="none" stroke="#e7f1e5" stroke-width="2"/><circle cx="18" cy="2" r="11" fill="#e1a079"/><path d="M12-7q14 13 0 17M7 2h21" fill="none" stroke="#fff3cf" stroke-width="2"/>`;
     else if (d.id === "table") art = `<path d="M-23 3v17M23 3v17M0 17v14" stroke="#876949" stroke-width="5"/><path d="M-32 0l32-18 32 18L0 19Z" fill="${n("#d8b789")}"/><ellipse cy="-2" rx="9" ry="5" fill="#f0e3bd"/>`;
+    else if (d.id === "kitchen") art = `<path d="M-28-7v30L0 37V7Z" fill="${n("#ede0c5")}"/><path d="M0 7v30l29-16V-9Z" fill="${n("#c6b39a")}"/><path d="M-34-9L0-35 34-10 0 10Z" fill="${roof}"/><path d="M13-26v-17h9v20" fill="${n("#bca68e")}"/><path d="M17-45q-7-5-1-9" fill="none" stroke="#e7ded4" stroke-width="3" stroke-linecap="round" opacity=".65"/><path d="M-22 8h14v15l-14-7Z" fill="#625345"/><path d="M-18 15l3-5 3 8" fill="#f4be80"/><ellipse cx="13" cy="10" rx="9" ry="4" fill="#8c7772"/><path d="M4 10v8q9 9 18 0v-8" fill="#8c7772"/><ellipse cx="13" cy="10" rx="7" ry="2.5" fill="#e9c38c"/>`;
+    else if (d.id === "greenhouse") art = `<path d="M-30-8L0-35 32-8V24L0 40-30 24Z" fill="${n("#b7d5c1")}" fill-opacity=".8"/><path d="M0 8v32l32-16V-8Z" fill="${n("#75a999")}" fill-opacity=".5"/><path d="M-30-8L0 8 32-8M0-35V8M-30 24L0 40 32 24M-15-22L16-1v32M16-22L-15-1v32M0 8v32" fill="none" stroke="${n("#e5e3ca")}" stroke-width="2"/><path d="M-23 7l10 6M8 18l14-7" stroke="#f2ffed" stroke-opacity=".65" stroke-width="3"/><path d="M-16 25v-9M13 26v-12" stroke="#729772" stroke-width="3"/><ellipse cx="-19" cy="16" rx="6" ry="3" fill="#94b880"/><ellipse cx="16" cy="14" rx="6" ry="3" fill="#a2c888"/>`;
+    else if (d.id === "woodshop" || d.id === "alchemy") art = `<path d="M-27 2v24M7 20v19M29 8v18" stroke="${n("#8d6e57")}" stroke-width="5"/><path d="M-33-5L-9-19 34 3 9 19Z" fill="${n("#cfae82")}"/><path d="M-33-5v7L9 25v-6Z" fill="${n("#9c795c")}"/>${d.id === "woodshop" ? '<path d="M-24-6l12-6L19 3 8 9Z" fill="#e6c69a"/><path d="M3-17l16-9 10 6L13-7Z" fill="#a7b8c2"/><path d="M19-26l9-6 7 5-7 7Z" fill="#866b56"/>' : '<path d="M-14-16v-12h8v12L2-4q-7 7-18 0Z" fill="#c8abdd"/><path d="M-14-7h13l3 4q-7 7-18 0Z" fill="#a389c2"/><path d="M12-8v-14h7v14l5 9q-8 5-16 0Z" fill="#b4d9cc"/><path d="M12-22h7" stroke="#e6ddc3" stroke-width="4"/><circle cx="-7" cy="-8" r="2" fill="#ece4f6"/>'}`;
+    else if (d.id === "observe") art = `<path d="M0-8L-19 27M0-8L19 24M0-8v42" stroke="${n("#a78f77")}" stroke-width="4" stroke-linecap="round"/><path d="M-20-11l35-27 11 14L-10 3Z" fill="${n("#b5a5c2")}"/><path d="M-20-11l6-4 11 14-7 4Z" fill="#8b7d9d"/><ellipse cx="21" cy="-31" rx="6" ry="9" transform="rotate(-35 21 -31)" fill="#d4eee5" stroke="#e7ddc6" stroke-width="2"/>`;
+    else if (d.id === "expedition") art = `<path d="M-36 12L-5-33 35 10 2 31Z" fill="${roof}"/><path d="M-5-33L2 31l33-21Z" fill="${n("#ece0bf")}"/><path d="M-5-15L-20 19 3 30Z" fill="#6b737b"/><path d="M-5-33v-16" stroke="#b99e7d" stroke-width="3"/><path d="M-4-49l21 7-21 7Z" fill="#e6bd8c"/><path d="M-35 13l-7 8M35 10l7 8" stroke="#c3b08b" stroke-width="2"/>`;
+    else if (d.id === "seedbank") art = `<path d="M-25-26L0-36 25-24V22L0 34-25 21Z" fill="${n("#aa8c6d")}"/><path d="M-21-22L0-30v54l-21-9Z" fill="#e5d5ae"/><path d="M3-30l18 8v38L3 25Z" fill="#7e9b84"/><path d="M-21-5L0 5M-21 10L0 20M3-12l18 8M3 6l18 8" stroke="#b79e79" stroke-width="3"/><g fill="#b3c89e"><path d="M-17-19l11 5v8l-11-5Z"/><path d="M-17 0l11 5v8l-11-5Z"/></g><path d="M7-24l10 4v8l-10-4Z" fill="#e3c592"/>`;
     else if (["pond", "spa", "filter", "waterbed"].includes(d.id)) art = `<ellipse cy="-4" rx="32" ry="20" fill="${n("#c9c4b4")}"/><ellipse cy="-6" rx="29" ry="17" fill="${n("#a49f90")}"/><ellipse cy="-8" rx="27" ry="15" fill="url(#lw-water)"/><path d="M-14-9q10-8 24 0M-10-2q12-5 22 0" fill="none" stroke="#effbf6" stroke-opacity=".8" stroke-width="2" stroke-linecap="round"/>${lit ? '<ellipse cx="6" cy="-10" rx="9" ry="3" fill="#f6e3b0" opacity=".55"/>' : ""}`;
     else if (["bed", "grove", "compost", "channel"].includes(d.id)) art = `<path d="M-28-6L0-22 30-6 0 12Z" fill="${n("#b08766")}"/><path d="M-28-6v10L0 21V12Z" fill="${n("#8a6d55")}"/><path d="M0 21l30-16V-6L0 12Z" fill="${n("#735a47")}"/><path d="M-17-5L0-15 20-5 0 6Z" fill="#5d5340"/><path d="M-11-6v-15m20 19v-23" stroke="#7fb574" stroke-width="4" stroke-linecap="round"/><ellipse cx="-16" cy="-19" rx="7" ry="4" fill="#b6e0a4"/><ellipse cx="14" cy="-24" rx="8" ry="5" fill="#c4e19a"/><ellipse cx="-2" cy="-14" rx="5" ry="3" fill="#a6d48f"/>`;
     else if (["resonance", "stars", "insects"].includes(d.id)) art = `<path d="M-18 0l18-45 20 39L0 8Z" fill="${roof}"/><path d="M0-45v53L20-6Z" fill="#f2ead8" opacity=".55"/><circle cy="-27" r="9" fill="url(#lw-window)" opacity="${lit ? 1 : 0.5}"/><circle cy="-27" r="4.5" fill="#fff6d2"/>`;
     else art = `<path d="M-28-10v29L0 34V4Z" fill="${n("#efe2c6")}"/><path d="M0 4v30l30-16V-12Z" fill="${n("#c8b99d")}"/><path d="M-35-11L0-39 36-12 0 8Z" fill="${roof}"/><path d="M0-39V8l36-20Z" fill="#1b2140" opacity=".2"/><path d="M-33-11L0 8 34-12" fill="none" stroke="#fff3dc" stroke-opacity=".7" stroke-width="2" stroke-linejoin="round"/><path d="M-18 6v15l10 6V11Z" fill="${n("#6f6658")}"/><path d="M11 9v8l10-6V3Z" fill="${lit ? "#ffd98a" : "#fff0c4"}"/><path d="M22-27v-9h6v12" fill="${n("#b9a68a")}"/>${glow}`;
+    if (preview) return `<g>${base}${art}</g>`;
     return `<g class="lw-object ${selected ? "lw-selected" : ""}" data-lw-object="${p.id}" role="button" tabindex="0" aria-label="${esc(d?.name ?? dec?.name)}\uFF0C\u7B49\u7EA7 ${p.level}" transform="translate(${point.x} ${point.y + 10})"><rect x="-36" y="-44" width="72" height="88" fill="transparent"/>${base}${art}<title>${esc(d?.name ?? dec?.name)} \xB7 ${p.level} \u7EA7</title>${d ? `<text y="47" text-anchor="middle" class="lw-map-label">${esc(d.name)}</text>` : ""}</g>`;
+  }
+  function buildingPreview(def) {
+    const art = building({ id: 0, def, zone: 0, x: 0, y: 0, rotation: 0, level: 1, stored: false }, false, false, true).replace(/url\(#lw-water\)/g, "#8dcbd0").replace(/url\(#lw-window\)/g, "#ffe6a3");
+    return `<svg viewBox="-65 -58 130 108" aria-hidden="true" focusable="false">${art}</svg>`;
   }
   function cropArt(w, c) {
     const v = w.cultivars.find((v2) => v2.id === c.cultivar), d = PLANTS.find((p2) => p2.id === v.species), p = xy(c.x + 0.5, c.y + 0.5), s = (0.45 + Math.min(1, c.progress) * 0.7) * (0.82 + v.genes.form * 0.09), fill = `hsl(${v.genes.color} 62% 74%)`;
@@ -3770,7 +3919,7 @@ var LivingWorld = (() => {
   }
 
   // src/world/view.ts
-  var ui = { tab: "home", zone: 0, build: "", plant: 0, selected: 0, crop: 0, overlay: "", zoom: 1, rotate: 0, edit: false, character: "sprout", person: 0, chain: "", journal: 0, family: 0, region: 0 };
+  var ui = { tab: "home", zone: 0, build: "", buildKind: "facilities", buildGroup: 0, plant: 0, selected: 0, crop: 0, overlay: "", zoom: 1, rotate: 0, edit: false, person: 0, family: 0, region: 0 };
   var lastInteraction = 0;
   var recentlyInteracted = () => Date.now() - lastInteraction < 2500;
   var host;
@@ -3789,13 +3938,35 @@ var LivingWorld = (() => {
   function resources(w) {
     return `<div class="lw-stock" aria-label="\u5BB6\u56ED\u6750\u6599">${["wood", "stone", "ingredient", "feed"].map((k) => `<span data-mat="${k}"><small>${MATERIALS[k]}</small><b>${Math.floor(w.stock[k] ?? 0)}</b></span>`).join("")}</div>`;
   }
+  function buildCatalog(w) {
+    const stored = w.placements.filter((p) => p.stored), decor = ui.buildKind === "decor";
+    const groups = decor ? ["\u5C0F\u5F84", "\u56F4\u680F", "\u706F\u5149", "\u4F11\u61A9", "\u82B1\u827A", "\u6807\u8BC6", "\u81EA\u7136", "\u7EAA\u5FF5"] : ["\u751F\u6D3B", "\u79CD\u690D", "\u751F\u6001", "\u6C34\u666F", "\u5DE5\u574A", "\u661F\u7A7A"];
+    const defs = decor ? DECORATIONS.filter((d) => d.group === ui.buildGroup) : BUILDINGS.filter((d) => d.zone === ui.buildGroup);
+    const items = ui.buildKind === "stored" ? stored.map((p) => ({ p, d: BUILDINGS.find((d) => d.id === p.def) ?? DECORATIONS.find((d) => d.id === p.def) })) : defs.map((d) => ({ p: null, d }));
+    const selected = BUILDINGS.find((d) => d.id === ui.build) ?? DECORATIONS.find((d) => d.id === ui.build);
+    return `<details class="lw-build-catalog" ${ui.edit ? "open" : ""}><summary><span>\u5E03\u7F6E\u5C0F\u5BB6<small>\u628A\u559C\u6B22\u7684\u98CE\u666F\uFF0C\u653E\u8FDB\u751F\u6D3B\u91CC</small></span><span class="lw-catalog-toggle" aria-hidden="true">\uFF0B</span></summary>
+ <div class="lw-build-tabs" aria-label="\u5EFA\u9020\u5206\u7C7B">${[["facilities", "\u8BBE\u65BD"], ["decor", "\u88C5\u9970"], ["stored", `\u6536\u7EB3 \xB7 ${stored.length}`]].map(([kind, label]) => button(label, "build-kind", `data-kind="${kind}" aria-pressed="${ui.buildKind === kind}" class="${ui.buildKind === kind ? "is-active" : ""}"`)).join("")}</div>
+ ${ui.buildKind !== "stored" ? `<div class="lw-build-groups" aria-label="\u7269\u4EF6\u7528\u9014">${groups.map((name, index) => button(name, "build-group", `data-group="${index}" aria-pressed="${ui.buildGroup === index}" class="${ui.buildGroup === index ? "is-active" : ""}"`)).join("")}</div>` : ""}
+ <div class="lw-build-items">${items.map(({ p, d }) => {
+      const enough = !!p || afford(w, d.cost), chosen = p ? ui.selected === p.id : ui.build === d.id, owned = w.placements.filter((p2) => !p2.stored && p2.def === d.id).length;
+      return button(`<span class="lw-build-art">${buildingPreview(d.id)}<span class="lw-build-check" aria-hidden="true">${chosen ? "\u2713" : "\uFF0B"}</span></span><span class="lw-build-title">${esc(d.name)}<small>${p ? "\u5DF2\u6536\u7EB3" : "size" in d ? d.size.join(" \xD7 ") : "1 \xD7 1"}</small></span><span class="lw-build-price ${enough ? "" : "is-short"}">${p ? "\u53D6\u51FA\u6446\u653E" : cost(d.cost)}</span>${!enough ? '<span class="lw-build-availability">\u6750\u6599\u4E0D\u8DB3</span>' : owned && !p ? `<span class="lw-build-availability">\u5DF2\u653E\u7F6E ${owned}</span>` : ""}`, p ? "move" : "prepare-build", `${p ? `data-id="${p.id}"` : `data-def="${d.id}"`} class="lw-build-item ${chosen ? "is-active" : ""}" aria-pressed="${chosen}" aria-disabled="${!enough}" title="${esc("desc" in d ? d.desc : d.effect)}"`);
+    }).join("") || `<div class="lw-storage-empty">${buildingPreview("house")}<b>\u559C\u6B22\u7684\u7269\u4EF6\uFF0C\u968F\u65F6\u653E\u56DE\u6765</b><p>\u70B9\u5730\u56FE\u4E0A\u7684\u7269\u4EF6\uFF0C\u5C31\u80FD\u628A\u5B83\u6536\u7EB3\u5728\u8FD9\u91CC\u3002</p></div>`}</div>
+ ${selected ? `<div class="lw-build-description"><b>${esc(selected.name)}</b><p>${esc("desc" in selected ? selected.desc : selected.effect)}</p></div>` : ""}
+ <div class="lw-build-footer"><span>\u6728\u6750 <b>${Math.floor(w.stock.wood ?? 0)}</b> \xB7 \u77F3\u6750 <b>${Math.floor(w.stock.stone ?? 0)}</b></span>${button(ui.build === "path" ? "\u505C\u6B62\u94FA\u8DEF" : "\u94FA\u8BBE\u5C0F\u8DEF", "path-mode", `aria-pressed="${ui.build === "path"}"`)}</div></details>`;
+  }
+  function placementHint(w) {
+    const d = BUILDINGS.find((d2) => d2.id === ui.build) ?? DECORATIONS.find((d2) => d2.id === ui.build), moving = ui.edit && ui.selected ? w.placements.find((p) => p.id === ui.selected) : null;
+    if (!d && !moving && ui.build !== "path") return "";
+    const name = d?.name ?? (moving ? BUILDINGS.find((d2) => d2.id === moving.def)?.name ?? DECORATIONS.find((d2) => d2.id === moving.def)?.name : "\u5C0F\u8DEF");
+    return `<div class="lw-placement-hint" role="status"><div><b>${esc(name)}</b><span>${ui.build === "path" ? "\u70B9\u5730\u5757\u94FA\u8DEF\uFF0C\u518D\u70B9\u4E00\u6B21\u64E6\u9664" : "\u70B9\u5730\u56FE\u7A7A\u5730\u653E\u7F6E"}</span></div>${button("\u53D6\u6D88", "cancel-build")}</div>`;
+  }
   function home(w) {
     const s = host.state().slimes, locked = !w.unlocked.includes(ui.zone), e = environment(w, ui.zone, 6, 6, s);
     let selection = "";
     const p = w.placements.find((p2) => p2.id === ui.selected);
     if (p) {
       const d = BUILDINGS.find((d2) => d2.id === p.def), dec = DECORATIONS.find((d2) => d2.id === p.def), workers = w.workers.filter((j) => j.building === p.id), recipes = RECIPES.filter((r) => r.building === p.def);
-      selection = `<section class="lw-detail"><div class="lw-line"><h3>${esc(d?.name ?? dec?.name)} <small>${p.level} \u7EA7${p.stored ? " \xB7 \u5DF2\u6536\u7EB3" : ""}</small></h3>${button("\u5173\u95ED", "deselect")}</div>${note(d?.desc ?? dec?.effect ?? "")}${d && p.level < 3 ? note(`\u5347\u7EA7\uFF1A${d.upgrades[p.level - 1]} \xB7 ${cost(Object.fromEntries(Object.entries(d.cost).map(([k, v]) => [k, v * (p.level + 1)])))}`) : ""}<div class="lw-actions">${d ? cmd("\u5347\u7EA7", { type: "upgrade", id: p.id }, p.level >= 3 || p.stored) : ""}${button(p.stored ? "\u53D6\u51FA\u653E\u7F6E" : "\u79FB\u52A8", "move", `data-id="${p.id}"`)}${button("\u65CB\u8F6C\u540E\u653E\u7F6E", "rotate", `data-id="${p.id}"`)}${cmd("\u6536\u7EB3", { type: "store", id: p.id }, p.stored)}</div>${d ? `<div class="lw-inline-form">${select("lw-worker", "\u5B89\u6392\u4F19\u4F34", freeSlimes(w).map((s2) => ({ id: s2.id, name: s2.name })))}${button("\u4E0A\u5C97", "assign", `data-id="${p.id}"`, p.stored || !freeSlimes(w).length)}</div>${workers.map((j) => `<div class="lw-line">${esc(s.find((s2) => s2.id === j.slimeId)?.name)} \u6B63\u5728\u5E2E\u5FD9${cmd("\u4F11\u606F", { type: "unassign", slime: j.slimeId })}</div>`).join("")}${recipes.map((r) => `<div class="lw-recipe"><div><b>${r.name}</b><small>${cost(r.cost)} \u2192 ${cost(r.output)} \xB7 ${r.seconds / 60} \u5206\u949F${r.level > p.level ? ` \xB7 \u9700\u8981 ${r.level} \u7EA7` : ""}</small></div>${cmd("\u5236\u4F5C", { type: "craft", recipe: r.id, building: p.id }, r.level > p.level || !afford(w, r.cost) || p.stored)}</div>`).join("")}` : ""}</section>`;
+      selection = `<section class="lw-detail"><div class="lw-line"><h3>${esc(d?.name ?? dec?.name)} <small>${p.level} \u7EA7${p.stored ? " \xB7 \u5DF2\u6536\u7EB3" : ""}</small></h3>${button("\u5173\u95ED", "deselect")}</div>${note(d?.desc ?? dec?.effect ?? "")}${d && p.level < 3 ? note(`\u5347\u7EA7\uFF1A${d.upgrades[p.level - 1]} \xB7 ${cost(Object.fromEntries(Object.entries(d.cost).map(([k, v]) => [k, v * (p.level + 1)])))}`) : ""}<div class="lw-actions">${d ? cmd("\u5347\u7EA7", { type: "upgrade", id: p.id }, p.level >= 3 || p.stored) : ""}${button(p.stored ? "\u53D6\u51FA\u653E\u7F6E" : "\u79FB\u52A8", "move", `data-id="${p.id}"`)}${button("\u65CB\u8F6C\u540E\u653E\u7F6E", "rotate", `data-id="${p.id}"`)}${cmd("\u6536\u7EB3", { type: "store", id: p.id }, p.stored)}</div>${d ? `<div class="lw-inline-form">${freeSlimes(w).map((s2) => cmd(`\u9080\u8BF7${esc(s2.name)}\u5E2E\u5FD9`, { type: "assign", slime: s2.id, building: p.id }, p.stored)).join("") || note("\u4F19\u4F34\u90FD\u5728\u5FD9\uFF0C\u7B49\u5B83\u4EEC\u56DE\u5BB6\u518D\u6765\u5E2E\u5FD9\u3002")}</div>${workers.map((j) => `<div class="lw-line">${esc(s.find((s2) => s2.id === j.slimeId)?.name)} \u6B63\u5728\u5E2E\u5FD9${cmd("\u4F11\u606F", { type: "unassign", slime: j.slimeId })}</div>`).join("")}${recipes.map((r) => `<div class="lw-recipe"><div><b>${r.name}</b><small>${cost(r.cost)} \u2192 ${cost(r.output)} \xB7 ${r.seconds / 60} \u5206\u949F${r.level > p.level ? ` \xB7 \u9700\u8981 ${r.level} \u7EA7` : ""}</small></div>${cmd("\u5236\u4F5C", { type: "craft", recipe: r.id, building: p.id }, r.level > p.level || !afford(w, r.cost) || p.stored)}</div>`).join("")}` : ""}</section>`;
     }
     if (p) selection += facility(w, p.def);
     const c = w.crops.find((c2) => c2.id === ui.crop);
@@ -3803,11 +3974,10 @@ var LivingWorld = (() => {
       const v = w.cultivars.find((v2) => v2.id === c.cultivar), d = PLANTS.find((p2) => p2.id === v.species), env = environment(w, c.zone, c.x, c.y, s);
       selection = `<section class="lw-detail"><div class="lw-line"><h3>${esc(v.name)}</h3>${button("\u5173\u95ED", "deselect")}</div><p>${FAMILIES[d.family]} \xB7 ${Math.round(c.progress * 100)}% \xB7 ${c.water <= 0 ? "\u9700\u8981\u8865\u6C34" : `\u6C34\u5206\u53EF\u7EF4\u6301 ${Math.ceil(c.water)} \u5206\u949F`}</p><progress max="1" value="${c.progress}"></progress><p>\u5149\u7167 ${Math.round(env.light)} \xB7 \u6E7F\u5EA6 ${Math.round(env.moisture)} \xB7 \u80A5\u529B ${Math.round(env.fertility)} \xB7 ${env.temperature}\xB0</p>${note(d.use)}<div class="lw-actions">${cmd("\u7167\u6599 \xB7 \u9732\u6C34 1", { type: "care", id: c.id })}${cmd("\u6536\u83B7", { type: "harvest", id: c.id }, c.progress < 1 || d.id === "glowflower")}${cmd("\u65BD\u80A5", { type: "fertilize", id: c.id, item: "fertilizer" }, !(w.stock.fertilizer > 0))}${cmd("\u4F7F\u7528\u6C83\u571F", { type: "fertilize", id: c.id, item: "soil" }, !(w.stock.soil > 0))}${cmd("\u79FB\u56DE\u79CD\u5B50\u5E93", { type: "uproot", id: c.id })}</div></section>`;
     }
-    const buildings = BUILDINGS.map((d) => ({ id: d.id, name: `${d.name} \xB7 ${cost(d.cost)}` })), decor = DECORATIONS.map((d) => ({ id: d.id, name: `${d.name} \xB7 ${cost(d.cost)}` }));
-    return `${companionBar(w)}${wishCard(w)}<div class="lw-zone-nav">${ZONES.map((z) => button(z.name, "zone", `data-zone="${z.id}" class="${ui.zone === z.id ? "is-active" : ""} ${w.unlocked.includes(z.id) ? "" : "is-locked"}"`)).join("")}</div>
- ${locked ? `<div class="lw-empty"><h3>\u628A\u5BB6\u56ED\u5EF6\u4F38\u5230\u8FD9\u91CC</h3><p>\u9700\u8981 ${ZONES[ui.zone].threshold} \u9879\u53D1\u73B0\uFF0C\u5DF2\u6709 ${w.discoveries.length} \u9879\u3002</p>${note(cost({ wood: 10 + ui.zone * 10, stone: 5 + ui.zone * 5 }))}${cmd("\u5F00\u8F9F\u533A\u57DF", { type: "unlock", zone: ui.zone }, w.discoveries.length < ZONES[ui.zone].threshold)}</div>` : `<div class="lw-scene-wrap" style="--zoom:${ui.zoom}">${scene(w, ui.zone, s, ui.selected, ui.overlay, host.slimeHTML)}</div><div class="lw-map-tools">${button(ui.edit ? "\u5B8C\u6210\u5E03\u7F6E" : "\u5E03\u7F6E\u5BB6\u56ED", "edit")}${button("\u2212", "zoomout", 'aria-label="\u7F29\u5C0F\u5730\u56FE"')}${button("+", "zoomin", 'aria-label="\u653E\u5927\u5730\u56FE"')}${button("\u590D\u4F4D", "zoomreset")}<span>${ui.build ? "\u70B9\u51FB\u7A7A\u5730\u5EFA\u9020" : ui.plant ? "\u70B9\u51FB\u7A7A\u5730\u79CD\u690D" : ui.edit && ui.selected ? "\u62D6\u52A8\u6240\u9009\u7269\u4EF6\uFF0C\u6216\u70B9\u51FB\u7A7A\u5730\u79FB\u52A8" : "\u70B9\u51FB\u690D\u7269\u4E0E\u8BBE\u65BD\u67E5\u770B"}</span></div>${selection}
+    return `${ui.edit ? "" : companionBar(w) + wishCard(w)}<div class="lw-zone-nav">${ZONES.map((z) => button(z.name, "zone", `data-zone="${z.id}" class="${ui.zone === z.id ? "is-active" : ""} ${w.unlocked.includes(z.id) ? "" : "is-locked"}"`)).join("")}</div>
+ ${locked ? `<div class="lw-empty"><h3>\u628A\u5BB6\u56ED\u5EF6\u4F38\u5230\u8FD9\u91CC</h3><p>\u9700\u8981 ${ZONES[ui.zone].threshold} \u9879\u53D1\u73B0\uFF0C\u5DF2\u6709 ${w.discoveries.length} \u9879\u3002</p>${note(cost({ wood: 10 + ui.zone * 10, stone: 5 + ui.zone * 5 }))}${cmd("\u5F00\u8F9F\u533A\u57DF", { type: "unlock", zone: ui.zone }, w.discoveries.length < ZONES[ui.zone].threshold)}</div>` : `<div class="lw-scene-wrap" style="--zoom:${ui.zoom}">${scene(w, ui.zone, s, ui.selected, ui.overlay, host.slimeHTML)}</div><div class="lw-map-tools">${button(ui.edit ? "\u5B8C\u6210\u5E03\u7F6E" : "\u5EFA\u9020\u4E0E\u88C5\u9970", "edit")}${button("\u2212", "zoomout", 'aria-label="\u7F29\u5C0F\u5730\u56FE"')}${button("+", "zoomin", 'aria-label="\u653E\u5927\u5730\u56FE"')}${button("\u590D\u4F4D", "zoomreset")}<span>${ui.build ? "\u9009\u597D\u4E86\uFF0C\u70B9\u5730\u56FE\u7A7A\u5730\u653E\u7F6E" : ui.plant ? "\u70B9\u51FB\u7A7A\u5730\u79CD\u690D" : ui.edit && ui.selected ? "\u62D6\u52A8\u6240\u9009\u7269\u4EF6\uFF0C\u6216\u70B9\u51FB\u7A7A\u5730\u79FB\u52A8" : "\u70B9\u51FB\u690D\u7269\u4E0E\u8BBE\u65BD\u67E5\u770B"}</span></div>${placementHint(w)}${selection}
  <div class="lw-actions">${cmd(w.clock - w.lastGather >= 300 ? "\u91C7\u96C6\u7269\u8D44" : `${Math.ceil((300 - w.clock + w.lastGather) / 60)} \u5206\u540E\u53EF\u91C7\u96C6`, { type: "gather" }, w.clock - w.lastGather < 300)}${cmd("\u5168\u90E8\u6536\u83B7", { type: "harvestAll" }, !w.crops.some((c2) => c2.progress >= 1))}${cmd("\u6279\u91CF\u8865\u6C34", { type: "careAll" })}</div>
- <details class="lw-disclosure" ${ui.edit ? "open" : ""}><summary>\u5EFA\u9020\u3001\u88C5\u9970\u4E0E\u6536\u7EB3</summary><div class="lw-inline-form">${select("lw-build", "\u9009\u62E9\u8BBE\u65BD\u6216\u88C5\u9970", [...buildings, ...decor], ui.build)}${button("\u653E\u5230\u5730\u56FE", "prepare-build")}</div>${note("\u6BCF\u5EA7\u8BBE\u65BD\u7559\u51FA\u901A\u5411\u8FB9\u7F18\u7684\u7A7A\u5730\u3002\u6750\u6599\u4E0D\u8DB3\u4F1A\u4FDD\u7559\u5E03\u5C40\uFF0C\u4E0D\u6263\u9664\u6750\u6599\u3002")}<div class="lw-actions">${button("\u94FA\u8BBE / \u64E6\u9664\u9053\u8DEF", "path-mode")}${w.placements.filter((p2) => p2.stored).map((p2) => button(`${BUILDINGS.find((d) => d.id === p2.def)?.name ?? DECORATIONS.find((d) => d.id === p2.def)?.name} \xB7 \u53D6\u51FA`, "move", `data-id="${p2.id}"`)).join("")}</div></details>
+ ${buildCatalog(w)}
  <details><summary>\u8FD9\u4E00\u7247\u571F\u5730\u7684\u73AF\u5883</summary><div class="lw-environment-summary"><span>\u5149\u7167 ${Math.round(e.light)}</span><span>\u6E7F\u5EA6 ${Math.round(e.moisture)}</span><span>\u80A5\u529B ${Math.round(e.fertility)}</span><span>\u6C34\u8D28 ${Math.round(e.quality)}</span></div></details>`}
  <details class="lw-disclosure"><summary>\u7269\u8D44\u4ED3\u5E93 \xB7 ${Object.keys(w.stock).length} \u7C7B</summary><div class="lw-inventory">${Object.entries(w.stock).map(([k, v]) => `<span>${esc(k.startsWith("seed:") ? w.cultivars.find((c2) => c2.id === Number(k.slice(5)))?.name ?? "\u79CD\u5B50" : MATERIALS[k] ?? k)}<b>${Math.floor(v)}</b></span>`).join("")}</div>${Object.values(w.pending).some((v) => v > 0) ? note(`\u4ED3\u6EE1\u7269\u8D44\u4FDD\u7559\uFF1A${cost(w.pending)}`) + cmd("\u9886\u53D6\u80FD\u653E\u4E0B\u7684\u7269\u8D44", { type: "claimOverflow" }) : ""}</details>`;
   }
@@ -3823,7 +3993,7 @@ var LivingWorld = (() => {
  <div class="lw-line"><h3>\u5E7C\u4F53\u7684\u5BB6</h3><small>${w.juveniles.filter((j) => j.active).length}/${(level(w, "house") || 1) * 2} \u5728\u517B</small></div>
  ${w.juveniles.length ? w.juveniles.map((j) => {
       const event = j.choices.includes(`${j.stage}:element`) ? BABY_PERSONAL_EVENTS[j.id % 24] : BABY_EVENTS.find((e) => e.element === j.element);
-      return `<article class="lw-baby"><div class="lw-line"><svg viewBox="-30 -45 60 70" width="55" height="64" aria-hidden="true">${jelly(elementHue(j.element), j.name)}</svg><div><h3>${esc(j.name)}</h3><small>${j.element} \xB7 ${j.active ? j.stage ? "\u5E7C\u5E74" : "\u5E7C\u4F53" : "\u5F85\u5B89\u7F6E"} \xB7 ${Math.floor((w.clock - j.born) / 60)} \u5206\u949F</small></div></div><p>\u7167\u6599 ${j.care.length}/5 \xB7 ${j.care.join(" / ") || "\u7B49\u5F85\u7B2C\u4E00\u6B21\u966A\u4F34"}</p>${j.active ? `<div class="lw-actions">${["\u5582\u98DF", "\u6E38\u620F", "\u5B89\u629A", "\u73AF\u5883"].map((kind) => cmd(kind, { type: "babyCare", id: j.id, kind }, j.care.includes(kind))).join("")}</div>${select(`lw-mentor-${j.id}`, "\u5BFC\u5E08", freeSlimes(w).map((s) => ({ id: s.id, name: s.name })))}${button("\u9080\u8BF7\u5BFC\u5E08", "mentor", `data-id="${j.id}"`, j.care.includes("\u5BFC\u5E08") || !freeSlimes(w).length)}${!j.choices.includes(`${j.stage}:personal`) ? `<div class="lw-story"><b>${event.title}</b><p>${event.text}</p>${event.choices.map((text, choice) => cmd(text, { type: "babyChoice", id: j.id, choice })).join("")}</div>` : ""}${note(j.traits.join("\uFF1B"))}${cmd(j.stage ? "\u786E\u8BA4\u6210\u5E74" : "\u8FDB\u5165\u5E7C\u5E74", { type: "grow", id: j.id })}${note(j.stage ? "\u6210\u5E74\u9700\u8981 60 \u5206\u949F\u6210\u957F\u4E0E 5 \u7C7B\u7167\u6599\u3002" : "\u8FDB\u5165\u5E7C\u5E74\u9700\u8981 15 \u5206\u949F\u6210\u957F\u4E0E 3 \u7C7B\u7167\u6599\u3002")}` : cmd("\u5B89\u7F6E\u5230\u5C0F\u5C4B", { type: "adopt", id: j.id })}</article>`;
+      return `<article class="lw-baby"><div class="lw-line"><svg viewBox="-30 -45 60 70" width="55" height="64" aria-hidden="true">${jelly(elementHue(j.element), j.name)}</svg><div><h3>${esc(j.name)}</h3><small>${j.element} \xB7 ${j.active ? j.stage ? "\u5E7C\u5E74" : "\u5E7C\u4F53" : "\u5F85\u5B89\u7F6E"} \xB7 ${Math.floor((w.clock - j.born) / 60)} \u5206\u949F</small></div></div><p>\u7167\u6599 ${j.care.length}/5 \xB7 ${j.care.join(" / ") || "\u7B49\u5F85\u7B2C\u4E00\u6B21\u966A\u4F34"}</p>${j.active ? `<div class="lw-actions">${["\u5582\u98DF", "\u6E38\u620F", "\u5B89\u629A", "\u73AF\u5883"].map((kind) => cmd(kind, { type: "babyCare", id: j.id, kind }, j.care.includes(kind))).join("")}</div>${select(`lw-mentor-${j.id}`, "\u5BFC\u5E08", freeSlimes(w).map((s) => ({ id: s.id, name: s.name })))}${button("\u9080\u8BF7\u5BFC\u5E08", "mentor", `data-id="${j.id}"`, j.care.includes("\u5BFC\u5E08") || !freeSlimes(w).length)}${!j.choices.includes(`${j.stage}:personal`) ? `<div class="lw-story"><b>${event.title}</b><p>${event.text}</p>${cmd("\u7EE7\u7EED\u6545\u4E8B", { type: "babyContinue", id: j.id, stage: j.stage, chapter: j.choices.length })}</div>` : ""}${note(j.traits.join("\uFF1B"))}${cmd(j.stage ? "\u786E\u8BA4\u6210\u5E74" : "\u8FDB\u5165\u5E7C\u5E74", { type: "grow", id: j.id })}${note(j.stage ? "\u6210\u5E74\u9700\u8981 60 \u5206\u949F\u6210\u957F\u4E0E 5 \u7C7B\u7167\u6599\u3002" : "\u8FDB\u5165\u5E7C\u5E74\u9700\u8981 15 \u5206\u949F\u6210\u957F\u4E0E 3 \u7C7B\u7167\u6599\u3002")}` : cmd("\u5B89\u7F6E\u5230\u5C0F\u5C4B", { type: "adopt", id: j.id })}</article>`;
     }).join("") : note("\u63A2\u7D22\u65F6\u53EF\u4EE5\u6551\u52A9\u5E7C\u4F53\uFF0C\u4E5F\u53EF\u4EE5\u9080\u8BF7\u4E24\u4F4D\u6210\u5E74\u4F19\u4F34\u5171\u9E23\u3002\u5E7C\u4F53\u4F1A\u5B89\u5168\u7B49\u5F85\u4F60\u5B89\u7F6E\u3002")}
  <details class="lw-disclosure"><summary>\u4F19\u4F34\u5171\u9E23 \xB7 \u65B0\u751F\u547D</summary>${select("lw-resonance-a", "\u4F19\u4F34\u4E00", freeSlimes(w).map((s) => ({ id: s.id, name: s.name })))}${select("lw-resonance-b", "\u4F19\u4F34\u4E8C", freeSlimes(w).map((s) => ({ id: s.id, name: s.name })), freeSlimes(w)[1]?.id ?? 0)}${note("\u9732\u6C34 8 \xB7 \u98DF\u6750 2\uFF1B\u6210\u5E74\u4F19\u4F34\u4FDD\u7559\u3002\u6BCF 30 \u5206\u949F\u53EF\u5171\u9E23\u4E00\u6B21\u3002")}${button("\u5F00\u59CB\u5171\u9E23", "resonate", "", freeSlimes(w).length < 2)}</details>`;
   }
@@ -3836,17 +4006,14 @@ var LivingWorld = (() => {
     const free = freeSlimes(w), z = ZONES[ui.region], preset = host.state().legacyTeamPreset ?? [];
     return `${heading("\u4E00\u8D77\u628A\u53D1\u73B0\u5E26\u56DE\u5BB6", "\u9009\u62E9\u5730\u70B9\uFF0C\u518D\u51B3\u5B9A\u8FD9\u6B21\u600E\u6837\u51FA\u53D1\u3002")}
  <div class="lw-world-map">${ZONES.map((r) => button(`<b>${r.area}</b><small>${w.discoveries.length >= r.threshold ? "\u5DF2\u53D1\u73B0\u8DEF\u7EBF\u5165\u53E3" : `\u8FD8\u9700${r.threshold - w.discoveries.length}\u9879\u53D1\u73B0`}</small>`, "region", `data-region="${r.id}" class="${r.id === ui.region ? "is-active" : ""}"`)).join("")}</div>
- <section class="lw-detail"><h3>${z.area}</h3><p>${z.story}</p>${note("\u80FD\u5E26\u56DE\uFF1A\u6728\u6750\u3001\u77F3\u6750\u3001\u98DF\u6750\u3001\u79CD\u5B50\u4E0E\u7814\u7A76\u7B14\u8BB0\u3002\u540C\u884C\u5143\u7D20\u53EF\u80FD\u5F00\u542F\u7279\u522B\u9009\u62E9\uFF1B\u6BCF\u4E2A\u4E8B\u4EF6\u90FD\u4FDD\u7559\u666E\u901A\u529E\u6CD5\u3002")}${note("\u540C\u884C\u673A\u4F1A\uFF1A" + ([...new Set(EVENTS.filter((e) => e.region === z.id).flatMap((e) => e.choices.map((c) => c.requires?.element).filter(Boolean)))].map((e) => e + "\u4F19\u4F34\u7684\u80FD\u529B").join("\u3001") || "\u6240\u6709\u5143\u7D20\u90FD\u80FD\u53D1\u73B0\u65B0\u7EBF\u7D22"))}${ui.region === 1 ? note("\u5E26\u6709\u53D1\u5149\u79CD\u5B50\u613F\u671B\u7684\u4F19\u4F34\u540C\u884C\uFF0C\u53EF\u4EE5\u628A\u4E00\u675F\u5149\u5E26\u56DE\u5BB6\u3002") : ""}
+ <section class="lw-detail"><h3>${z.area}</h3><p>${z.story}</p>${note("\u80FD\u5E26\u56DE\uFF1A\u6728\u6750\u3001\u77F3\u6750\u3001\u98DF\u6750\u3001\u79CD\u5B50\u4E0E\u7814\u7A76\u7B14\u8BB0\u3002\u540C\u884C\u4F19\u4F34\u4F1A\u7528\u81EA\u5DF1\u7684\u65B9\u5F0F\u56DE\u5E94\u6CBF\u9014\u7684\u76F8\u9047\u3002")}${note("\u540C\u884C\u673A\u4F1A\uFF1A" + ([...new Set(EVENTS.filter((e) => e.region === z.id).flatMap((e) => e.choices.map((c) => c.requires?.element).filter(Boolean)))].map((e) => e + "\u4F19\u4F34\u7684\u80FD\u529B").join("\u3001") || "\u6240\u6709\u5143\u7D20\u90FD\u80FD\u53D1\u73B0\u65B0\u7EBF\u7D22"))}${ui.region === 1 ? note("\u5E26\u6709\u53D1\u5149\u79CD\u5B50\u613F\u671B\u7684\u4F19\u4F34\u540C\u884C\uFF0C\u53EF\u4EE5\u628A\u4E00\u675F\u5149\u5E26\u56DE\u5BB6\u3002") : ""}
  <input type="hidden" id="lw-region" value="${ui.region}">${select("lw-route", "\u8DEF\u7EBF", [{ id: 0, name: "\u91C7\u96C6\u5C0F\u8DEF" }, { id: 1, name: "\u8C03\u67E5\u5C0F\u8DEF" }, { id: 2, name: "\u6311\u6218\u5C0F\u8DEF" }], 0)}
  <div class="lw-team">${free.map((s, i) => `<label><input type="checkbox" name="lw-team" value="${s.id}" ${(preset.length ? preset.includes(s.id) : i === 0) ? "checked" : ""}>${esc(s.name)} \xB7 ${s.element} \xB7 \u4F53\u529B${Math.floor(s.stamina)}</label>`).join("") || note("\u5148\u8BA9\u4E00\u4F4D\u4F19\u4F34\u56DE\u5BB6\uFF0C\u6216\u5728\u4F19\u4F34\u9875\u53EC\u5524\u3002")}</div>
  ${button("\u4E00\u8D77\u51FA\u6E38 \xB7 \u65E0\u98DF\u7269\u95E8\u7968", "depart", 'data-mode="active"', !free.length || w.discoveries.length < z.threshold)}
  <details><summary>\u59D4\u6258\u719F\u6089\u7684\u8DEF\u7EBF</summary>${select("lw-duration", "\u59D4\u6258\u65F6\u957F", [{ id: 300, name: "5\u5206\u949F" }, { id: 1200, name: "20\u5206\u949F" }, { id: 3600, name: "60\u5206\u949F" }, { id: 10800, name: "180\u5206\u949F" }], 300)}${select("lw-supply", "\u643A\u5E26\u8865\u7ED9", [{ id: "feed", name: "\u57FA\u7840\u9972\u6599" }, { id: "meal", name: "\u4FBF\u5F53" }], "feed")}<label><input type="checkbox" id="lw-repeat">\u8FDE\u7EED\u59D4\u6258\uFF08\u540E\u7EED\u6BCF\u6B21\u8865\u5145\u57FA\u7840\u9972\u6599\uFF09</label>${note("\u6BCF20\u5206\u949F1\u4EFD\u4FBF\u5F53\u62162\u4EFD\u9972\u6599\uFF0C\u6700\u5C111\u6863\uFF1B\u5148\u4E00\u8D77\u5B8C\u6210\u6240\u9009\u8DEF\u7EBF\u5373\u53EF\u59D4\u6258\u3002\u8865\u7ED9\u5728\u51FA\u53D1\u65F6\u4F7F\u7528\uFF0C\u53EC\u56DE\u4FDD\u7559\u5DF2\u83B7\u5F97\u7684\u6536\u83B7\u3002")}${button("\u59D4\u6258\u91C7\u96C6", "depart", 'data-mode="offline"', !free.length || w.discoveries.length < z.threshold)}</details></section>
  ${w.trips.map((t) => {
       const e = tripScene(w, t, host.state().slimes), team = host.state().slimes.filter((s) => t.team.includes(s.id));
-      return `<article class="lw-detail"><h3>${ZONES[t.region].area} \xB7 ${t.mode === "active" ? "\u4E00\u8D77\u51FA\u6E38" : "\u59D4\u6258\u91C7\u96C6"}</h3><p>${team.map((s) => esc(s.name)).join("\u3001")} \xB7 ${t.ready ? "\u5DF2\u56DE\u5BB6" : t.resting ? "\u5728\u5BB6\u4F11\u606F\uFF0C\u4ECD\u4FDD\u7559\u672C\u6B21\u5B89\u6392" : `${t.node}/4\u6BB5`}</p>${e ? `<div class="lw-story"><h4>${e.title}</h4><p>${e.text}</p>${e.choices.map((c, choice) => {
-        const problem = choiceProblem(w, team, c);
-        return cmd(c.text + (problem ? " \xB7 " + problem : ""), { type: "tripChoice", id: t.id, choice }, !!problem);
-      }).join("")}</div>` : ""}<div class="lw-actions">${t.ready ? cmd("\u6536\u597D\u65C5\u884C\u7269\u8D44", { type: "claimTrip", id: t.id }) : `${t.mode === "active" ? cmd("\u7EE7\u7EED\u524D\u8FDB", { type: "step", id: t.id }, !!t.pending) + cmd("\u9014\u4E2D\u4F11\u6574", { type: "restTrip", id: t.id }) : ""}${cmd("\u53EC\u56DE\u4F19\u4F34", { type: "recall", id: t.id })}`}</div><details><summary>\u6CBF\u9014\u8BB0\u5F55\u4E0E\u6536\u83B7</summary>${note(cost(t.bag))}${t.log.map((line) => note(line)).join("")}${note(`\u6676\u5E01${t.coins ?? 0} \xB7 \u5DF2\u5B8C\u6210${t.actions ?? 0}\u6B21\u91C7\u96C6\u884C\u52A8`)}</details></article>`;
+      return `<article class="lw-detail"><h3>${ZONES[t.region].area} \xB7 ${t.mode === "active" ? "\u4E00\u8D77\u51FA\u6E38" : "\u59D4\u6258\u91C7\u96C6"}</h3><p>${team.map((s) => esc(s.name)).join("\u3001")} \xB7 ${t.ready ? "\u5DF2\u56DE\u5BB6" : t.resting ? "\u5728\u5BB6\u4F11\u606F\uFF0C\u4ECD\u4FDD\u7559\u672C\u6B21\u5B89\u6392" : `${t.node}/4\u6BB5`}</p>${e ? `<div class="lw-story"><h4>${e.title}</h4><p>${e.text}</p>${cmd("\u7EE7\u7EED\u65C5\u9014", { type: "tripContinue", id: t.id, event: e.id })}</div>` : ""}<div class="lw-actions">${t.ready ? cmd("\u6536\u597D\u65C5\u884C\u7269\u8D44", { type: "claimTrip", id: t.id }) : `${t.mode === "active" ? cmd("\u7EE7\u7EED\u524D\u8FDB", { type: "step", id: t.id }, !!t.pending) + cmd("\u9014\u4E2D\u4F11\u6574", { type: "restTrip", id: t.id }) : ""}${cmd("\u53EC\u56DE\u4F19\u4F34", { type: "recall", id: t.id })}`}</div><details><summary>\u6CBF\u9014\u8BB0\u5F55\u4E0E\u6536\u83B7</summary>${note(cost(t.bag))}${t.log.map((line) => note(line)).join("")}${note(`\u6676\u5E01${t.coins ?? 0} \xB7 \u5DF2\u5B8C\u6210${t.actions ?? 0}\u6B21\u91C7\u96C6\u884C\u52A8`)}</details></article>`;
     }).join("")}
  <section class="lw-detail"><h3>\u6311\u6218\u533A\u57DF</h3>${button("\u8FDB\u5165\u6DF1\u6E0A\u3001\u6559\u5B66\u4E0E\u626B\u8361", "legacy", 'data-page="challenges"')}${note("\u6218\u6597\u4FDD\u6301\u539F\u6709\u6210\u957F\u89C4\u5219\uFF0C\u51FA\u6218\u4F19\u4F34\u4E0E\u5BB6\u56ED\u3001\u65C5\u884C\u5171\u7528\u6D3B\u52A8\u72B6\u6001\u3002")}</section>
  <details class="lw-disclosure"><summary>\u8425\u5730\u4E0E\u4E16\u754C\u6545\u4E8B</summary>${ZONES.map((r) => `<article class="lw-camp"><b>${r.area}</b><p>${r.story}</p>${w.camps.includes(r.id) ? storyCard(w, `region:${r.id}`, ui.person ? [ui.person] : []) : cmd("\u4FEE\u590D\u8425\u5730 \xB7 " + cost({ wood: 15 + r.id * 5, stone: 10 + r.id * 3 }), { type: "camp", region: r.id }, w.discoveries.length < r.threshold)}</article>`).join("")}</details>
@@ -3854,21 +4021,24 @@ var LivingWorld = (() => {
   }
   function storyCard(w, definition, ids) {
     const i = w.stories[storyId(definition, ids)];
-    if (!i || i.legacy && i.status === "active" && !i.participants.length) return cmd("\u548C\u9009\u4E2D\u7684\u4F19\u4F34\u5F00\u59CB", { type: "storyStart", definition, participants: ids }, !ids.length || ids.some((id2) => activity(w, id2).kind !== "home"));
-    const people = i.participants.map((id2) => host.state().slimes.find((s) => s.id === id2)?.name ?? w.archives[id2]?.name ?? "\u5386\u53F2\u53C2\u4E0E\u8005").join("\u3001");
-    const issue2 = storyRequirement(w, i), scene2 = storyScene(i, host.state().slimes.filter((s) => i.participants.includes(s.id)), w);
-    return `<div class="lw-story" data-story="${esc(i.id)}"><h4>${esc(storyTitle(i))} \xB7 ${i.stage}\u6BB5\u5DF2\u5B8C\u6210</h4><p class="lw-note">${esc(people || "\u65E7\u8BB0\u5F55\u672A\u4FDD\u5B58\u53C2\u4E0E\u8005")}${i.legacy ? " \xB7 \u4FDD\u7559\u539F\u6709\u5386\u53F2" : ""}</p>${i.status === "active" ? `<p>${esc(scene2.text)}</p>${issue2 ? note("\u63A5\u4E0B\u6765\uFF1A" + issue2) : ""}${scene2.choices.map((c, choice) => {
-      const missing = choiceProblem(w, host.state().slimes.filter((s) => i.participants.includes(s.id)), c);
-      return cmd(c.text + (missing ? " \xB7 " + missing : ""), { type: "storyChoice", id: i.id, choice }, !!issue2 || !!missing);
-    }).join("")}` : note(i.status === "completed" ? "\u8FD9\u6BB5\u56DE\u5FC6\u5DF2\u7ECF\u7559\u5728\u5BB6\u91CC\u3002" : "\u53C2\u4E0E\u8005\u79BB\u5F00\u540E\uFF0C\u8FD9\u6BB5\u7ECF\u5386\u4FDD\u5B58\u5728\u6863\u6848\u4E2D\u3002")}${i.choices.length ? `<details><summary>\u67E5\u770B\u6211\u4EEC\u7684\u9009\u62E9</summary>${i.choices.map((c) => note(c.result)).join("")}</details>` : ""}</div>`;
+    if (!i || i.legacy && i.status === "active" && !i.participants.length) return cmd("\u7FFB\u5F00\u8FD9\u6BB5\u6545\u4E8B", { type: "storyStart", definition }, !storyCasts(w, freeSlimes(w), definition).length);
+    const team = host.state().slimes.filter((s) => i.participants.includes(s.id)), people = i.participants.map((id2) => host.state().slimes.find((s) => s.id === id2)?.name ?? w.archives[id2]?.name ?? "\u5386\u53F2\u53C2\u4E0E\u8005").join("\u3001");
+    const issue2 = storyRequirement(w, i), scene2 = storyScene(i, team, w), away = team.some((s) => activity(w, s.id).kind !== "home"), length = i.kind === "world" ? 6 : i.kind === "pair" ? 1 : 3;
+    return `<article class="lw-story" data-story="${esc(i.id)}"><div class="lw-story-byline"><span>${esc(people || "\u7B49\u5F85\u4E00\u4F4D\u540C\u884C\u4F19\u4F34")}</span><small>${i.status === "completed" ? "\u5DF2\u73CD\u85CF" : `${Math.min(i.stage + 1, length)} / ${length}`}</small></div><h4>${esc(storyTitle(i))}</h4>${i.status === "active" ? `<p>${esc(scene2.text)}</p>${issue2 ? note("\u63A5\u4E0B\u6765\uFF1A" + issue2) : away ? note("\u7B49\u540C\u884C\u4F19\u4F34\u56DE\u5BB6\uFF0C\u5C31\u80FD\u63A5\u7740\u542C\u3002") : ""}${cmd("\u7EE7\u7EED\u6545\u4E8B", { type: "storyContinue", id: i.id, stage: i.stage }, !!issue2 || away)}` : note(i.status === "completed" ? "\u8FD9\u6BB5\u56DE\u5FC6\u5DF2\u7ECF\u7559\u5728\u5BB6\u91CC\u3002" : "\u8FD9\u6BB5\u7ECF\u5386\u4FDD\u5B58\u5728\u4F19\u4F34\u7684\u6863\u6848\u4E2D\u3002")}${i.choices.length ? `<details><summary>\u5DF2\u7ECF\u53D1\u751F\u7684\u6545\u4E8B</summary>${i.choices.map((c) => note(c.result)).join("")}</details>` : ""}</article>`;
+  }
+  function storyShelf(w, kind) {
+    const active = Object.values(w.stories).filter((i) => i.kind === kind && i.status === "active" && i.participants.length);
+    const intro = { world: "\u4E00\u4F4D\u6765\u8BBF\u8005\uFF0C\u5E26\u6765\u4E00\u6BB5\u65B0\u7684\u76F8\u9047\u3002", personal: "\u4F19\u4F34\u6709\u4EF6\u5C0F\u4E8B\uFF0C\u60F3\u6162\u6162\u8BB2\u7ED9\u4F60\u542C\u3002", pair: "\u5728\u540C\u4E00\u4E2A\u5BB6\u91CC\uFF0C\u4E24\u4F4D\u4F19\u4F34\u6E10\u6E10\u719F\u6089\u3002" }[kind];
+    return active.length ? storyCard(w, active[0].definition, active[0].participants) + (active.length > 1 ? `<details class="lw-disclosure"><summary>\u8FD8\u6709 ${active.length - 1} \u6BB5\u672A\u8BFB\u7684\u6545\u4E8B</summary>${active.slice(1).map((i) => storyCard(w, i.definition, i.participants)).join("")}</details>` : "") : `<div class="lw-story-invitation"><p>${intro}</p>${cmd("\u8BA9\u6545\u4E8B\u5F00\u59CB", { type: "storyEncounter", kind }, freeSlimes(w).length < (kind === "pair" ? 2 : 1))}</div>`;
   }
   function companionBar(w) {
     const all = host.state().slimes;
     if (!all.length) return `<div class="lw-welcome"><h2>\u5C0F\u5BB6\u5728\u7B49\u7B2C\u4E00\u4F4D\u4F19\u4F34</h2>${button("\u53EC\u5524\u4E00\u4F4D\u4F19\u4F34", "legacy", 'data-page="summon"')}</div>`;
-    const s = all.find((s2) => s2.id === ui.person) ?? all[0];
-    ui.person = s.id;
-    const a = activity(w, s.id);
-    return `<div class="lw-companion-bar">${select("lw-person", "\u4ECA\u5929\u548C\u8C01\u4E00\u8D77", all.map((s2) => ({ id: s2.id, name: s2.name + " \xB7 " + s2.personality })), s.id)}${button("\u9009\u62E9", "person")}<span>${a.kind === "home" ? "\u5728\u5BB6" : a.kind === "work" ? "\u5E2E\u5FD9\u4E2D" : a.kind === "trip" ? "\u65C5\u884C\u5B89\u6392\u4E2D" : a.kind === "battle" ? "\u6218\u6597\u4E2D" : "\u73A9\u800D\u4E2D"}</span></div>`;
+    if (!all.some((s) => s.id === ui.person)) ui.person = all[0].id;
+    return `<div class="lw-companion-bar" aria-label="\u5BB6\u91CC\u7684\u4F19\u4F34">${all.map((s) => {
+      const a = activity(w, s.id);
+      return button(`<span class="lw-companion-portrait">${host.slimeHTML(s)}</span><span class="lw-companion-name"><b>${esc(s.name)}</b><small>${a.kind === "home" ? "\u5728\u5BB6" : a.kind === "work" ? "\u5E2E\u5FD9\u4E2D" : a.kind === "trip" ? "\u65C5\u9014\u4E2D" : a.kind === "battle" ? "\u6218\u6597\u4E2D" : "\u73A9\u800D\u4E2D"}</small></span>`, "person", `data-id="${s.id}" class="lw-companion-chip ${s.id === ui.person ? "is-active" : ""}" aria-pressed="${s.id === ui.person}" aria-label="${esc(s.name)}"`);
+    }).join("")}</div>`;
   }
   function wishCard(w) {
     const i = w.stories[`wish:${ui.person}`];
@@ -3897,9 +4067,10 @@ var LivingWorld = (() => {
   function stories(w) {
     const all = host.state().slimes, s = all.find((s2) => s2.id === ui.person) ?? all[0];
     if (s) ui.person = s.id;
-    return `${heading("\u6211\u4EEC\u7684\u4F19\u4F34", "\u540D\u5B57\u3001\u7ECF\u5386\u548C\u559C\u6B22\u7684\u89D2\u843D\uFF0C\u90FD\u5C5E\u4E8E\u8FD9\u4E00\u53EA\u3002")}<div class="lw-actions">${button("\u53EC\u5524\u4F19\u4F34", "legacy", 'data-page="summon"')}${button("\u53EC\u5524\u5E08\u6210\u957F\u4E0E\u4EFB\u52A1", "legacy", 'data-page="status"')}${button("\u9B54\u7269\u7167\u6599", "legacy", 'data-page="monsters"')}</div>${companionBar(w)}${s ? `${interactions(w)}${wishCard(w)}<details class="lw-disclosure"><summary>\u504F\u597D\u3001\u670B\u53CB\u548C\u56DE\u5FC6</summary>${note("\u559C\u6B22\uFF1A" + companion(w, s).interest)}${Object.entries(companion(w, s).friends).map(([id2, n]) => note((all.find((s2) => s2.id === Number(id2))?.name ?? w.archives[id2]?.name ?? "\u65E7\u53CB") + " \xB7 " + n)).join("")}${companion(w, s).memories.map((m) => `<article><h4>${esc(m.title)}</h4>${note(m.text)}</article>`).join("")}</details><details class="lw-disclosure"><summary>\u5C5E\u4E8E${esc(s.name)}\u7684\u6027\u683C\u6545\u4E8B</summary>${PERSONAL_CHAINS.filter((c) => c.personality === s.personality).map((c) => `<article><h4>${c.title}</h4>${storyCard(w, "personal:" + c.id, [s.id])}</article>`).join("")}</details>` : ""}
- <details class="lw-disclosure"><summary>\u6765\u8BBF\u8005\u5E26\u6765\u7684\u4E16\u754C\u6545\u4E8B</summary>${CHARACTERS.map((c) => `<article><h4>${c.name} \xB7 ${c.theme}</h4>${storyCard(w, "world:" + c.id, s ? [s.id] : [])}</article>`).join("")}</details>
- <details class="lw-disclosure"><summary>\u4E24\u4F4D\u4F19\u4F34\u7684\u5173\u7CFB\u6545\u4E8B</summary>${select("lw-pair-a", "\u4F19\u4F34\u4E00", all.map((s2) => ({ id: s2.id, name: s2.name })), s?.id ?? 0)}${select("lw-pair-b", "\u4F19\u4F34\u4E8C", all.map((s2) => ({ id: s2.id, name: s2.name })), all.find((x) => x !== s)?.id ?? 0)}${select("lw-pair-event", "\u5171\u540C\u4E8B\u4EF6", PAIR_EVENTS.map((e) => ({ id: e.id, name: e.title })))}${button("\u67E5\u770B\u5171\u540C\u4E8B\u4EF6", "pair-preview")}<div id="lw-pair-preview"></div></details>${memorialGallery(w)}
+    return `${heading("\u6211\u4EEC\u7684\u4F19\u4F34", "\u540D\u5B57\u3001\u7ECF\u5386\u548C\u559C\u6B22\u7684\u89D2\u843D\uFF0C\u90FD\u5C5E\u4E8E\u8FD9\u4E00\u53EA\u3002")}<div class="lw-actions">${button("\u53EC\u5524\u4F19\u4F34", "legacy", 'data-page="summon"')}${button("\u53EC\u5524\u5E08\u6210\u957F\u4E0E\u4EFB\u52A1", "legacy", 'data-page="status"')}${button("\u9B54\u7269\u7167\u6599", "legacy", 'data-page="monsters"')}</div>${companionBar(w)}${s ? `${interactions(w)}${wishCard(w)}<details class="lw-disclosure"><summary>\u504F\u597D\u3001\u670B\u53CB\u548C\u56DE\u5FC6</summary>${note("\u559C\u6B22\uFF1A" + companion(w, s).interest)}${Object.entries(companion(w, s).friends).map(([id2, n]) => note((all.find((s2) => s2.id === Number(id2))?.name ?? w.archives[id2]?.name ?? "\u65E7\u53CB") + " \xB7 " + n)).join("")}${companion(w, s).memories.map((m) => `<article><h4>${esc(m.title)}</h4>${note(m.text)}</article>`).join("")}</details>` : ""}
+ <details class="lw-disclosure"><summary>\u6765\u8BBF\u8005\u7684\u6545\u4E8B</summary>${storyShelf(w, "world")}</details>
+ <details class="lw-disclosure"><summary>\u4F19\u4F34\u7684\u5FC3\u4E8B</summary>${storyShelf(w, "personal")}</details>
+ <details class="lw-disclosure"><summary>\u6162\u6162\u6210\u4E3A\u670B\u53CB</summary>${storyShelf(w, "pair")}</details>${memorialGallery(w)}
  ${Object.keys(w.archives).length ? `<details class="lw-disclosure"><summary>\u4F19\u4F34\u7559\u4E0B\u7684\u5386\u53F2\u6863\u6848</summary>${Object.values(w.archives).map((a) => `<h4>${esc(a.name)}</h4>${a.profile.memories.map((m) => note(m.title + "\uFF1A" + m.text)).join("")}`).join("")}</details>` : ""}`;
   }
   function workshop(w) {
@@ -3931,6 +4102,36 @@ var LivingWorld = (() => {
     ui.tab = { home: "home", journey: "explore", companions: "stories" }[tab] ?? tab;
     ui.selected = 0;
     ui.crop = 0;
+    ui.build = "";
+    ui.edit = false;
+  }
+  function redraw(renderPage = () => host.render()) {
+    const root = document.getElementById("livingWorld");
+    const opened = new Set([...root?.querySelectorAll("details[open]") ?? []].map((d) => d.querySelector(":scope > summary")?.textContent));
+    const positions = ["#content", ".lw-build-items", ".lw-build-groups", ".lw-companion-bar"].map((selector) => {
+      const el = document.querySelector(selector);
+      return { selector, x: el?.scrollLeft ?? 0, y: el?.scrollTop ?? 0 };
+    });
+    const focused = document.activeElement, action = focused?.dataset.lw, data = focused?.dataset;
+    renderPage();
+    for (const d of document.querySelectorAll("#livingWorld details")) if (opened.has(d.querySelector(":scope > summary")?.textContent)) d.open = true;
+    for (const p of positions) {
+      const el = document.querySelector(p.selector);
+      if (el) {
+        el.scrollLeft = p.x;
+        el.scrollTop = p.y;
+      }
+    }
+    if (action && data) {
+      const command = data.command ? JSON.parse(data.command) : null;
+      const match = [...document.querySelectorAll("[data-lw]")].find((el) => {
+        if (el.dataset.lw !== action || !["id", "def", "group", "kind"].every((key) => el.dataset[key] === data[key])) return false;
+        if (!command) return true;
+        const next2 = el.dataset.command ? JSON.parse(el.dataset.command) : null;
+        return next2 && Object.entries(command).every(([key, value2]) => key === "stage" || key === "chapter" || JSON.stringify(next2[key]) === JSON.stringify(value2));
+      });
+      match?.focus({ preventScroll: true });
+    }
   }
   function render(h, dispatch2) {
     host = h;
@@ -3939,7 +4140,7 @@ var LivingWorld = (() => {
     if (!ui.person && h.state().slimes.length) ui.person = h.state().slimes[0].id;
     const pages = { home, nursery, ecology, explore: exploration, stories, workshop, games };
     const sub = !["home", "explore", "stories"].includes(ui.tab);
-    return `<div id="livingWorld" class="lw ${ui.edit ? "lw-edit" : ""} ${w.reducedMotion ? "lw-reduced" : ""}"><div class="lw-masthead"><b>${SEASONS[season(w)]}\u5B63 \xB7 \u7B2C${day(w) + 1}\u65E5</b><small>${WEATHER[w.weather]} \xB7 ${night(w) ? "\u591C\u665A" : "\u767D\u5929"}</small></div>${sub ? button("\u8FD4\u56DE\u5BB6\u56ED", "tab", 'data-tab="home"') : ""}${(pages[ui.tab] ?? home)(w)}${ui.tab === "home" ? `${interactions(w)}<div class="lw-actions">${button("\u82D7\u5703\u4E0E\u5E7C\u4F53", "tab", 'data-tab="nursery"')}${button("\u5236\u4F5C\u961F\u5217", "tab", 'data-tab="workshop"')}${button("\u751F\u6001\u89C2\u5BDF", "tab", 'data-tab="ecology"')}</div>${memorialGallery(w)}` : ""}<div class="lw-feedback" role="status">${esc(w.notices[0] ?? "\u6B22\u8FCE\u56DE\u5BB6")}</div><details class="lw-disclosure"><summary>\u751F\u6D3B\u7269\u8D44\u4E0E\u504F\u597D</summary>${resources(w)}${cmd(w.reducedMotion ? "\u542F\u7528\u52A8\u6001" : "\u51CF\u5C11\u52A8\u6001", { type: "settings", reduced: !w.reducedMotion })}${cmd(w.autoReplant ? "\u5173\u95ED\u81EA\u52A8\u8865\u79CD" : "\u5F00\u542F\u81EA\u52A8\u8865\u79CD", { type: "settings", replant: !w.autoReplant })}${note("\u79BB\u7EBF\u6700\u591A\u63A8\u8FDB12\u5C0F\u65F6\uFF0C\u690D\u7269\u4E0D\u4F1A\u6B7B\u4EA1\uFF0C\u91CD\u8981\u6545\u4E8B\u4F1A\u7B49\u5F85\u4F60\u3002")}</details></div>`;
+    return `<div id="livingWorld" class="lw ${ui.edit ? "lw-edit" : ""} ${w.reducedMotion ? "lw-reduced" : ""}"><div class="lw-masthead"><b>${SEASONS[season(w)]}\u5B63 \xB7 \u7B2C${day(w) + 1}\u65E5</b><small>${WEATHER[w.weather]} \xB7 ${night(w) ? "\u591C\u665A" : "\u767D\u5929"}</small></div>${sub ? button("\u8FD4\u56DE\u5BB6\u56ED", "tab", 'data-tab="home"') : ""}${(pages[ui.tab] ?? home)(w)}${ui.tab === "home" ? `${interactions(w)}<div class="lw-actions">${button("\u82D7\u5703\u4E0E\u5E7C\u4F53", "tab", 'data-tab="nursery"')}${button("\u5236\u4F5C\u961F\u5217", "tab", 'data-tab="workshop"')}${button("\u751F\u6001\u89C2\u5BDF", "tab", 'data-tab="ecology"')}</div>${memorialGallery(w)}` : ""}<div class="lw-feedback" role="status">${esc(w.notices[0] ?? "\u6B22\u8FCE\u56DE\u5BB6")}</div><details class="lw-disclosure"><summary>\u751F\u6D3B\u7269\u8D44\u4E0E\u504F\u597D</summary>${resources(w)}${cmd(w.reducedMotion ? "\u542F\u7528\u52A8\u6001" : "\u51CF\u5C11\u52A8\u6001", { type: "settings", reduced: !w.reducedMotion })}${cmd(w.autoReplant ? "\u5173\u95ED\u81EA\u52A8\u8865\u79CD" : "\u5F00\u542F\u81EA\u52A8\u8865\u79CD", { type: "settings", replant: !w.autoReplant })}${note("\u79BB\u7EBF\u6700\u591A\u63A8\u8FDB12\u5C0F\u65F6\uFF0C\u690D\u7269\u4E0D\u4F1A\u6B7B\u4EA1\uFF0C\u672A\u8BFB\u7684\u6545\u4E8B\u4F1A\u7B49\u5F85\u4F60\u3002")}</details></div>`;
   }
   var value = (id2) => document.getElementById(id2)?.value ?? "";
   var number = (id2) => Number(value(id2));
@@ -4010,15 +4211,38 @@ var LivingWorld = (() => {
         ui.build = "";
         ui.plant = 0;
         break;
-      case "prepare-build":
-        ui.build = value("lw-build");
-        ui.selected = 0;
-        ui.plant = 0;
+      case "build-kind":
+        ui.buildKind = el.dataset.kind;
+        ui.buildGroup = 0;
         ui.edit = true;
-        host.toast("\u5728\u5730\u56FE\u4E0A\u70B9\u51FB\u7A7A\u5730\u653E\u7F6E");
+        break;
+      case "build-group":
+        ui.buildGroup = Number(el.dataset.group);
+        ui.edit = true;
+        break;
+      case "prepare-build": {
+        const d = BUILDINGS.find((d2) => d2.id === el.dataset.def) ?? DECORATIONS.find((d2) => d2.id === el.dataset.def);
+        if (!d) return true;
+        if (!afford(w, d.cost)) {
+          host.toast("\u6750\u6599\u8FD8\u4E0D\u591F\uFF0C\u5148\u91C7\u96C6\u4E00\u4E9B\u6728\u6750\u548C\u77F3\u6750\u3002");
+          return true;
+        }
+        ui.build = d.id;
+        ui.selected = 0;
+        ui.crop = 0;
+        ui.plant = 0;
+        ui.rotate = 0;
+        ui.edit = true;
+        break;
+      }
+      case "cancel-build":
+        ui.build = "";
+        ui.selected = 0;
+        ui.crop = 0;
+        ui.plant = 0;
         break;
       case "path-mode":
-        ui.build = "path";
+        ui.build = ui.build === "path" ? "" : "path";
         ui.edit = true;
         ui.selected = 0;
         ui.plant = 0;
@@ -4062,26 +4286,25 @@ var LivingWorld = (() => {
       case "depart":
         issue({ type: "depart", region: number("lw-region"), route: number("lw-route"), duration: number("lw-duration") || 300, mode: el.dataset.mode, supply: value("lw-supply") || "feed", repeat: !!document.getElementById("lw-repeat")?.checked, team: [...document.querySelectorAll('input[name="lw-team"]:checked')].map((e) => Number(e.value)) });
         return true;
-      case "character":
-        ui.character = el.dataset.character;
-        break;
       case "person":
-        ui.person = number("lw-person");
+        ui.person = Number(el.dataset.id);
         break;
       case "meal":
         issue({ type: "meal", ids: [...document.querySelectorAll('input[name="lw-meal"]:checked')].map((e) => Number(e.value)) });
         return true;
-      case "pair-preview": {
-        const definition = "pair:" + value("lw-pair-event"), ids = [number("lw-pair-a"), number("lw-pair-b")], node = document.getElementById("lw-pair-preview");
-        if (node) node.innerHTML = storyCard(w, definition, ids);
-        repaint = false;
-        break;
-      }
       case "mini-cell":
         issue({ type: "miniCell", index: Number(el.dataset.index) });
         return true;
     }
-    if (repaint) host.render();
+    if (repaint) {
+      if (a === "tab" || a === "edit") host.render();
+      else redraw();
+    }
+    if (a === "build-kind" || a === "build-group") {
+      const list = document.querySelector(".lw-build-items");
+      if (list) list.scrollTop = 0;
+    }
+    if (["prepare-build", "move", "path-mode", "edit"].includes(a ?? "") && ui.edit) document.querySelector(".lw-scene-wrap")?.scrollIntoView({ block: "start" });
     return true;
   }
   function mapAction(svg, event, dragId) {
@@ -4467,7 +4690,7 @@ var LivingWorld = (() => {
     }
     host2.progress?.(res.events);
     const saved = host2.save();
-    host2.render();
+    redraw(() => host2.render());
     host2.toast(saved ? res.message.length > 36 ? "\u8FD9\u6BB5\u56DE\u5FC6\u5DF2\u4FDD\u5B58\uFF0C\u53EF\u4EE5\u5728\u65C5\u884C\u518C\u56DE\u770B\u3002" : res.message : "\u8FDB\u5EA6\u6682\u5B58\u5728\u672C\u9875\uFF0C\u5B58\u50A8\u5931\u8D25\u3002\u8BF7\u7559\u5728\u9875\u9762\u5E76\u68C0\u67E5\u5B58\u6863\u63D0\u793A\u3002");
   }
   function reconcile(s) {
@@ -5590,85 +5813,41 @@ function updateExploreItems(dt){
 
 /* ==================== 剧情 ==================== */
 const STORY_STEPS = [
-  {t:`「……喂，醒醒。」\n\n你猛地睁开眼。\n\n头顶是深紫色的夜空，两轮月亮静静地悬着。远处的浮空岛屿缓缓飘动，成群发光的水母从云层间掠过。\n\n这里是……哪里？`},
-  {t:`记忆像被搅碎的水面。\n\n你只记得自己在深夜赶完了一份报告，然后眼皮越来越沉……然后，就没有然后了。\n\n就在这时，一道冰冷的机械音在脑海里炸响——`},
-  {t:`【叮！检测到异世界灵魂波动……】\n\n【最强召唤师系统 · 激活成功】`,highlight:true},
-  {t:`金色的符文从你脚下升起，在空气中排列成一行行发光的小字。\n\n【宿主状态：未觉醒】\n【即将进行：天赋觉醒仪式】\n【请做好准备】`,highlight:true},
-  {t:`白光吞没了视野。\n\n你听见无数声音在耳边低语，像是在等待一个答案。\n\n然后——\n\n【觉醒完成！】\n【宿主天赋：史莱姆召唤师（SSS级 · 唯一）】`,highlight:true},
-  {t:`……史莱姆？\n\n你低下头，看见一只圆滚滚、软乎乎的小东西正歪着脑袋看你，眼睛一眨一眨的。\n\n【提示：请不要小看它。这世上最强的召唤师，都是从一只史莱姆开始的。】`},
-  {t:`系统界面在你面前缓缓展开，一个空白的角色栏位闪烁着微光。\n\n【请为宿主录入姓名】`,input:'name'},
-  {t:`录入完成。\n\n【检测到宿主尚未设定系统形象】\n【请自定义您的系统化身——它将常伴您左右】`,input:'sys'},
-  {t:`一切准备就绪。\n\n远处的城镇亮起了灯火，而你在这个魔法世界的旅途，正式开始了。\n\n【新手礼包已发放：晶币 ×2000、系统积分 ×200、饲料 ×5、天材地宝 ×2、词条抽取券 ×1】`,highlight:true}
+  {title:'月光把你带到这里',t:()=>`两轮月亮挂在夜空，浮岛轻轻晃动。<br>你是<b>${esc(S.name)}</b>，刚刚醒来的史莱姆召唤师。`,next:'跟着微光走'},
+  {title:'从此，有个小小的同行者',t:()=>`<b>${esc(S.sysName)}</b>从月光里探出脑袋，轻轻碰了碰你的手。<br>“我会陪着你。我们去找一个家吧。”`,next:'一起去看看'},
+  {title:'把这座浮岛，慢慢变成家',t:()=>`种一朵花，遇见新的伙伴，听一段沿途的故事。<br>行囊已经备好，生活从这一刻开始。`,next:'一起回家'}
 ];
-
 let storyStep = 0;
 let blocking = false;
 
-function renderStory(){
-  if(storyStep >= STORY_STEPS.length){ finishStory(); return; }
-  const st = STORY_STEPS[storyStep];
-  const stage = $('#storyStage'), text = $('#storyText'), action = $('#storyAction'), hint = $('#storyHint');
-  const screen = $('#storyScreen');
-  if(!screen.querySelector('.story-sky')) screen.insertAdjacentHTML('afterbegin', skyArt('story'));
-  stage.innerHTML=''; action.innerHTML=''; hint.style.display='block';
-  text.innerHTML = st.t.split('\n').join('<br>');
-  text.classList.toggle('hl', !!st.highlight);
-  text.style.opacity = 0;
-  requestAnimationFrame(()=>{ text.style.transition='opacity .35s'; text.style.opacity=1; });
-
-  if(st.input === 'name'){
-    blocking = true; hint.style.display='none';
-    action.innerHTML = `
-      <input id="nameInput" class="story-input" placeholder="输入你的名字" maxlength="8" value="${esc(S.name||'')}">
-      <button class="btn gold full" id="nameOk">确 定</button>`;
-    const inp = $('#nameInput');
-    setTimeout(()=>inp.focus(),150);
-    $('#nameOk').onclick = ()=>{
-      const v = inp.value.trim();
-      if(!v){ inp.value=''; inp.placeholder='名字不能为空哦'; return; }
-      S.name = v; blocking=false; storyStep++; renderStory(); save();
-    };
-    inp.addEventListener('keydown',e=>{ if(e.key==='Enter') $('#nameOk').click(); });
+function assignStoryRole(){
+  if(persistenceBlocked) return;
+  let changed=false;
+  if(!S.name){S.name=['星野','月白','青禾','云岚','林夕','沐风','初晴','知秋'][Math.floor(Math.random()*8)];changed=true;}
+  if(!S.sysName){
+    const guide=[['团子',200],['小满',150],['糯米',42],['云朵',260],['桃桃',330],['青芽',100]][Math.floor(Math.random()*6)];
+    S.sysName=guide[0];S.sysLook={h:guide[1],s:66,l:70,eh:guide[1],es:48,el:25};changed=true;
   }
-  else if(st.input === 'sys'){
-    blocking = true; hint.style.display='none';
-    buildSysCustom();
-  }
+  if(changed)save();
 }
-
-function buildSysCustom(){
-  const stage = $('#storyStage'), action = $('#storyAction');
-  const render = ()=>{ stage.innerHTML = lookHTML(S.sysLook,{mood:'idle'}); };
-  render();
-  const mk = (key,label,max)=>`
-    <label>${label}<input type="range" min="0" max="${max}" value="${S.sysLook[key]}" data-look="${key}">
-    <span data-out="${key}">${S.sysLook[key]}</span></label>`;
-  action.innerHTML = `
-    <div class="custom-panel">
-      <div style="font-size:11.5px;color:var(--muted);letter-spacing:1px;">—— 身体 ——</div>
-      ${mk('h','身体 色相',360)}${mk('s','身体 饱和',100)}${mk('l','身体 明度',100)}
-      <div style="font-size:11.5px;color:var(--muted);letter-spacing:1px;margin-top:4px;">—— 眼睛 ——</div>
-      ${mk('eh','眼睛 色相',360)}${mk('es','眼睛 饱和',100)}${mk('el','眼睛 明度',100)}
-      <input id="sysNameInput" class="story-input" placeholder="为系统起个昵称" maxlength="8" value="${esc(S.sysName||'团子')}">
-      <button class="btn gold full" id="sysOk">完 成 绑 定</button>
-    </div>`;
-  action.querySelectorAll('[data-look]').forEach(inp=>{
-    inp.addEventListener('input',()=>{
-      const k = inp.dataset.look;
-      S.sysLook[k] = +inp.value;
-      action.querySelector(`[data-out="${k}"]`).textContent = inp.value;
-      render();
-    });
-  });
-  $('#sysOk').onclick = ()=>{
-    const v = $('#sysNameInput').value.trim();
-    S.sysName = v || '团子';
-    blocking = false; storyStep++; renderStory(); save();
-  };
+function renderStory(){
+  assignStoryRole();
+  if(storyStep >= STORY_STEPS.length){ finishStory(); return; }
+  const st=STORY_STEPS[storyStep],stage=$('#storyStage'),text=$('#storyText'),action=$('#storyAction'),screen=$('#storyScreen');
+  if(!screen.querySelector('.story-sky'))screen.insertAdjacentHTML('afterbegin',skyArt('story'));
+  screen.classList.add('story-arrival');
+  stage.innerHTML=`<div class="arrival-orbit">${lookHTML(S.sysLook,{mood:'happy'})}</div><span class="arrival-guide">${esc(S.sysName)} · 你的向导</span>`;
+  text.classList.remove('hl');
+  text.innerHTML=`<div class="arrival-progress" aria-label="序章 ${storyStep+1} / ${STORY_STEPS.length}">${STORY_STEPS.map((_,i)=>`<i class="${i<=storyStep?'is-read':''}"></i>`).join('')}</div><h1>${st.title}</h1><p>${st.t()}</p>`;
+  action.innerHTML=`<button class="btn gold full arrival-next" id="storyNext">${st.next}<span aria-hidden="true">→</span></button>`;
+  $('#storyNext').onclick=()=>{storyStep++;renderStory();};
+  $('#storyHint').textContent='你的身份已确定，故事就此开始';
+  blocking=false;
 }
 
 function finishStory(){
   if(persistenceBlocked){ toast('请先恢复存档；原始数据仍受保护'); return; }
+  assignStoryRole();
   if(!S.started && !S.starterGiftClaimed){S.points += 200;S.starterGiftClaimed=true;}
   S.started = true;
   save();

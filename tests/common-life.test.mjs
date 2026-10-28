@@ -4,7 +4,7 @@ import {createWorld,execute,advance,companion} from '../src/world/engine.ts';
 import {activity,resident,record,route,blockedCells,entranceCells} from '../src/world/life.ts';
 import {prepareWorld,upgradeWorld} from '../src/world/migration.ts';
 import {attachLegacyInventory} from '../src/world/inventory.ts';
-import {storyRequirement,startStory,choiceProblem,tripScene} from '../src/world/stories.ts';
+import {storyRequirement,startStory,choiceProblem,tripScene,automaticChoice} from '../src/world/stories.ts';
 import {validWorld} from '../src/world/storage.ts';
 import {scene} from '../src/world/art.ts';
 import {ZONES} from '../src/world/content.ts';
@@ -13,6 +13,53 @@ const pet=(id,element='草')=>({id,name:'小芽'+id,personality:'胆小',element
 const fresh=()=>({started:true,saveVersion:4,lastActive:0,slimes:[pet(1),pet(2,'水'),pet(3,'火')],world:createWorld(987)});
 const go=(s,c)=>{const r=execute(s,c);assert.equal(r.ok,true,r.message);return r;};
 const reload=s=>{const t=JSON.parse(JSON.stringify(s));assert.ok(validWorld(t.world,t.slimes.map(p=>p.id)));prepareWorld(t.world);return t;};
+
+test('stories randomly cast an available partner once and keep that identity after reload',()=>{
+ const casts=new Set();
+ for(let seed=1;seed<=16;seed++){
+  let s=fresh();s.world=createWorld((seed*0x9e3779b1)>>>0);s.world.activities[1]={kind:'battle'};
+  go(s,{type:'storyStart',definition:'world:sprout',actor:1});
+  const id=s.world.stories['world:sprout'].participants[0];assert.ok([2,3].includes(id));casts.add(id);
+  s=reload(s);assert.deepEqual(s.world.stories['world:sprout'].participants,[id]);
+  const before=JSON.stringify(s);assert.equal(execute(s,{type:'storyStart',definition:'world:sprout'}).ok,false);assert.equal(JSON.stringify(s),before);
+ }
+ assert.equal(casts.size,2);
+});
+test('random encounters choose valid casts and reject duplicate or unavailable starts atomically',()=>{
+ for(const kind of ['world','personal','pair']){
+  const s=fresh();go(s,{type:'storyEncounter',kind});const story=Object.values(s.world.stories)[0];
+  assert.equal(story.kind,kind);assert.equal(new Set(story.participants).size,kind==='pair'?2:1);
+  const before=JSON.stringify(s);assert.equal(execute(s,{type:'storyEncounter',kind}).ok,false);assert.equal(JSON.stringify(s),before);assert.ok(validWorld(s.world,[1,2,3]));
+ }
+ const s=fresh(),before=JSON.stringify(s);assert.equal(execute(s,{type:'storyEncounter',kind:'world'},()=>false).ok,false);assert.equal(JSON.stringify(s),before);
+});
+test('continuing a story preserves RNG across reload, requires real progress and cannot pay twice',()=>{
+ const s=fresh();go(s,{type:'storyStart',definition:'world:sprout'});const id=s.world.stories['world:sprout'].participants[0],command={type:'storyContinue',id:'world:sprout',stage:0};
+ const before=JSON.stringify(s);assert.equal(execute(s,command).ok,false);assert.equal(JSON.stringify(s),before);
+ record(s.world,s.slimes,'plant',[id]);const saved=reload(s);go(s,command);go(saved,command);
+ assert.deepEqual(saved.world.stories,s.world.stories);assert.equal(saved.world.rng,s.world.rng);assert.equal(s.world.memorials.length,1);
+ const finished=JSON.stringify(s);assert.equal(execute(s,command).ok,false);assert.equal(JSON.stringify(s),finished);
+ record(s.world,s.slimes,'harvest',[id]);const busy=JSON.stringify(s);assert.equal(execute(s,{...command,stage:1},candidate=>candidate!==id).ok,false);assert.equal(JSON.stringify(s),busy);
+});
+test('automatic narration filters unavailable abilities and never spends optional materials',()=>{
+ const s=fresh();const choices=[{text:'pay',result:'paid',reward:{},requires:{cost:{wood:1}}},{text:'wind',result:'flew',reward:{},requires:{element:'风'}},{text:'walk',result:'walked',reward:{}}];
+ for(let i=0;i<20;i++)assert.equal(automaticChoice(s.world,s.slimes,choices),2);
+});
+test('every travel encounter continues without a decision, optional spending or stale rewards',async()=>{
+ const {EVENTS}=await import('../src/world/narratives.ts');
+ for(const event of EVENTS){
+  const s=fresh();s.slimes[0].level=1;s.world.discoveries=Array.from({length:20},(_,i)=>'d'+i);
+  go(s,{type:'depart',region:event.region,route:0,team:[1],mode:'active',duration:300});const id=s.world.trips[0].id;s.world.trips[0].events[0]=event.id;go(s,{type:'step',id});
+  const stock={...s.world.stock},command={type:'tripContinue',id,event:event.id};go(s,command);assert.deepEqual({...s.world.stock},stock,event.id);assert.equal(s.world.trips[0].pending,null);
+  const after=JSON.stringify(s);assert.equal(execute(s,command).ok,false);assert.equal(JSON.stringify(s),after,event.id);
+ }
+});
+test('childhood narration resumes with distinct chapters and rejects a repeated click',()=>{
+ const s=fresh();go(s,{type:'resonate',a:1,b:2});const baby=s.world.juveniles[0];
+ const command={type:'babyContinue',id:baby.id,stage:0,chapter:0};go(s,command);const after=JSON.stringify(s);
+ assert.equal(execute(s,command).ok,false);assert.equal(JSON.stringify(s),after);
+ const saved=reload(s);go(saved,{...command,chapter:1});assert.equal(saved.world.juveniles[0].choices.length,2);
+});
 function outing(s,region=0,team=[1]){go(s,{type:'depart',region,route:0,team,mode:'active',duration:300});const id=s.world.trips.at(-1).id;for(let n=0;n<4;n++){go(s,{type:'step',id});const choices=tripScene(s.world,s.world.trips.find(t=>t.id===id),s.slimes).choices;const choice=choices.findIndex(c=>!choiceProblem(s.world,s.slimes.filter(p=>team.includes(p.id)),c));go(s,{type:'tripChoice',id,choice});}return id;}
 
 test('harvest, cook, feed, travel and a lasting glowing memorial use the same original partner',()=>{

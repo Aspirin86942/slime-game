@@ -1,6 +1,6 @@
 import type {Host,GameCommand,GameState,Slime,World} from './types.ts';
 import {createWorld,execute,advance,companion,occupied,random} from './engine.ts';
-import {render as view,mount as mountView,handleClick as click,navigate as navigateView,paintResidents,recentlyInteracted} from './view.ts';
+import {render as view,mount as mountView,handleClick as click,navigate as navigateView,paintResidents,recentlyInteracted,redraw} from './view.ts';
 export {createWorld,execute,advance,occupied} from './engine.ts';
 export {validWorld} from './storage.ts';
 export {comboFor,COMBOS} from './combat.ts';
@@ -42,7 +42,7 @@ export function dispatch(c:GameCommand):void {
   if(event.type==='recruit'&&event.character){const ch=event.character,slime=host.create(ch.element,ch.name,ch.personality);slime.locked=true;s.world!.recruited[ch.id]=slime.id;const profile=companion(s.world!,slime);profile.memories.push({id:`${ch.id}-0`,title:ch.chapters[0].title,text:res.message,at:s.world!.clock});}
   if(event.type==='adopt'&&event.juvenile){const j=event.juvenile,slime=host.create(j.element,j.name,j.personality),profile=companion(s.world!,slime);profile.mentor=j.mentor;profile.interest=j.traits.includes('一起试一试，培养好奇心')?'旅行':'花草';profile.memories.push({id:`childhood-${j.id}`,title:'在家园长大的日子',text:`${j.care.join('、')}；${j.traits.join('；')}`,at:s.world!.clock});if(j.mentor){profile.friends[j.mentor]=10;const mentor=s.slimes.find(s=>s.id===j.mentor);if(mentor)companion(s.world!,mentor).friends[slime.id]=10;}}
  }
- host.progress?.(res.events);const saved=host.save();host.render();host.toast(saved?(res.message.length>36?'这段回忆已保存，可以在旅行册回看。':res.message):'进度暂存在本页，存储失败。请留在页面并检查存档提示。');
+ host.progress?.(res.events);const saved=host.save();redraw(()=>host!.render());host.toast(saved?(res.message.length>36?'这段回忆已保存，可以在旅行册回看。':res.message):'进度暂存在本页，存储失败。请留在页面并检查存档提示。');
 }
 /** Called only after intentional roster changes such as merging. */
 export function reconcile(s:GameState):void {

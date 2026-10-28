@@ -8,7 +8,7 @@
     "typecheck": "tsc --noEmit",
     "test:world": "node --experimental-strip-types --test tests/world.test.mjs tests/common-life.test.mjs",
     "test": "npm run typecheck && npm run build && npm run test:world && node tests/review-tests.cjs && node tests/merge-growth.cjs && node tests/world-integration.cjs && node tests/common-life-integration.cjs",
-    "test:browser": "node tests/world-browser.cjs"
+    "test:browser": "node tests/world-browser.cjs && node tests/catalog-browser.cjs"
   },
   "devDependencies": { "esbuild": "0.25.12", "typescript": "5.9.3" }
 }

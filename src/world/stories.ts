@@ -1,7 +1,7 @@
 import type {World,Slime,StoryInstance,Choice,Stock,Trip,ExploreEvent} from './types.ts';
 import {EVENTS,CHARACTERS,PERSONAL_CHAINS,PAIR_EVENTS} from './narratives.ts';
 import {ZONES,PLANTS} from './content.ts';
-import {companion,reward} from './engine.ts';
+import {companion,reward,random} from './engine.ts';
 import {seedAccount} from './inventory.ts';
 import {activity,record,resident} from './life.ts';
 
@@ -13,6 +13,18 @@ const actions=['plant','harvest','trip','care','craft','meal'];
 const labels:Record<string,string>={plant:'一起种下一株植物',harvest:'一起收获成熟植物',trip:'完成一次同行旅行',care:'一起照料植物',craft:'在厨房或工坊一起完成制作',meal:'参加一次聚餐',together:'一起工作、聚餐或旅行',bloom:'让带回的发光种子开花'};
 export function storyId(definition:string,participants:number[]):string {
  return definition.startsWith('personal:')||definition.startsWith('pair:')||definition==='wish'?`${definition}:${participants.slice().sort((a,b)=>a-b).join(':')}`:definition;
+}
+export function storyCasts(w:World,slimes:Slime[],definition:string):number[][] {
+ const [kind,key]=definition.split(':'),free=slimes.filter(s=>activity(w,s.id).kind==='home');
+ const pool=kind==='personal'?free.filter(s=>PERSONAL_CHAINS.some(c=>c.id===key&&c.personality===s.personality)):free;
+ const teams=kind==='pair'?pool.flatMap((a,index)=>pool.slice(index+1).map(b=>[a.id,b.id])):pool.map(s=>[s.id]);
+ return teams.filter(ids=>{const old=w.stories[storyId(definition,ids)];return !old||old.legacy&&old.status==='active'&&!old.participants.length;});
+}
+export function automaticChoice(w:World,team:Slime[],choices:Choice[]):number {
+ // Narrative continuation never spends inventory on the player's behalf.
+ const eligible=choices.map((choice,index)=>({choice,index})).filter(({choice})=>!choiceProblem(w,team,choice)&&!Object.values(choice.requires?.cost??{}).some(n=>n>0));
+ need(eligible.length,'这段经历暂时无法继续');
+ return eligible[Math.floor(random(w)*eligible.length)].index;
 }
 export function startStory(w:World,slimes:Slime[],definition:string,ids:number[]):StoryInstance {
  need(ids.length>0&&ids.length<=3&&new Set(ids).size===ids.length,'请选择1–3位不同的参与者');
@@ -35,7 +47,7 @@ export function storyTitle(i:StoryInstance):string {
 }
 export function storyRequirement(w:World,i:StoryInstance):string|null {
  if(i.status!=='active')return i.status==='completed'?'这段故事已完成':'这段故事已归档';
- if(!i.participants.length)return '选择伙伴继续余下的故事';
+ if(!i.participants.length)return '等待伙伴接续这段故事';
  if(i.participants.some(id=>!w.companions[id]))return '参与者已离开，回忆保留在档案中';
  const action=i.kind==='world'?actions[i.stage]:i.kind==='personal'?['care','trip','meal'][i.stage]:i.kind==='pair'?'together':i.kind==='region'?['trip','craft','care'][i.stage]:['plant','trip','bloom'][i.stage];
  if((i.kind==='pair'?shared(w,i.participants):counter(w,i.participants,action))<=(i.baseline[action]??0))return labels[action];
@@ -47,7 +59,7 @@ export function storyRequirement(w:World,i:StoryInstance):string|null {
 }
 export function storyScene(i:StoryInstance,team:Slime[]=[],w?:World):{text:string;choices:Choice[]} {
  const key=i.definition.split(':')[1];
- if(i.kind==='world'){const ch=CHARACTERS.find(c=>c.id===key)!;const scene=ch.chapters[Math.min(5,i.stage)];return{text:`来访者${ch.name}带来一个请求。你选择的伙伴与你一起参与：${scene.text}`,choices:scene.choices.map(c=>({...c,result:c.result.replace(ch.name+'和你','同行伙伴与你')}))};}
+ if(i.kind==='world'){const ch=CHARACTERS.find(c=>c.id===key)!;const scene=ch.chapters[Math.min(5,i.stage)];return{text:`来访者${ch.name}带来一个请求。同行伙伴陪你一起听它讲述：${scene.text}`,choices:scene.choices.map(c=>({...c,result:c.result.replace(ch.name+'和你','同行伙伴与你')}))};}
  if(i.kind==='personal'){const chain=PERSONAL_CHAINS.find(c=>c.id===key)!;return{text:chain.chapters[Math.min(2,i.stage)],choices:chain.choices.map(text=>({text,result:`${text}。这位伙伴把共同完成的行动记在心里，并愿意在家园再试一次。`,reward:{}}))};}
  if(i.kind==='pair'){const event=PAIR_EVENTS.find(e=>e.id===key)!;return{text:event.text,choices:event.choices.map(text=>({text,result:`${text}。两位伙伴约定，下次遇见彼此时主动打招呼。`,reward:{notes:1}}))};}
  if(i.kind==='region'){const z=ZONES[Number(key)];return{text:z.story+['你们带回了沿途的线索。','你们准备了家园制作的工具。','你们照料的植物已经能够送往营地。'][Math.min(2,i.stage)],choices:['留下共同绘制的路线','留下种植与修复记录'].map(text=>({text,result:`${z.area}保存了你们的${text.slice(2)}，路牌开始指向共同的家。`,reward:{notes:3}}))};}

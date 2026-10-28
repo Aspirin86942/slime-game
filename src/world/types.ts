@@ -32,7 +32,8 @@ export interface World {version:3|4;inventory:Inventory;residents:Record<string,
 export type GameCommandData =
  | {type:'interact';slime:number;action:'pet'|'chat'|'feed'|'snack'|'rest';item?:string}
  | {type:'refill';amount?:number} | {type:'relocate';slime:number;zone:number}
- | {type:'storyStart';definition:string;participants:number[]} | {type:'storyChoice';id:string;choice:number}
+ | {type:'storyStart';definition:string;participants?:number[]} | {type:'storyChoice';id:string;choice:number}
+ | {type:'storyEncounter';kind:'world'|'personal'|'pair'} | {type:'storyContinue';id:string;stage:number}
  | {type:'gather'} | {type:'unlock';zone:number}
  | {type:'build';def:string;zone:number;x:number;y:number;rotation?:number}
  | {type:'move';id:number;zone:number;x:number;y:number;rotation?:number}
@@ -41,12 +42,12 @@ export type GameCommandData =
  | {type:'care'|'harvest'|'uproot';id:number} | {type:'harvestAll'|'careAll'} | {type:'sow';cultivar:number;zone:number}
  | {type:'breed';a:number;b:number} | {type:'cultivar';id:number;name?:string;protect?:boolean} | {type:'clone';id:number}
  | {type:'resonate';a:number;b:number} | {type:'babyCare';id:number;kind:string;mentor?:number}
- | {type:'babyChoice';id:number;choice:number} | {type:'grow';id:number} | {type:'adopt';id:number}
+ | {type:'babyChoice';id:number;choice:number} | {type:'babyContinue';id:number;stage:number;chapter:number} | {type:'grow';id:number} | {type:'adopt';id:number}
  | {type:'assign';slime:number;building:number} | {type:'unassign';slime:number}
  | {type:'craft';recipe:string;building:number} | {type:'claimCraft';id:number}
  | {type:'useSupply';item:'meal'|'soup'|'potion';slime:number} | {type:'fertilize';id:number;item:'fertilizer'|'soil'}
  | {type:'depart';region:number;route:number;team:number[];duration:number;mode:'active'|'offline';supply?:'feed'|'meal';repeat?:boolean}
- | {type:'step'|'recall'|'claimTrip'|'restTrip';id:number} | {type:'tripChoice';id:number;choice:number}
+ | {type:'step'|'recall'|'claimTrip'|'restTrip';id:number} | {type:'tripChoice';id:number;choice:number} | {type:'tripContinue';id:number;event:string}
  | {type:'camp';region:number} | {type:'regionStory';region:number;participants?:number[]}
  | {type:'chapter';character:string;choice:number;participants?:number[]} | {type:'personal';slime:number;chain:string;choice:number}
  | {type:'pair';a:number;b:number;event:string;choice:number} | {type:'meal';ids:number[]}
