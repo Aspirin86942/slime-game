@@ -1,6 +1,6 @@
 import {prepareWorld} from './migration.ts';
 import type {World} from './types.ts';
-import {BUILDINGS,DECORATIONS,PLANTS,RECIPES,PERSONALITIES,ELEMENTS,VISITORS} from './content.ts';
+import {BUILDINGS,DECORATIONS,PATH_STYLES,PLANTS,RECIPES,PERSONALITIES,ELEMENTS,VISITORS} from './content.ts';
 import {EVENTS,CHARACTERS,PERSONAL_CHAINS,PAIR_EVENTS} from './narratives.ts';
 const obj=(v:unknown):v is Record<string,unknown>=>!!v&&typeof v==='object'&&!Array.isArray(v);
 const num=(v:unknown,min=0,max=1e12):v is number=>typeof v==='number'&&Number.isFinite(v)&&v>=min&&v<=max;
@@ -46,6 +46,7 @@ export function validWorld(value:unknown,slimeIds:number[]=[]):value is World {
   if(!Object.entries(typed.chapters).every(([k,v])=>CHARACTERS.some(c=>c.id===k)&&num(v,0,6)))return false;
   if(!Object.entries(typed.companions).every(([k,c])=>slimeIds.includes(Number(k))&&obj(c)&&num(c.slimeId,1)&&str(c.role)&&str(c.interest)&&arr(c.memories,20000)&&c.memories.every(m=>obj(m)&&str(m.id)&&str(m.title)&&str(m.text)&&num(m.at))&&obj(c.friends)&&Object.entries(c.friends).every(([k,v])=>(slimeIds.includes(Number(k))||!!typed.archives?.[k])&&num(v,0,100))&&stock(c.story)&&(c.facts===undefined||stock(c.facts))&&num(c.day)&&num(c.daily)&& (c.mentor===null||slimeIds.includes(c.mentor)||!!typed.archives?.[c.mentor])))return false;
   if(!Object.entries(typed.visitors).every(([k,v])=>VISITORS.some(d=>d.id===k)&&typeof v==='boolean')||!Object.entries(typed.recruited).every(([k,v])=>CHARACTERS.some(d=>d.id===k)&&slimeIds.includes(v))||!Object.entries(typed.paths).every(([k,v])=>num(Number(k),0,5)&&arr(v)&&v.every(n=>num(n,0,143)&&Number.isInteger(n))))return false;
+  if(typed.pathStyles!==undefined&&!(obj(typed.pathStyles)&&Object.entries(typed.pathStyles).every(([k,v])=>/^[0-5]:(\d|[1-9]\d|1[0-3]\d|14[0-3])$/.test(k)&&Number.isInteger(v)&&num(v,1,PATH_STYLES.length-1))))return false;
   if(!typed.camps.every(n=>Number.isInteger(n)&&n>=0&&n<6)||!Object.entries(typed.regionStory).every(([k,v])=>num(Number(k),0,5)&&Number.isInteger(v)&&num(v,0,3))||!stock(typed.miniRewards))return false;
   if(!typed.flags.every(v=>str(v,180))||!typed.discoveries.every(v=>str(v,180))||!typed.notices.every(v=>str(v)))return false;
   if(!typed.journals.every(j=>id(j.id)&&str(j.title)&&arr(j.lines)&&j.lines.every(x=>str(x))&&num(j.at)))return false;

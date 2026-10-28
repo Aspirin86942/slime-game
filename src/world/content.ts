@@ -38,6 +38,8 @@ const buildingRows:[string,string,string,string,string,[number,number],string,st
 export const BUILDINGS:BuildingDef[]=buildingRows.map((r,i)=>({id:r[0],name:r[1],icon:r[2],desc:r[3],service:r[4],size:r[5],upgrades:[r[6],r[7]],zone:Math.floor(i/4),cost:{wood:12+4*Math.floor(i/4),stone:8+3*Math.floor(i/4)}}));
 BUILDINGS.push({id:'trough',name:'饲料槽',zone:0,icon:'▱',desc:'伙伴走过来分享实际存放的饲料',service:'feed',size:[1,1],cost:{wood:8,stone:4},upgrades:['伙伴安心用餐','家园的用餐角落']},{id:'toys',name:'玩具区',zone:0,icon:'◉',desc:'一起接球、叠叠乐和练习观察',service:'play',size:[1,1],cost:{wood:8,stone:4},upgrades:['保留共同游戏的记录','伙伴喜欢的游乐角落']});
 const decorNames=[['碎石小径','苔石小径','木板步道','白砂路','落叶路','星砂路'],['矮木篱','藤编围栏','白石围栏','竹篱','蘑菇围栏','月牙围栏'],['纸灯','萤光灯','蘑菇灯','冰晶灯','星灯','暖炉灯'],['长椅','摇椅','野餐毯','秋千','躺椅','树桩桌'],['木花架','藤花门','垂吊花盆','种子风铃','水莲盆','菌菇架'],['庭院路牌','苗圃标签','访客告示','旅人留言板','星图牌','伙伴名牌'],['落叶堆','蜜源花篮','小鸟浴盆','虫洞木桩','苔石丘','浅水盆'],['种子相框','溪流石刻','小小灶台','归家门牌','霜花瓶','旅程相册']];
+/* 第一组「小径」是路面材质：在地图上拖动铺成连续道路，材质编号存进 pathStyles。 */
+export const PATH_STYLES=decorNames[0];
 export const DECORATIONS:DecorationDef[]=decorNames.flatMap((names,g)=>names.map((name,i)=>({id:`decor-${g}-${i}`,name,group:g,icon:['·','╬','✦','▱','❋','⚑','♧','♡'][g],effect:['铺设可通行的小路','遮阴 +3','光照 +4','舒适与聚餐回忆','授粉环境 +3','家园标识与回忆','湿度与肥力 +3','舒适与回忆'][g],cost:{wood:3+g,stone:2+i}})));
 export const FAMILIES=['花卉','草药','蔬果','果树','菌菇','水生'];
 const plants=[['晨露花','铃兰','日光菊','月见花','绯瓣花','星绒花'],['薄荷','甘露草','暖叶草','霜叶草','清心草','回声草'],['甜萝卜','蜜番茄','月南瓜','脆豆','光莓','雨瓜'],['苹果树','蜜桃树','风梨树','银杏','雪梨树','星枣树'],['苔菇','灯笼菇','雨伞菇','绒球菇','晶耳','梦孢菇'],['浮萍','水莲','芦苇','净水藻','冰灯莲','星舟草']];

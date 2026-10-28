@@ -236,6 +236,13 @@
 .lw-storage-empty svg{width:120px;height:90px;opacity:.6}.lw-storage-empty b{font-size:13px;font-weight:500}.lw-storage-empty p{font-size:11px;color:var(--lw-muted)}
 .lw-placement-hint{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;margin:0 0 14px;border:1px solid var(--lw-gold);border-radius:14px;background:var(--lw-gold-soft)}
 .lw-placement-hint b{display:block;font-size:14px}.lw-placement-hint span{font-size:11px;color:var(--lw-muted)}.lw-placement-hint .lw-button{min-height:44px}
+/* 铺路时的材质色块：小菱形就是路面本身的颜色，选中项用金边标出。 */
+.lw-road-hint{flex-wrap:wrap}.lw-road-hint>div:first-child{flex:1;min-width:0}
+.lw-road-swatches{flex-basis:100%;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.lw-road-swatches .lw-button{flex-direction:column;justify-content:center;min-height:50px;padding:6px 2px;gap:5px;font-size:12px;line-height:1.1;white-space:nowrap;border-radius:12px}
+.lw-road-swatches .lw-button.is-active{border-color:var(--lw-gold);box-shadow:inset 0 0 0 1px var(--lw-gold)}
+.lw-road-swatches i{flex:0 0 auto;width:16px;height:10px;background:var(--road);clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%);box-shadow:inset 0 -2px 0 var(--rim)}
+.lw-road-swatches .is-eraser i{background:repeating-linear-gradient(45deg,#e7a69c 0 2px,transparent 2px 4px);outline:1px dashed #c96f63;outline-offset:-1px}
 .lw-companion-bar{flex-wrap:nowrap;overflow-x:auto;gap:8px;padding:4px 1px 9px;margin:0 0 8px;scrollbar-width:none}
 .lw-companion-chip.lw-button{display:flex;align-items:center;justify-content:flex-start;flex-wrap:nowrap;flex:0 0 auto;min-width:118px;max-width:200px;min-height:60px;padding:6px 12px 6px 6px;gap:6px;border-radius:16px;background:var(--lw-surface);box-shadow:none}
 .lw-companion-chip.is-active{background:var(--lw-gold-soft)}

@@ -1,5 +1,5 @@
 import type {World,GameState,GameCommand,Result,GameEvent,Stock,Genes,Companion,Trip,Slime,Crop,Placement,Juvenile} from './types.ts';
-import {BUILDINGS,DECORATIONS,PLANTS,ZONES,RECIPES,ELEMENTS,PERSONALITIES,BABY_EVENTS,BABY_PERSONAL_EVENTS} from './content.ts';
+import {BUILDINGS,DECORATIONS,PATH_STYLES,PLANTS,ZONES,RECIPES,ELEMENTS,PERSONALITIES,BABY_EVENTS,BABY_PERSONAL_EVENTS} from './content.ts';
 import {EVENTS,CHARACTERS,PERSONAL_CHAINS,PAIR_EVENTS} from './narratives.ts';
 import {environment,level,bounds,refreshVisitors,day} from './ecology.ts';
 import {bindInventory,seedAccount,tripAccount} from './inventory.ts';
@@ -151,7 +151,12 @@ export function execute(state:GameState,command:GameCommand,available:(id:number
   case 'move':{const p=placement(command.id),candidate={...p,zone:command.zone,x:command.x,y:command.y,rotation:command.rotation??p.rotation,stored:false};const err=placementError(w,candidate);requireThat(!err,err??'');Object.assign(p,candidate);for(const r of Object.values(w.residents)){r.arrived=false;delete r.goal;}message='位置已保存';break;}
   case 'store':{const p=placement(command.id);requireThat(!w.crafts.some(t=>t.building===p.id),'请先领取或完成设施中的制作队列。');p.stored=true;w.workers=w.workers.filter(j=>j.building!==p.id);message='已收纳，服务已暂停';break;}
   case 'upgrade':{const p=placement(command.id),d=BUILDINGS.find(d=>d.id===p.def);requireThat(d&&p.level<3&&!p.stored,'设施已满级或处于收纳中。');pay(w,Object.fromEntries(Object.entries(d!.cost).map(([k,v])=>[k,v*(p.level+1)])));p.level++;message=d!.upgrades[p.level-2];break;}
-  case 'path':{requireThat(w.unlocked.includes(command.zone)&&Number.isInteger(command.x)&&Number.isInteger(command.y)&&command.x>=0&&command.x<12&&command.y>=0&&command.y<12,'路径位置无效。');const key=String(command.zone),n=command.y*12+command.x;w.paths[key]??=[];w.paths[key]=w.paths[key].includes(n)?w.paths[key].filter(v=>v!==n):[...w.paths[key],n];message='道路已更新';break;}
+  case 'path':{requireThat(w.unlocked.includes(command.zone)&&Number.isInteger(command.x)&&Number.isInteger(command.y)&&command.x>=0&&command.x<12&&command.y>=0&&command.y<12,'路径位置无效。');const key=String(command.zone),n=command.y*12+command.x;w.paths[key]??=[];w.paths[key]=w.paths[key].includes(n)?w.paths[key].filter(v=>v!==n):[...w.paths[key],n];delete w.pathStyles?.[`${key}:${n}`];message='道路已更新';break;}
+  case 'paint':{const cells=[...new Set(Array.isArray(command.cells)?command.cells:[])];requireThat(w.unlocked.includes(command.zone)&&cells.length>0&&cells.length<=144&&cells.every(n=>Number.isInteger(n)&&n>=0&&n<144)&&Number.isInteger(command.style)&&command.style>=0&&command.style<PATH_STYLES.length,'路面位置或材质无效。');
+   // 一次拖动只提交一条命令：路面集合供寻路使用，材质只影响外观；碎石（0 号）是默认材质，不写入存档。
+   const key=String(command.zone),styles=w.pathStyles??={},road=new Set(w.paths[key]??[]);
+   for(const n of cells){if(command.erase)road.delete(n);else road.add(n);if(command.erase||!command.style)delete styles[`${key}:${n}`];else styles[`${key}:${n}`]=command.style;}
+   w.paths[key]=[...road];message=command.erase?`擦除了 ${cells.length} 格路面`:`铺好 ${cells.length} 格${PATH_STYLES[command.style]}`;break;}
   case 'plant':plant(w,command.cultivar,command.zone,command.x,command.y,command.explicit);message='种子已经安家';break;
   case 'sow':{const v=w.cultivars.find(v=>v.id===command.cultivar);requireThat(v&&!v.protected,'请先选择未收藏的品系。');let count=0;for(let y=5;y<12;y++)for(let x=0;x<12;x++){if(count>=6||!v!.seeds)break;try{plant(w,command.cultivar,command.zone,x,y);count++;}catch{ /* Occupied plots are deliberately skipped. */ }}requireThat(count>0,'没有可用地块、种子或水生设施。');message=`已播种 ${count} 株`;break;}
   case 'care':{const c=crop(command.id);pay(w,{dew:1});c.water=180;const add=Math.min(.05,.2-c.care);c.progress=Math.min(1,c.progress+Math.max(0,add));c.care+=Math.max(0,add);message='已浇水并照料';break;}

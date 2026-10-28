@@ -34,6 +34,46 @@ function decorationArt(group:number,variant:number,lit:boolean):string {
   `<path d="M-22-31h44v47h-44Z" fill="${wood}"/><path d="M-18-27h36v39h-36Z" fill="${light}"/><path d="M-14-23h28V8h-28Z" fill="${accent}"/><path d="M0-17l3 7 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1Z" fill="${light}"/><path d="M-24 18h48" stroke="${wood}" stroke-width="5" stroke-linecap="round"/>`
  ][group]??'';
 }
+/* 六种路面材质的底色、路缘和纹理色，顺序与 PATH_STYLES 一致。 */
+export const PATH_TONES=[
+ {base:'#ddd0b0',edge:'#a8936e',dot:'#b4a07c'},
+ {base:'#a9c196',edge:'#6f8f6a',dot:'#dcdccd'},
+ {base:'#cfa77c',edge:'#8a6748',dot:'#9b7655'},
+ {base:'#f3ebd6',edge:'#c4b28a',dot:'#d6c7a3'},
+ {base:'#dcc093',edge:'#a07a4f',dot:'#d9875a'},
+ {base:'#bdb8e6',edge:'#7a72b8',dot:'#fff6c8'}
+];
+/* 按格子编号生成固定的伪随机数，让石子、落叶每次重绘都落在同一位置。 */
+const jitter=(n:number,k:number)=>{const v=Math.sin(n*127.1+k*311.7)*43758.5453;return v-Math.floor(v);};
+const poly=(pts:[number,number][])=>pts.map(([u,v],i)=>{const p=xy(u,v);return `${i?'L':'M'}${p.x.toFixed(1)} ${p.y.toFixed(1)}`;}).join('')+'Z';
+/* 路面自动拼接：与相邻路面贴齐；没有相邻路面的一侧向内收 0.14 格，露出草边，连起来就是一条完整的路。 */
+function roadCells(roads:Map<number,number>,dark:boolean):string {
+ const has=(x:number,y:number)=>x>=0&&x<12&&y>=0&&y<12&&roads.has(y*12+x),d=.14;
+ let rims='',faces='',marks='';
+ for(const [n,style] of roads){
+  const x=n%12,y=Math.floor(n/12),t=PATH_TONES[style]??PATH_TONES[0],L=has(x-1,y),R=has(x+1,y),T=has(x,y-1),B=has(x,y+1);
+  const u0=x+(L?0:d),u1=x+1-(R?0:d),v0=y+(T?0:d),v1=y+1-(B?0:d),shape=poly([[u0,v0],[u1,v0],[u1,v1],[u0,v1]]);
+  const tone=(c:string)=>dark?mix(c,'#1e3058',style===5?.18:.42):c,base=tone(t.base),edge=tone(t.edge),dot=style===5?t.dot:tone(t.dot);
+  // 路缘：同形状下移 2.5 像素并加粗圆角描边，让路面看起来有厚度、拐角圆润。
+  rims+=`<path d="${shape}" transform="translate(0 2.5)" fill="${edge}" stroke="${edge}" stroke-width="3" stroke-linejoin="round"/>`;
+  faces+=`<path data-lw-road="${n}" d="${shape}" fill="${base}" stroke="${base}" stroke-width="${L||R||T||B?1:3}" stroke-linejoin="round"/>`;
+  const at=(k:number)=>xy(x+.22+jitter(n,k)*.56,y+.22+jitter(n,k+9)*.56);
+  // 路线沿 x 方向延伸时木板横跨 x，否则横跨 y；白砂的耙痕与行进方向一致。
+  const alongX=(L||R)&&!(T||B),line=(k:number,cross:boolean)=>{const [a,b]=cross===alongX?[xy(x+k,v0),xy(x+k,v1)]:[xy(u0,y+k),xy(u1,y+k)];return `M${a.x.toFixed(1)} ${a.y.toFixed(1)}L${b.x.toFixed(1)} ${b.y.toFixed(1)}`;};
+  if(style===0)marks+=[0,1,2,3].map(k=>{const p=at(k);return `<ellipse cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" rx="${(2+jitter(n,k+3)*1.6).toFixed(1)}" ry="${(1.2+jitter(n,k+5)).toFixed(1)}" fill="${k?dot:'#f7efdc'}" opacity="${k?.8:.7}"/>`;}).join('');
+  if(style===1){const p=xy(x+.5,y+.5),q=at(1);marks+=`<ellipse cx="${p.x.toFixed(1)}" cy="${(p.y+.5).toFixed(1)}" rx="9" ry="5.2" fill="${edge}"/><ellipse cx="${p.x.toFixed(1)}" cy="${(p.y-.5).toFixed(1)}" rx="8.5" ry="4.6" fill="${dot}"/><ellipse cx="${(p.x-2.5).toFixed(1)}" cy="${(p.y-1.8).toFixed(1)}" rx="3.5" ry="1.4" fill="#fff" opacity=".45"/><circle cx="${q.x.toFixed(1)}" cy="${q.y.toFixed(1)}" r="1.6" fill="${tone('#7fa86f')}"/>`;}
+  if(style===2)marks+=`<path d="${line(1/3,true)}${line(2/3,true)}" stroke="${dot}" stroke-width="1.3" stroke-linecap="round" fill="none"/>`;
+  if(style===3)marks+=`<path d="${line(.35,false)}${line(.65,false)}" stroke="${dot}" stroke-width="1" stroke-linecap="round" fill="none" opacity=".9"/>`;
+  if(style===4)marks+=[0,1,2].map(k=>{const p=at(k);return `<ellipse cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" rx="3.2" ry="1.6" fill="${tone(['#d9875a','#e2b25a','#c8664e'][k])}" transform="rotate(${Math.round(jitter(n,k+7)*180)} ${p.x.toFixed(1)} ${p.y.toFixed(1)})"/>`;}).join('');
+  if(style===5)marks+=[0,1,2].map(k=>{const p=at(k),r=1.2+jitter(n,k+4)*1.4;return `<path d="M${p.x.toFixed(1)} ${(p.y-r*2).toFixed(1)}q${(r*.3).toFixed(1)} ${(r*1.7).toFixed(1)} ${(r*2).toFixed(1)} ${(r*2).toFixed(1)}q${(-r*1.7).toFixed(1)} ${(r*.3).toFixed(1)} ${(-r*2).toFixed(1)} ${(r*2).toFixed(1)}q${(-r*.3).toFixed(1)} ${(-r*1.7).toFixed(1)} ${(-r*2).toFixed(1)} ${(-r*2).toFixed(1)}q${(r*1.7).toFixed(1)} ${(-r*.3).toFixed(1)} ${(r*2).toFixed(1)} ${(-r*2).toFixed(1)}Z" fill="${dot}" opacity="${dark?.95:.8}"/>`;}).join('');
+ }
+ return `<g class="lw-roads" pointer-events="none">${rims}${faces}${marks}</g>`;
+}
+export function roadMap(w:World,zone:number):Map<number,number>{return new Map((w.paths[zone]??[]).map(n=>[n,w.pathStyles?.[`${zone}:${n}`]??0]));}
+/* 目录里的材质样张：一段带拐角的四格小路，直接复用地图上的拼接画法。 */
+export function roadPreview(style:number):string {
+ return `<svg viewBox="244 54 136 92" aria-hidden="true" focusable="false"><path d="${poly([[-.15,-.15],[3.15,-.15],[3.15,2.15],[-.15,2.15]])}" fill="#a9c49c" opacity=".6"/>${roadCells(new Map([0,1,2,14].map(n=>[n,style])),false)}</svg>`;
+}
 function building(p:Placement,selected:boolean,lit:boolean,preview=false):string {
  const d=BUILDINGS.find(d=>d.id===p.def),dec=DECORATIONS.find(d=>d.id===p.def),point=xy(p.x,p.y),[a,b]=bounds(p),width=(a+b)*19;
  const n=(c:string)=>lit?mix(c,'#2a2c5e',.38):c,roof=n(['#c98a6a','#7fae8c','#6c9eae','#c99a6f','#86aac4','#a08fc9'][d?.zone??p.zone]);
@@ -94,9 +134,9 @@ function islandBody(dark:boolean,tone:string):string {
  <g><circle cx="314" cy="512" r="22" fill="url(#lw-glow)"/><path d="M314 499l6 12-6 12-6-12Z" fill="#ddd1ff"/><circle cx="212" cy="404" r="12" fill="url(#lw-glow)"/><path d="M212 398l3 6-3 6-3-6Z" fill="#ddd1ff" opacity=".85"/><circle cx="420" cy="398" r="12" fill="url(#lw-glow)"/><path d="M420 392l3 6-3 6-3-6Z" fill="#ddd1ff" opacity=".85"/></g>`;
 }
 export function scene(w:World,zone:number,slimes:Slime[],selected:number,overlay:string,renderSlime?:(s:Slime)=>string):string {
- const dark=night(w),tone=ZONES[zone].color,dusk=(c:string)=>dark?mix(c,'#1e3058',.5):c,tileA=dusk(mix(tone,'#ffffff',.12)),tileB=dusk(mix(tone,'#ffffff',.02)),pathTile=dark?'#8c86a8':'#e6d6b0';
- let cells='';for(let y=0;y<12;y++)for(let x=0;x<12;x++){const p=xy(x,y),path=(w.paths[zone]??[]).includes(y*12+x),e=overlay?environment(w,zone,x,y,slimes):null,val=e?e[overlay as 'light'|'moisture'|'fertility'|'quality']:0;
-  const fill=overlay?`hsl(${Math.round(val*1.3)} 45% ${68-val*.18}%)`:path?pathTile:(x+y)%2===0?tileA:tileB;cells+=`<path data-lw-cell="${x},${y}" d="M${p.x} ${p.y}l23 15-23 15-23-15Z" fill="${fill}" stroke="${mix(tone,'#1f2a2a',.35)}" stroke-opacity=".22"/>`;
+ const dark=night(w),tone=ZONES[zone].color,dusk=(c:string)=>dark?mix(c,'#1e3058',.5):c,tileA=dusk(mix(tone,'#ffffff',.12)),tileB=dusk(mix(tone,'#ffffff',.02)),roads=roadMap(w,zone);
+ let cells='';for(let y=0;y<12;y++)for(let x=0;x<12;x++){const p=xy(x,y),e=overlay?environment(w,zone,x,y,slimes):null,val=e?e[overlay as 'light'|'moisture'|'fertility'|'quality']:0;
+  const fill=overlay?`hsl(${Math.round(val*1.3)} 45% ${68-val*.18}%)`:(x+y)%2===0?tileA:tileB;cells+=`<path data-lw-cell="${x},${y}" d="M${p.x} ${p.y}l23 15-23 15-23-15Z" fill="${fill}" stroke="${mix(tone,'#1f2a2a',.35)}" stroke-opacity=".22"/>`;
  }
  const moonlight=`<path d="M300 62L576 242 300 422 24 242Z" fill="url(#lw-moonlight)"/>`;
  const p=w.placements.filter(p=>p.zone===zone&&!p.stored).map(p=>({depth:p.x+p.y,art:building(p,selected===p.id,dark)}));
@@ -114,5 +154,5 @@ export function scene(w:World,zone:number,slimes:Slime[],selected:number,overlay
  <radialGradient id="lw-moonlight" cx=".72" cy=".1" r=".9"><stop stop-color="#fff2cf" stop-opacity="${dark?.2:.28}"/><stop offset=".6" stop-color="#fff2cf" stop-opacity="0"/></radialGradient>
  <linearGradient id="lw-water" x2="0" y2="1"><stop stop-color="#9fdde0"/><stop offset="1" stop-color="#5aa6b4"/></linearGradient>
  <linearGradient id="lw-rock" x2="0" y2="1"><stop stop-color="${dark?'#3e3660':'#6e6496'}"/><stop offset=".6" stop-color="${dark?'#28224a':'#4d4578'}"/><stop offset="1" stop-color="${dark?'#1a172c':'#3b3462'}" stop-opacity="0"/></linearGradient></defs>`;
- return `<svg class="lw-map ${dark?'is-night':'is-day'}" viewBox="0 0 ${MAP_W} ${MAP_H}" aria-label="${ZONES[zone].name}，12 乘 12 自由布置地图" role="img">${defs}${sky(dark)}${islandBody(dark,tone)}<g>${cells}</g>${overlay?'':moonlight}${[...p,...c,...creatures].sort((a,b)=>a.depth-b.depth).map(o=>o.art).join('')}${memorials}${visitors}${fireflies}<text x="26" y="${MAP_H-18}" class="lw-map-hint">${overlay?'环境图层：数值越高，颜色越深':'点击物件查看，布置模式可拖动'}</text></svg>`;
+ return `<svg class="lw-map ${dark?'is-night':'is-day'}" viewBox="0 0 ${MAP_W} ${MAP_H}" aria-label="${ZONES[zone].name}，12 乘 12 自由布置地图" role="img">${defs}${sky(dark)}${islandBody(dark,tone)}<g>${cells}</g>${overlay?'':roadCells(roads,dark)+moonlight}${[...p,...c,...creatures].sort((a,b)=>a.depth-b.depth).map(o=>o.art).join('')}${memorials}${visitors}${fireflies}<text x="26" y="${MAP_H-18}" class="lw-map-hint">${overlay?'环境图层：数值越高，颜色越深':'点击物件查看，布置模式可拖动'}</text></svg>`;
 }

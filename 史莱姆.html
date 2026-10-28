@@ -1624,6 +1624,13 @@ body{background:#05060c;color:#e8e9f3;}
 .lw-storage-empty svg{width:120px;height:90px;opacity:.6}.lw-storage-empty b{font-size:13px;font-weight:500}.lw-storage-empty p{font-size:11px;color:var(--lw-muted)}
 .lw-placement-hint{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;margin:0 0 14px;border:1px solid var(--lw-gold);border-radius:14px;background:var(--lw-gold-soft)}
 .lw-placement-hint b{display:block;font-size:14px}.lw-placement-hint span{font-size:11px;color:var(--lw-muted)}.lw-placement-hint .lw-button{min-height:44px}
+/* 铺路时的材质色块：小菱形就是路面本身的颜色，选中项用金边标出。 */
+.lw-road-hint{flex-wrap:wrap}.lw-road-hint>div:first-child{flex:1;min-width:0}
+.lw-road-swatches{flex-basis:100%;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.lw-road-swatches .lw-button{flex-direction:column;justify-content:center;min-height:50px;padding:6px 2px;gap:5px;font-size:12px;line-height:1.1;white-space:nowrap;border-radius:12px}
+.lw-road-swatches .lw-button.is-active{border-color:var(--lw-gold);box-shadow:inset 0 0 0 1px var(--lw-gold)}
+.lw-road-swatches i{flex:0 0 auto;width:16px;height:10px;background:var(--road);clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%);box-shadow:inset 0 -2px 0 var(--rim)}
+.lw-road-swatches .is-eraser i{background:repeating-linear-gradient(45deg,#e7a69c 0 2px,transparent 2px 4px);outline:1px dashed #c96f63;outline-offset:-1px}
 .lw-companion-bar{flex-wrap:nowrap;overflow-x:auto;gap:8px;padding:4px 1px 9px;margin:0 0 8px;scrollbar-width:none}
 .lw-companion-chip.lw-button{display:flex;align-items:center;justify-content:flex-start;flex-wrap:nowrap;flex:0 0 auto;min-width:118px;max-width:200px;min-height:60px;padding:6px 12px 6px 6px;gap:6px;border-radius:16px;background:var(--lw-surface);box-shadow:none}
 .lw-companion-chip.is-active{background:var(--lw-gold-soft)}
@@ -1790,6 +1797,7 @@ var LivingWorld = (() => {
   var BUILDINGS = buildingRows.map((r, i) => ({ id: r[0], name: r[1], icon: r[2], desc: r[3], service: r[4], size: r[5], upgrades: [r[6], r[7]], zone: Math.floor(i / 4), cost: { wood: 12 + 4 * Math.floor(i / 4), stone: 8 + 3 * Math.floor(i / 4) } }));
   BUILDINGS.push({ id: "trough", name: "\u9972\u6599\u69FD", zone: 0, icon: "\u25B1", desc: "\u4F19\u4F34\u8D70\u8FC7\u6765\u5206\u4EAB\u5B9E\u9645\u5B58\u653E\u7684\u9972\u6599", service: "feed", size: [1, 1], cost: { wood: 8, stone: 4 }, upgrades: ["\u4F19\u4F34\u5B89\u5FC3\u7528\u9910", "\u5BB6\u56ED\u7684\u7528\u9910\u89D2\u843D"] }, { id: "toys", name: "\u73A9\u5177\u533A", zone: 0, icon: "\u25C9", desc: "\u4E00\u8D77\u63A5\u7403\u3001\u53E0\u53E0\u4E50\u548C\u7EC3\u4E60\u89C2\u5BDF", service: "play", size: [1, 1], cost: { wood: 8, stone: 4 }, upgrades: ["\u4FDD\u7559\u5171\u540C\u6E38\u620F\u7684\u8BB0\u5F55", "\u4F19\u4F34\u559C\u6B22\u7684\u6E38\u4E50\u89D2\u843D"] });
   var decorNames = [["\u788E\u77F3\u5C0F\u5F84", "\u82D4\u77F3\u5C0F\u5F84", "\u6728\u677F\u6B65\u9053", "\u767D\u7802\u8DEF", "\u843D\u53F6\u8DEF", "\u661F\u7802\u8DEF"], ["\u77EE\u6728\u7BF1", "\u85E4\u7F16\u56F4\u680F", "\u767D\u77F3\u56F4\u680F", "\u7AF9\u7BF1", "\u8611\u83C7\u56F4\u680F", "\u6708\u7259\u56F4\u680F"], ["\u7EB8\u706F", "\u8424\u5149\u706F", "\u8611\u83C7\u706F", "\u51B0\u6676\u706F", "\u661F\u706F", "\u6696\u7089\u706F"], ["\u957F\u6905", "\u6447\u6905", "\u91CE\u9910\u6BEF", "\u79CB\u5343", "\u8EBA\u6905", "\u6811\u6869\u684C"], ["\u6728\u82B1\u67B6", "\u85E4\u82B1\u95E8", "\u5782\u540A\u82B1\u76C6", "\u79CD\u5B50\u98CE\u94C3", "\u6C34\u83B2\u76C6", "\u83CC\u83C7\u67B6"], ["\u5EAD\u9662\u8DEF\u724C", "\u82D7\u5703\u6807\u7B7E", "\u8BBF\u5BA2\u544A\u793A", "\u65C5\u4EBA\u7559\u8A00\u677F", "\u661F\u56FE\u724C", "\u4F19\u4F34\u540D\u724C"], ["\u843D\u53F6\u5806", "\u871C\u6E90\u82B1\u7BEE", "\u5C0F\u9E1F\u6D74\u76C6", "\u866B\u6D1E\u6728\u6869", "\u82D4\u77F3\u4E18", "\u6D45\u6C34\u76C6"], ["\u79CD\u5B50\u76F8\u6846", "\u6EAA\u6D41\u77F3\u523B", "\u5C0F\u5C0F\u7076\u53F0", "\u5F52\u5BB6\u95E8\u724C", "\u971C\u82B1\u74F6", "\u65C5\u7A0B\u76F8\u518C"]];
+  var PATH_STYLES = decorNames[0];
   var DECORATIONS = decorNames.flatMap((names, g) => names.map((name, i) => ({ id: `decor-${g}-${i}`, name, group: g, icon: ["\xB7", "\u256C", "\u2726", "\u25B1", "\u274B", "\u2691", "\u2667", "\u2661"][g], effect: ["\u94FA\u8BBE\u53EF\u901A\u884C\u7684\u5C0F\u8DEF", "\u906E\u9634 +3", "\u5149\u7167 +4", "\u8212\u9002\u4E0E\u805A\u9910\u56DE\u5FC6", "\u6388\u7C89\u73AF\u5883 +3", "\u5BB6\u56ED\u6807\u8BC6\u4E0E\u56DE\u5FC6", "\u6E7F\u5EA6\u4E0E\u80A5\u529B +3", "\u8212\u9002\u4E0E\u56DE\u5FC6"][g], cost: { wood: 3 + g, stone: 2 + i } })));
   var FAMILIES = ["\u82B1\u5349", "\u8349\u836F", "\u852C\u679C", "\u679C\u6811", "\u83CC\u83C7", "\u6C34\u751F"];
   var plants = [["\u6668\u9732\u82B1", "\u94C3\u5170", "\u65E5\u5149\u83CA", "\u6708\u89C1\u82B1", "\u7EEF\u74E3\u82B1", "\u661F\u7ED2\u82B1"], ["\u8584\u8377", "\u7518\u9732\u8349", "\u6696\u53F6\u8349", "\u971C\u53F6\u8349", "\u6E05\u5FC3\u8349", "\u56DE\u58F0\u8349"], ["\u751C\u841D\u535C", "\u871C\u756A\u8304", "\u6708\u5357\u74DC", "\u8106\u8C46", "\u5149\u8393", "\u96E8\u74DC"], ["\u82F9\u679C\u6811", "\u871C\u6843\u6811", "\u98CE\u68A8\u6811", "\u94F6\u674F", "\u96EA\u68A8\u6811", "\u661F\u67A3\u6811"], ["\u82D4\u83C7", "\u706F\u7B3C\u83C7", "\u96E8\u4F1E\u83C7", "\u7ED2\u7403\u83C7", "\u6676\u8033", "\u68A6\u5B62\u83C7"], ["\u6D6E\u840D", "\u6C34\u83B2", "\u82A6\u82C7", "\u51C0\u6C34\u85FB", "\u51B0\u706F\u83B2", "\u661F\u821F\u8349"]];
@@ -3261,7 +3269,22 @@ var LivingWorld = (() => {
           const key = String(command.zone), n = command.y * 12 + command.x;
           w.paths[key] ??= [];
           w.paths[key] = w.paths[key].includes(n) ? w.paths[key].filter((v) => v !== n) : [...w.paths[key], n];
+          delete w.pathStyles?.[`${key}:${n}`];
           message = "\u9053\u8DEF\u5DF2\u66F4\u65B0";
+          break;
+        }
+        case "paint": {
+          const cells = [...new Set(Array.isArray(command.cells) ? command.cells : [])];
+          requireThat(w.unlocked.includes(command.zone) && cells.length > 0 && cells.length <= 144 && cells.every((n) => Number.isInteger(n) && n >= 0 && n < 144) && Number.isInteger(command.style) && command.style >= 0 && command.style < PATH_STYLES.length, "\u8DEF\u9762\u4F4D\u7F6E\u6216\u6750\u8D28\u65E0\u6548\u3002");
+          const key = String(command.zone), styles = w.pathStyles ??= {}, road = new Set(w.paths[key] ?? []);
+          for (const n of cells) {
+            if (command.erase) road.delete(n);
+            else road.add(n);
+            if (command.erase || !command.style) delete styles[`${key}:${n}`];
+            else styles[`${key}:${n}`] = command.style;
+          }
+          w.paths[key] = [...road];
+          message = command.erase ? `\u64E6\u9664\u4E86 ${cells.length} \u683C\u8DEF\u9762` : `\u94FA\u597D ${cells.length} \u683C${PATH_STYLES[command.style]}`;
           break;
         }
         case "plant":
@@ -3807,6 +3830,63 @@ var LivingWorld = (() => {
       `<path d="M-22-31h44v47h-44Z" fill="${wood}"/><path d="M-18-27h36v39h-36Z" fill="${light}"/><path d="M-14-23h28V8h-28Z" fill="${accent}"/><path d="M0-17l3 7 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1Z" fill="${light}"/><path d="M-24 18h48" stroke="${wood}" stroke-width="5" stroke-linecap="round"/>`
     ][group] ?? "";
   }
+  var PATH_TONES = [
+    { base: "#ddd0b0", edge: "#a8936e", dot: "#b4a07c" },
+    { base: "#a9c196", edge: "#6f8f6a", dot: "#dcdccd" },
+    { base: "#cfa77c", edge: "#8a6748", dot: "#9b7655" },
+    { base: "#f3ebd6", edge: "#c4b28a", dot: "#d6c7a3" },
+    { base: "#dcc093", edge: "#a07a4f", dot: "#d9875a" },
+    { base: "#bdb8e6", edge: "#7a72b8", dot: "#fff6c8" }
+  ];
+  var jitter = (n, k) => {
+    const v = Math.sin(n * 127.1 + k * 311.7) * 43758.5453;
+    return v - Math.floor(v);
+  };
+  var poly = (pts) => pts.map(([u, v], i) => {
+    const p = xy(u, v);
+    return `${i ? "L" : "M"}${p.x.toFixed(1)} ${p.y.toFixed(1)}`;
+  }).join("") + "Z";
+  function roadCells(roads, dark) {
+    const has = (x, y) => x >= 0 && x < 12 && y >= 0 && y < 12 && roads.has(y * 12 + x), d = 0.14;
+    let rims = "", faces = "", marks = "";
+    for (const [n, style] of roads) {
+      const x = n % 12, y = Math.floor(n / 12), t = PATH_TONES[style] ?? PATH_TONES[0], L = has(x - 1, y), R = has(x + 1, y), T = has(x, y - 1), B = has(x, y + 1);
+      const u0 = x + (L ? 0 : d), u1 = x + 1 - (R ? 0 : d), v0 = y + (T ? 0 : d), v1 = y + 1 - (B ? 0 : d), shape = poly([[u0, v0], [u1, v0], [u1, v1], [u0, v1]]);
+      const tone = (c) => dark ? mix(c, "#1e3058", style === 5 ? 0.18 : 0.42) : c, base = tone(t.base), edge = tone(t.edge), dot = style === 5 ? t.dot : tone(t.dot);
+      rims += `<path d="${shape}" transform="translate(0 2.5)" fill="${edge}" stroke="${edge}" stroke-width="3" stroke-linejoin="round"/>`;
+      faces += `<path data-lw-road="${n}" d="${shape}" fill="${base}" stroke="${base}" stroke-width="${L || R || T || B ? 1 : 3}" stroke-linejoin="round"/>`;
+      const at = (k) => xy(x + 0.22 + jitter(n, k) * 0.56, y + 0.22 + jitter(n, k + 9) * 0.56);
+      const alongX = (L || R) && !(T || B), line = (k, cross) => {
+        const [a, b] = cross === alongX ? [xy(x + k, v0), xy(x + k, v1)] : [xy(u0, y + k), xy(u1, y + k)];
+        return `M${a.x.toFixed(1)} ${a.y.toFixed(1)}L${b.x.toFixed(1)} ${b.y.toFixed(1)}`;
+      };
+      if (style === 0) marks += [0, 1, 2, 3].map((k) => {
+        const p = at(k);
+        return `<ellipse cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" rx="${(2 + jitter(n, k + 3) * 1.6).toFixed(1)}" ry="${(1.2 + jitter(n, k + 5)).toFixed(1)}" fill="${k ? dot : "#f7efdc"}" opacity="${k ? 0.8 : 0.7}"/>`;
+      }).join("");
+      if (style === 1) {
+        const p = xy(x + 0.5, y + 0.5), q = at(1);
+        marks += `<ellipse cx="${p.x.toFixed(1)}" cy="${(p.y + 0.5).toFixed(1)}" rx="9" ry="5.2" fill="${edge}"/><ellipse cx="${p.x.toFixed(1)}" cy="${(p.y - 0.5).toFixed(1)}" rx="8.5" ry="4.6" fill="${dot}"/><ellipse cx="${(p.x - 2.5).toFixed(1)}" cy="${(p.y - 1.8).toFixed(1)}" rx="3.5" ry="1.4" fill="#fff" opacity=".45"/><circle cx="${q.x.toFixed(1)}" cy="${q.y.toFixed(1)}" r="1.6" fill="${tone("#7fa86f")}"/>`;
+      }
+      if (style === 2) marks += `<path d="${line(1 / 3, true)}${line(2 / 3, true)}" stroke="${dot}" stroke-width="1.3" stroke-linecap="round" fill="none"/>`;
+      if (style === 3) marks += `<path d="${line(0.35, false)}${line(0.65, false)}" stroke="${dot}" stroke-width="1" stroke-linecap="round" fill="none" opacity=".9"/>`;
+      if (style === 4) marks += [0, 1, 2].map((k) => {
+        const p = at(k);
+        return `<ellipse cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" rx="3.2" ry="1.6" fill="${tone(["#d9875a", "#e2b25a", "#c8664e"][k])}" transform="rotate(${Math.round(jitter(n, k + 7) * 180)} ${p.x.toFixed(1)} ${p.y.toFixed(1)})"/>`;
+      }).join("");
+      if (style === 5) marks += [0, 1, 2].map((k) => {
+        const p = at(k), r = 1.2 + jitter(n, k + 4) * 1.4;
+        return `<path d="M${p.x.toFixed(1)} ${(p.y - r * 2).toFixed(1)}q${(r * 0.3).toFixed(1)} ${(r * 1.7).toFixed(1)} ${(r * 2).toFixed(1)} ${(r * 2).toFixed(1)}q${(-r * 1.7).toFixed(1)} ${(r * 0.3).toFixed(1)} ${(-r * 2).toFixed(1)} ${(r * 2).toFixed(1)}q${(-r * 0.3).toFixed(1)} ${(-r * 1.7).toFixed(1)} ${(-r * 2).toFixed(1)} ${(-r * 2).toFixed(1)}q${(r * 1.7).toFixed(1)} ${(-r * 0.3).toFixed(1)} ${(r * 2).toFixed(1)} ${(-r * 2).toFixed(1)}Z" fill="${dot}" opacity="${dark ? 0.95 : 0.8}"/>`;
+      }).join("");
+    }
+    return `<g class="lw-roads" pointer-events="none">${rims}${faces}${marks}</g>`;
+  }
+  function roadMap(w, zone) {
+    return new Map((w.paths[zone] ?? []).map((n) => [n, w.pathStyles?.[`${zone}:${n}`] ?? 0]));
+  }
+  function roadPreview(style) {
+    return `<svg viewBox="244 54 136 92" aria-hidden="true" focusable="false"><path d="${poly([[-0.15, -0.15], [3.15, -0.15], [3.15, 2.15], [-0.15, 2.15]])}" fill="#a9c49c" opacity=".6"/>${roadCells(new Map([0, 1, 2, 14].map((n) => [n, style])), false)}</svg>`;
+  }
   function building(p, selected, lit, preview = false) {
     const d = BUILDINGS.find((d2) => d2.id === p.def), dec = DECORATIONS.find((d2) => d2.id === p.def), point = xy(p.x, p.y), [a, b] = bounds(p), width = (a + b) * 19;
     const n = (c) => lit ? mix(c, "#2a2c5e", 0.38) : c, roof = n(["#c98a6a", "#7fae8c", "#6c9eae", "#c99a6f", "#86aac4", "#a08fc9"][d?.zone ?? p.zone]);
@@ -3864,11 +3944,11 @@ var LivingWorld = (() => {
  <g><circle cx="314" cy="512" r="22" fill="url(#lw-glow)"/><path d="M314 499l6 12-6 12-6-12Z" fill="#ddd1ff"/><circle cx="212" cy="404" r="12" fill="url(#lw-glow)"/><path d="M212 398l3 6-3 6-3-6Z" fill="#ddd1ff" opacity=".85"/><circle cx="420" cy="398" r="12" fill="url(#lw-glow)"/><path d="M420 392l3 6-3 6-3-6Z" fill="#ddd1ff" opacity=".85"/></g>`;
   }
   function scene(w, zone, slimes, selected, overlay, renderSlime) {
-    const dark = night(w), tone = ZONES[zone].color, dusk = (c2) => dark ? mix(c2, "#1e3058", 0.5) : c2, tileA = dusk(mix(tone, "#ffffff", 0.12)), tileB = dusk(mix(tone, "#ffffff", 0.02)), pathTile = dark ? "#8c86a8" : "#e6d6b0";
+    const dark = night(w), tone = ZONES[zone].color, dusk = (c2) => dark ? mix(c2, "#1e3058", 0.5) : c2, tileA = dusk(mix(tone, "#ffffff", 0.12)), tileB = dusk(mix(tone, "#ffffff", 0.02)), roads = roadMap(w, zone);
     let cells = "";
     for (let y = 0; y < 12; y++) for (let x = 0; x < 12; x++) {
-      const p2 = xy(x, y), path = (w.paths[zone] ?? []).includes(y * 12 + x), e = overlay ? environment(w, zone, x, y, slimes) : null, val = e ? e[overlay] : 0;
-      const fill = overlay ? `hsl(${Math.round(val * 1.3)} 45% ${68 - val * 0.18}%)` : path ? pathTile : (x + y) % 2 === 0 ? tileA : tileB;
+      const p2 = xy(x, y), e = overlay ? environment(w, zone, x, y, slimes) : null, val = e ? e[overlay] : 0;
+      const fill = overlay ? `hsl(${Math.round(val * 1.3)} 45% ${68 - val * 0.18}%)` : (x + y) % 2 === 0 ? tileA : tileB;
       cells += `<path data-lw-cell="${x},${y}" d="M${p2.x} ${p2.y}l23 15-23 15-23-15Z" fill="${fill}" stroke="${mix(tone, "#1f2a2a", 0.35)}" stroke-opacity=".22"/>`;
     }
     const moonlight = `<path d="M300 62L576 242 300 422 24 242Z" fill="url(#lw-moonlight)"/>`;
@@ -3899,7 +3979,7 @@ var LivingWorld = (() => {
  <radialGradient id="lw-moonlight" cx=".72" cy=".1" r=".9"><stop stop-color="#fff2cf" stop-opacity="${dark ? 0.2 : 0.28}"/><stop offset=".6" stop-color="#fff2cf" stop-opacity="0"/></radialGradient>
  <linearGradient id="lw-water" x2="0" y2="1"><stop stop-color="#9fdde0"/><stop offset="1" stop-color="#5aa6b4"/></linearGradient>
  <linearGradient id="lw-rock" x2="0" y2="1"><stop stop-color="${dark ? "#3e3660" : "#6e6496"}"/><stop offset=".6" stop-color="${dark ? "#28224a" : "#4d4578"}"/><stop offset="1" stop-color="${dark ? "#1a172c" : "#3b3462"}" stop-opacity="0"/></linearGradient></defs>`;
-    return `<svg class="lw-map ${dark ? "is-night" : "is-day"}" viewBox="0 0 ${MAP_W} ${MAP_H}" aria-label="${ZONES[zone].name}\uFF0C12 \u4E58 12 \u81EA\u7531\u5E03\u7F6E\u5730\u56FE" role="img">${defs}${sky(dark)}${islandBody(dark, tone)}<g>${cells}</g>${overlay ? "" : moonlight}${[...p, ...c, ...creatures].sort((a, b) => a.depth - b.depth).map((o) => o.art).join("")}${memorials}${visitors}${fireflies}<text x="26" y="${MAP_H - 18}" class="lw-map-hint">${overlay ? "\u73AF\u5883\u56FE\u5C42\uFF1A\u6570\u503C\u8D8A\u9AD8\uFF0C\u989C\u8272\u8D8A\u6DF1" : "\u70B9\u51FB\u7269\u4EF6\u67E5\u770B\uFF0C\u5E03\u7F6E\u6A21\u5F0F\u53EF\u62D6\u52A8"}</text></svg>`;
+    return `<svg class="lw-map ${dark ? "is-night" : "is-day"}" viewBox="0 0 ${MAP_W} ${MAP_H}" aria-label="${ZONES[zone].name}\uFF0C12 \u4E58 12 \u81EA\u7531\u5E03\u7F6E\u5730\u56FE" role="img">${defs}${sky(dark)}${islandBody(dark, tone)}<g>${cells}</g>${overlay ? "" : roadCells(roads, dark) + moonlight}${[...p, ...c, ...creatures].sort((a, b) => a.depth - b.depth).map((o) => o.art).join("")}${memorials}${visitors}${fireflies}<text x="26" y="${MAP_H - 18}" class="lw-map-hint">${overlay ? "\u73AF\u5883\u56FE\u5C42\uFF1A\u6570\u503C\u8D8A\u9AD8\uFF0C\u989C\u8272\u8D8A\u6DF1" : "\u70B9\u51FB\u7269\u4EF6\u67E5\u770B\uFF0C\u5E03\u7F6E\u6A21\u5F0F\u53EF\u62D6\u52A8"}</text></svg>`;
   }
 
   // src/world/combat.ts
@@ -3919,7 +3999,7 @@ var LivingWorld = (() => {
   }
 
   // src/world/view.ts
-  var ui = { tab: "home", zone: 0, build: "", buildKind: "facilities", buildGroup: 0, plant: 0, selected: 0, crop: 0, overlay: "", zoom: 1, rotate: 0, edit: false, person: 0, family: 0, region: 0 };
+  var ui = { tab: "home", zone: 0, build: "", pathStyle: 0, buildKind: "facilities", buildGroup: 0, plant: 0, selected: 0, crop: 0, overlay: "", zoom: 1, rotate: 0, edit: false, person: 0, family: 0, region: 0 };
   var lastInteraction = 0;
   var recentlyInteracted = () => Date.now() - lastInteraction < 2500;
   var host;
@@ -3943,22 +4023,29 @@ var LivingWorld = (() => {
     const groups = decor ? ["\u5C0F\u5F84", "\u56F4\u680F", "\u706F\u5149", "\u4F11\u61A9", "\u82B1\u827A", "\u6807\u8BC6", "\u81EA\u7136", "\u7EAA\u5FF5"] : ["\u751F\u6D3B", "\u79CD\u690D", "\u751F\u6001", "\u6C34\u666F", "\u5DE5\u574A", "\u661F\u7A7A"];
     const defs = decor ? DECORATIONS.filter((d) => d.group === ui.buildGroup) : BUILDINGS.filter((d) => d.zone === ui.buildGroup);
     const items = ui.buildKind === "stored" ? stored.map((p) => ({ p, d: BUILDINGS.find((d) => d.id === p.def) ?? DECORATIONS.find((d) => d.id === p.def) })) : defs.map((d) => ({ p: null, d }));
-    const selected = BUILDINGS.find((d) => d.id === ui.build) ?? DECORATIONS.find((d) => d.id === ui.build);
+    const selected = BUILDINGS.find((d) => d.id === ui.build) ?? DECORATIONS.find((d) => d.id === ui.build), brushes = decor && ui.buildGroup === 0 && ui.buildKind !== "stored";
     return `<details class="lw-build-catalog" ${ui.edit ? "open" : ""}><summary><span>\u5E03\u7F6E\u5C0F\u5BB6<small>\u628A\u559C\u6B22\u7684\u98CE\u666F\uFF0C\u653E\u8FDB\u751F\u6D3B\u91CC</small></span><span class="lw-catalog-toggle" aria-hidden="true">\uFF0B</span></summary>
  <div class="lw-build-tabs" aria-label="\u5EFA\u9020\u5206\u7C7B">${[["facilities", "\u8BBE\u65BD"], ["decor", "\u88C5\u9970"], ["stored", `\u6536\u7EB3 \xB7 ${stored.length}`]].map(([kind, label]) => button(label, "build-kind", `data-kind="${kind}" aria-pressed="${ui.buildKind === kind}" class="${ui.buildKind === kind ? "is-active" : ""}"`)).join("")}</div>
  ${ui.buildKind !== "stored" ? `<div class="lw-build-groups" aria-label="\u7269\u4EF6\u7528\u9014">${groups.map((name, index) => button(name, "build-group", `data-group="${index}" aria-pressed="${ui.buildGroup === index}" class="${ui.buildGroup === index ? "is-active" : ""}"`)).join("")}</div>` : ""}
- <div class="lw-build-items">${items.map(({ p, d }) => {
+ <div class="lw-build-items">${brushes ? PATH_STYLES.map((name, i) => {
+      const chosen = ui.build === "path" && ui.pathStyle === i;
+      return button(`<span class="lw-build-art">${roadPreview(i)}<span class="lw-build-check" aria-hidden="true">${chosen ? "\u2713" : "\uFF0B"}</span></span><span class="lw-build-title">${esc(name)}<small>\u62D6\u52A8\u8FDE\u7EED\u94FA\u8BBE</small></span><span class="lw-build-price">\u514D\u8D39</span>`, "path-style", `data-style="${i}" class="lw-build-item ${chosen ? "is-active" : ""}" aria-pressed="${chosen}" title="\u4F19\u4F34\u4F1A\u4F18\u5148\u8D70\u8DEF\u9762"`);
+    }).join("") : items.map(({ p, d }) => {
       const enough = !!p || afford(w, d.cost), chosen = p ? ui.selected === p.id : ui.build === d.id, owned = w.placements.filter((p2) => !p2.stored && p2.def === d.id).length;
       return button(`<span class="lw-build-art">${buildingPreview(d.id)}<span class="lw-build-check" aria-hidden="true">${chosen ? "\u2713" : "\uFF0B"}</span></span><span class="lw-build-title">${esc(d.name)}<small>${p ? "\u5DF2\u6536\u7EB3" : "size" in d ? d.size.join(" \xD7 ") : "1 \xD7 1"}</small></span><span class="lw-build-price ${enough ? "" : "is-short"}">${p ? "\u53D6\u51FA\u6446\u653E" : cost(d.cost)}</span>${!enough ? '<span class="lw-build-availability">\u6750\u6599\u4E0D\u8DB3</span>' : owned && !p ? `<span class="lw-build-availability">\u5DF2\u653E\u7F6E ${owned}</span>` : ""}`, p ? "move" : "prepare-build", `${p ? `data-id="${p.id}"` : `data-def="${d.id}"`} class="lw-build-item ${chosen ? "is-active" : ""}" aria-pressed="${chosen}" aria-disabled="${!enough}" title="${esc("desc" in d ? d.desc : d.effect)}"`);
     }).join("") || `<div class="lw-storage-empty">${buildingPreview("house")}<b>\u559C\u6B22\u7684\u7269\u4EF6\uFF0C\u968F\u65F6\u653E\u56DE\u6765</b><p>\u70B9\u5730\u56FE\u4E0A\u7684\u7269\u4EF6\uFF0C\u5C31\u80FD\u628A\u5B83\u6536\u7EB3\u5728\u8FD9\u91CC\u3002</p></div>`}</div>
- ${selected ? `<div class="lw-build-description"><b>${esc(selected.name)}</b><p>${esc("desc" in selected ? selected.desc : selected.effect)}</p></div>` : ""}
+ ${brushes ? `<div class="lw-build-description"><b>\u5C0F\u5F84</b><p>\u9009\u597D\u6750\u8D28\u540E\u5728\u5730\u56FE\u4E0A\u62D6\u52A8\uFF0C\u8FDE\u6210\u4E00\u6761\u8DEF\u3002\u4F19\u4F34\u4F1A\u4F18\u5148\u8D70\u8DEF\u9762\u3002</p></div>` : ""}${selected ? `<div class="lw-build-description"><b>${esc(selected.name)}</b><p>${esc("desc" in selected ? selected.desc : selected.effect)}</p></div>` : ""}
  <div class="lw-build-footer"><span>\u6728\u6750 <b>${Math.floor(w.stock.wood ?? 0)}</b> \xB7 \u77F3\u6750 <b>${Math.floor(w.stock.stone ?? 0)}</b></span>${button(ui.build === "path" ? "\u505C\u6B62\u94FA\u8DEF" : "\u94FA\u8BBE\u5C0F\u8DEF", "path-mode", `aria-pressed="${ui.build === "path"}"`)}</div></details>`;
   }
   function placementHint(w) {
     const d = BUILDINGS.find((d2) => d2.id === ui.build) ?? DECORATIONS.find((d2) => d2.id === ui.build), moving = ui.edit && ui.selected ? w.placements.find((p) => p.id === ui.selected) : null;
     if (!d && !moving && ui.build !== "path") return "";
+    if (ui.build === "path") {
+      const swatch = (i, label) => button(`<i aria-hidden="true" style="${i < 0 ? "" : `--road:${PATH_TONES[i].base};--rim:${PATH_TONES[i].edge}`}"></i>${label}`, "path-style", `data-style="${i}" aria-pressed="${ui.pathStyle === i}" class="${ui.pathStyle === i ? "is-active" : ""} ${i < 0 ? "is-eraser" : ""}"`);
+      return `<div class="lw-placement-hint lw-road-hint" role="status"><div><b>${ui.pathStyle < 0 ? "\u64E6\u9664\u8DEF\u9762" : esc(PATH_STYLES[ui.pathStyle])}</b><span>${ui.pathStyle < 0 ? "\u5728\u5730\u56FE\u4E0A\u62D6\u52A8\uFF0C\u5212\u8FC7\u7684\u8DEF\u9762\u4F1A\u88AB\u64E6\u6389" : "\u62D6\u52A8\u94FA\u8DEF\uFF0C\u70B9\u540C\u6B3E\u8DEF\u9762\u53EF\u64E6\u9664"}</span></div>${button("\u5B8C\u6210", "cancel-build")}<div class="lw-road-swatches">${PATH_STYLES.map((name2, i) => swatch(i, esc(name2))).join("")}${swatch(-1, "\u64E6\u9664")}</div></div>`;
+    }
     const name = d?.name ?? (moving ? BUILDINGS.find((d2) => d2.id === moving.def)?.name ?? DECORATIONS.find((d2) => d2.id === moving.def)?.name : "\u5C0F\u8DEF");
-    return `<div class="lw-placement-hint" role="status"><div><b>${esc(name)}</b><span>${ui.build === "path" ? "\u70B9\u5730\u5757\u94FA\u8DEF\uFF0C\u518D\u70B9\u4E00\u6B21\u64E6\u9664" : "\u70B9\u5730\u56FE\u7A7A\u5730\u653E\u7F6E"}</span></div>${button("\u53D6\u6D88", "cancel-build")}</div>`;
+    return `<div class="lw-placement-hint" role="status"><div><b>${esc(name)}</b><span>\u70B9\u5730\u56FE\u7A7A\u5730\u653E\u7F6E</span></div>${button("\u53D6\u6D88", "cancel-build")}</div>`;
   }
   function home(w) {
     const s = host.state().slimes, locked = !w.unlocked.includes(ui.zone), e = environment(w, ui.zone, 6, 6, s);
@@ -3975,7 +4062,7 @@ var LivingWorld = (() => {
       selection = `<section class="lw-detail"><div class="lw-line"><h3>${esc(v.name)}</h3>${button("\u5173\u95ED", "deselect")}</div><p>${FAMILIES[d.family]} \xB7 ${Math.round(c.progress * 100)}% \xB7 ${c.water <= 0 ? "\u9700\u8981\u8865\u6C34" : `\u6C34\u5206\u53EF\u7EF4\u6301 ${Math.ceil(c.water)} \u5206\u949F`}</p><progress max="1" value="${c.progress}"></progress><p>\u5149\u7167 ${Math.round(env.light)} \xB7 \u6E7F\u5EA6 ${Math.round(env.moisture)} \xB7 \u80A5\u529B ${Math.round(env.fertility)} \xB7 ${env.temperature}\xB0</p>${note(d.use)}<div class="lw-actions">${cmd("\u7167\u6599 \xB7 \u9732\u6C34 1", { type: "care", id: c.id })}${cmd("\u6536\u83B7", { type: "harvest", id: c.id }, c.progress < 1 || d.id === "glowflower")}${cmd("\u65BD\u80A5", { type: "fertilize", id: c.id, item: "fertilizer" }, !(w.stock.fertilizer > 0))}${cmd("\u4F7F\u7528\u6C83\u571F", { type: "fertilize", id: c.id, item: "soil" }, !(w.stock.soil > 0))}${cmd("\u79FB\u56DE\u79CD\u5B50\u5E93", { type: "uproot", id: c.id })}</div></section>`;
     }
     return `${ui.edit ? "" : companionBar(w) + wishCard(w)}<div class="lw-zone-nav">${ZONES.map((z) => button(z.name, "zone", `data-zone="${z.id}" class="${ui.zone === z.id ? "is-active" : ""} ${w.unlocked.includes(z.id) ? "" : "is-locked"}"`)).join("")}</div>
- ${locked ? `<div class="lw-empty"><h3>\u628A\u5BB6\u56ED\u5EF6\u4F38\u5230\u8FD9\u91CC</h3><p>\u9700\u8981 ${ZONES[ui.zone].threshold} \u9879\u53D1\u73B0\uFF0C\u5DF2\u6709 ${w.discoveries.length} \u9879\u3002</p>${note(cost({ wood: 10 + ui.zone * 10, stone: 5 + ui.zone * 5 }))}${cmd("\u5F00\u8F9F\u533A\u57DF", { type: "unlock", zone: ui.zone }, w.discoveries.length < ZONES[ui.zone].threshold)}</div>` : `<div class="lw-scene-wrap" style="--zoom:${ui.zoom}">${scene(w, ui.zone, s, ui.selected, ui.overlay, host.slimeHTML)}</div><div class="lw-map-tools">${button(ui.edit ? "\u5B8C\u6210\u5E03\u7F6E" : "\u5EFA\u9020\u4E0E\u88C5\u9970", "edit")}${button("\u2212", "zoomout", 'aria-label="\u7F29\u5C0F\u5730\u56FE"')}${button("+", "zoomin", 'aria-label="\u653E\u5927\u5730\u56FE"')}${button("\u590D\u4F4D", "zoomreset")}<span>${ui.build ? "\u9009\u597D\u4E86\uFF0C\u70B9\u5730\u56FE\u7A7A\u5730\u653E\u7F6E" : ui.plant ? "\u70B9\u51FB\u7A7A\u5730\u79CD\u690D" : ui.edit && ui.selected ? "\u62D6\u52A8\u6240\u9009\u7269\u4EF6\uFF0C\u6216\u70B9\u51FB\u7A7A\u5730\u79FB\u52A8" : "\u70B9\u51FB\u690D\u7269\u4E0E\u8BBE\u65BD\u67E5\u770B"}</span></div>${placementHint(w)}${selection}
+ ${locked ? `<div class="lw-empty"><h3>\u628A\u5BB6\u56ED\u5EF6\u4F38\u5230\u8FD9\u91CC</h3><p>\u9700\u8981 ${ZONES[ui.zone].threshold} \u9879\u53D1\u73B0\uFF0C\u5DF2\u6709 ${w.discoveries.length} \u9879\u3002</p>${note(cost({ wood: 10 + ui.zone * 10, stone: 5 + ui.zone * 5 }))}${cmd("\u5F00\u8F9F\u533A\u57DF", { type: "unlock", zone: ui.zone }, w.discoveries.length < ZONES[ui.zone].threshold)}</div>` : `<div class="lw-scene-wrap" style="--zoom:${ui.zoom}">${scene(w, ui.zone, s, ui.selected, ui.overlay, host.slimeHTML)}</div><div class="lw-map-tools">${button(ui.edit ? "\u5B8C\u6210\u5E03\u7F6E" : "\u5EFA\u9020\u4E0E\u88C5\u9970", "edit")}${button("\u2212", "zoomout", 'aria-label="\u7F29\u5C0F\u5730\u56FE"')}${button("+", "zoomin", 'aria-label="\u653E\u5927\u5730\u56FE"')}${button("\u590D\u4F4D", "zoomreset")}<span>${ui.build === "path" ? "\u62D6\u52A8\u94FA\u8DEF\uFF0C\u53EF\u4EE5\u62D0\u5F2F" : ui.build ? "\u9009\u597D\u4E86\uFF0C\u70B9\u5730\u56FE\u7A7A\u5730\u653E\u7F6E" : ui.plant ? "\u70B9\u51FB\u7A7A\u5730\u79CD\u690D" : ui.edit && ui.selected ? "\u62D6\u52A8\u6240\u9009\u7269\u4EF6\uFF0C\u6216\u70B9\u51FB\u7A7A\u5730\u79FB\u52A8" : "\u70B9\u51FB\u690D\u7269\u4E0E\u8BBE\u65BD\u67E5\u770B"}</span></div>${placementHint(w)}${selection}
  <div class="lw-actions">${cmd(w.clock - w.lastGather >= 300 ? "\u91C7\u96C6\u7269\u8D44" : `${Math.ceil((300 - w.clock + w.lastGather) / 60)} \u5206\u540E\u53EF\u91C7\u96C6`, { type: "gather" }, w.clock - w.lastGather < 300)}${cmd("\u5168\u90E8\u6536\u83B7", { type: "harvestAll" }, !w.crops.some((c2) => c2.progress >= 1))}${cmd("\u6279\u91CF\u8865\u6C34", { type: "careAll" })}</div>
  ${buildCatalog(w)}
  <details><summary>\u8FD9\u4E00\u7247\u571F\u5730\u7684\u73AF\u5883</summary><div class="lw-environment-summary"><span>\u5149\u7167 ${Math.round(e.light)}</span><span>\u6E7F\u5EA6 ${Math.round(e.moisture)}</span><span>\u80A5\u529B ${Math.round(e.fertility)}</span><span>\u6C34\u8D28 ${Math.round(e.quality)}</span></div></details>`}
@@ -4243,8 +4330,17 @@ var LivingWorld = (() => {
         break;
       case "path-mode":
         ui.build = ui.build === "path" ? "" : "path";
+        ui.pathStyle = Math.max(0, ui.pathStyle);
         ui.edit = true;
         ui.selected = 0;
+        ui.plant = 0;
+        break;
+      case "path-style":
+        ui.pathStyle = Number(el.dataset.style);
+        ui.build = "path";
+        ui.edit = true;
+        ui.selected = 0;
+        ui.crop = 0;
         ui.plant = 0;
         break;
       case "prepare-plant":
@@ -4304,7 +4400,7 @@ var LivingWorld = (() => {
       const list = document.querySelector(".lw-build-items");
       if (list) list.scrollTop = 0;
     }
-    if (["prepare-build", "move", "path-mode", "edit"].includes(a ?? "") && ui.edit) document.querySelector(".lw-scene-wrap")?.scrollIntoView({ block: "start" });
+    if ((["prepare-build", "move", "path-mode", "edit"].includes(a ?? "") || a === "path-style" && el.closest(".lw-build-catalog")) && ui.edit) document.querySelector(".lw-scene-wrap")?.scrollIntoView({ block: "start" });
     return true;
   }
   function mapAction(svg, event, dragId) {
@@ -4336,7 +4432,7 @@ var LivingWorld = (() => {
       return;
     }
     if (x < 0 || y < 0 || x > 11 || y > 11) return;
-    if (ui.build === "path") issue({ type: "path", zone: ui.zone, x, y });
+    if (ui.build === "path") issue({ type: "paint", zone: ui.zone, cells: [y * 12 + x], style: Math.max(0, ui.pathStyle), erase: ui.pathStyle < 0 || roadMap(host.state().world, ui.zone).get(y * 12 + x) === ui.pathStyle });
     else if (ui.build) issue({ type: "build", def: ui.build, zone: ui.zone, x, y, rotation: ui.rotate });
     else if (ui.plant) issue({ type: "plant", cultivar: ui.plant, zone: ui.zone, x, y, explicit: true });
     else if (ui.edit && ui.selected) issue({ type: "move", id: ui.selected, zone: ui.zone, x, y, rotation: ui.rotate });
@@ -4359,8 +4455,45 @@ var LivingWorld = (() => {
     const svg = document.querySelector("#livingWorld .lw-map");
     if (!svg) return;
     let down = null, moved = false;
+    let stroke = null;
+    const cellAt = (e) => {
+      const rect = svg.getBoundingClientRect();
+      return cellFromPoint((e.clientX - rect.left) * MAP_W / rect.width, (e.clientY - rect.top) * MAP_H / rect.height);
+    };
+    const inside = ([x, y]) => x >= 0 && y >= 0 && x < 12 && y < 12;
+    const mark = (x, y) => {
+      const n = y * 12 + x, cell = svg.querySelector(`[data-lw-cell="${x},${y}"]`);
+      if (!stroke || stroke.cells.includes(n) || !cell) return;
+      stroke.cells.push(n);
+      const p = document.createElementNS("http://www.w3.org/2000/svg", "path"), tone = PATH_TONES[Math.max(0, ui.pathStyle)];
+      p.setAttribute("d", cell.getAttribute("d"));
+      for (const [k, v] of Object.entries(stroke.erase ? { fill: "#f4c7c0", "fill-opacity": ".6", stroke: "#c96f63", "stroke-dasharray": "4 3" } : { fill: tone.base, "fill-opacity": ".9", stroke: tone.edge })) p.setAttribute(k, v);
+      stroke.layer.append(p);
+    };
+    const walk = (to) => {
+      if (!stroke) return;
+      let [x, y] = stroke.last;
+      while (x !== to[0] || y !== to[1]) {
+        if (Math.abs(to[0] - x) >= Math.abs(to[1] - y)) x += Math.sign(to[0] - x);
+        else y += Math.sign(to[1] - y);
+        if (inside([x, y])) mark(x, y);
+      }
+      stroke.last = to;
+    };
     svg.addEventListener("pointerdown", (e) => {
       lastInteraction = Date.now();
+      if (ui.edit && ui.build === "path") {
+        const c = cellAt(e);
+        if (!inside(c)) return;
+        const layer = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        layer.setAttribute("pointer-events", "none");
+        svg.append(layer);
+        stroke = { cells: [], erase: ui.pathStyle < 0 || roadMap(host.state().world, ui.zone).get(c[1] * 12 + c[0]) === ui.pathStyle, last: c, layer };
+        mark(...c);
+        svg.setPointerCapture(e.pointerId);
+        e.preventDefault();
+        return;
+      }
       const p = e.target.closest("[data-lw-object]");
       if (ui.edit && p) {
         down = { x: e.clientX, y: e.clientY, id: Number(p.dataset.lwObject) };
@@ -4371,6 +4504,11 @@ var LivingWorld = (() => {
       }
     });
     svg.addEventListener("pointermove", (e) => {
+      if (stroke) {
+        lastInteraction = Date.now();
+        walk(cellAt(e));
+        return;
+      }
       if (!down) return;
       const dx = e.clientX - down.x, dy = e.clientY - down.y;
       moved = Math.hypot(dx, dy) > 5;
@@ -4381,6 +4519,13 @@ var LivingWorld = (() => {
       }
     });
     svg.addEventListener("pointerup", (e) => {
+      if (stroke) {
+        const s = stroke;
+        stroke = null;
+        s.layer.remove();
+        issue({ type: "paint", zone: ui.zone, cells: s.cells, style: Math.max(0, ui.pathStyle), erase: s.erase });
+        return;
+      }
       if (down && moved) {
         mapAction(svg, e, down.id);
         moved = false;
@@ -4390,6 +4535,7 @@ var LivingWorld = (() => {
     svg.addEventListener("pointercancel", () => {
       down = null;
       moved = false;
+      stroke = null;
       host.render();
     });
     svg.addEventListener("keydown", (e) => {
@@ -4462,6 +4608,7 @@ var LivingWorld = (() => {
       if (!Object.entries(typed.chapters).every(([k, v]) => CHARACTERS.some((c) => c.id === k) && num(v, 0, 6))) return false;
       if (!Object.entries(typed.companions).every(([k, c]) => slimeIds.includes(Number(k)) && obj(c) && num(c.slimeId, 1) && str(c.role) && str(c.interest) && arr(c.memories, 2e4) && c.memories.every((m) => obj(m) && str(m.id) && str(m.title) && str(m.text) && num(m.at)) && obj(c.friends) && Object.entries(c.friends).every(([k2, v]) => (slimeIds.includes(Number(k2)) || !!typed.archives?.[k2]) && num(v, 0, 100)) && stock(c.story) && (c.facts === void 0 || stock(c.facts)) && num(c.day) && num(c.daily) && (c.mentor === null || slimeIds.includes(c.mentor) || !!typed.archives?.[c.mentor]))) return false;
       if (!Object.entries(typed.visitors).every(([k, v]) => VISITORS.some((d) => d.id === k) && typeof v === "boolean") || !Object.entries(typed.recruited).every(([k, v]) => CHARACTERS.some((d) => d.id === k) && slimeIds.includes(v)) || !Object.entries(typed.paths).every(([k, v]) => num(Number(k), 0, 5) && arr(v) && v.every((n) => num(n, 0, 143) && Number.isInteger(n)))) return false;
+      if (typed.pathStyles !== void 0 && !(obj(typed.pathStyles) && Object.entries(typed.pathStyles).every(([k, v]) => /^[0-5]:(\d|[1-9]\d|1[0-3]\d|14[0-3])$/.test(k) && Number.isInteger(v) && num(v, 1, PATH_STYLES.length - 1)))) return false;
       if (!typed.camps.every((n) => Number.isInteger(n) && n >= 0 && n < 6) || !Object.entries(typed.regionStory).every(([k, v]) => num(Number(k), 0, 5) && Number.isInteger(v) && num(v, 0, 3)) || !stock(typed.miniRewards)) return false;
       if (!typed.flags.every((v) => str(v, 180)) || !typed.discoveries.every((v) => str(v, 180)) || !typed.notices.every((v) => str(v))) return false;
       if (!typed.journals.every((j) => id(j.id) && str(j.title) && arr(j.lines) && j.lines.every((x) => str(x)) && num(j.at))) return false;

@@ -95,6 +95,20 @@ test('same participant occupies one district and follows moved facilities withou
  const s=fresh();s.world.unlocked=[0,1,2,3,4,5];go(s,{type:'assign',slime:1,building:2});advance(s.world,30,s.slimes);const r=s.world.residents[1];assert.ok(r.arrived);assert.equal(r.target,2);const serial=JSON.stringify(s.world.residents[1]);let counts=0;for(let z=0;z<6;z++)counts+=(scene(s.world,z,s.slimes,0,'',()=>'<div class="slime"></div>').match(/data-resident="1"/g)||[]).length;assert.equal(counts,1);
  go(s,{type:'move',id:2,zone:1,x:2,y:2});advance(s.world,30,s.slimes);assert.equal(s.world.residents[1].zone,1);assert.ok(s.world.residents[1].arrived);assert.ok(!blockedCells(s.world,1).has(s.world.residents[1].y*12+s.world.residents[1].x));assert.notEqual(JSON.stringify(s.world.residents[1]),serial);
 });
+test('dragged road strokes keep their material, erase cleanly, and survive reload',()=>{
+ let s=fresh();const base=s.world.paths[0].length,w={get paths(){return s.world.paths;},get pathStyles(){return s.world.pathStyles;}};
+ go(s,{type:'paint',zone:0,cells:[84,85,86,86,5],style:2});
+ assert.equal(w.paths[0].length,base+3);assert.deepEqual([84,85,86,5].map(n=>w.pathStyles['0:'+n]),[2,2,2,2]);
+ go(s,{type:'paint',zone:0,cells:[85],style:0});assert.ok(w.paths[0].includes(85));assert.equal(w.pathStyles['0:85'],undefined);
+ go(s,{type:'paint',zone:0,cells:[84,5],style:2,erase:true});assert.ok(!w.paths[0].includes(84)&&!w.paths[0].includes(5));assert.equal(w.pathStyles['0:84'],undefined);
+ go(s,{type:'path',zone:0,x:2,y:7});assert.ok(!w.paths[0].includes(86));assert.equal(w.pathStyles['0:86'],undefined);
+ const before=JSON.stringify(s);
+ for(const bad of [{cells:[],style:1},{cells:[144],style:1},{cells:[1.5],style:1},{cells:[3],style:6},{cells:[3],style:1,zone:1}])assert.equal(execute(s,{type:'paint',zone:0,...bad}).ok,false);
+ assert.equal(JSON.stringify(s),before);
+ go(s,{type:'paint',zone:0,cells:[40,41],style:5});s=reload(s);assert.equal(s.world.pathStyles['0:41'],5);
+ assert.match(scene(s.world,0,s.slimes,0,''),/data-lw-road="41"/);
+ for(const bad of [{'0:41':0},{'0:144':2},{'6:1':2},{'0:41':9},JSON.parse('{"__proto__":1}')]){const t=JSON.parse(JSON.stringify(s));t.world.pathStyles=bad;assert.equal(validWorld(t.world,t.slimes.map(p=>p.id)),false,JSON.stringify(bad));}
+});
 test('paths prefer roads and report unreachable destinations',()=>{const s=fresh(),w=s.world;w.placements=[];w.paths[0]=[12,13,14];const p=route(w,0,0,[2]);assert.deepEqual(p,[1,2]);w.placements=[{id:9,def:'house',zone:0,x:0,y:0,rotation:0,level:1,stored:false}];assert.equal(route(w,0,143,[0]),null);});
 test('trough only consumes on arrival and never exceeds capacity; layout changes retain contents',()=>{
  const s=fresh();s.slimes=s.slimes.slice(0,1);s.slimes[0].stamina=10;s.world.stock.feed=200;go(s,{type:'refill'});assert.equal(s.world.inventory.containers.trough.feed,99);const r=resident(s.world,s.slimes[0]);r.x=10;r.y=0;advance(s.world,1,s.slimes);assert.equal(s.world.inventory.containers.trough.feed,99);advance(s.world,30,s.slimes);assert.ok(s.world.inventory.containers.trough.feed<99);const before=s.world.inventory.containers.trough.feed;go(s,{type:'store',id:s.world.placements.find(p=>p.def==='trough').id});advance(s.world,30,s.slimes);assert.equal(s.world.inventory.containers.trough.feed,before);

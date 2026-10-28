@@ -1,13 +1,13 @@
 import {activity,resident} from './life.ts';
 import {storyTitle,storyScene,storyRequirement,storyId,storyCasts,tripScene} from './stories.ts';
 import type {Host,World,GameCommand,Slime,Mini} from './types.ts';
-import {BUILDINGS,DECORATIONS,PLANTS,VISITORS,ZONES,MATERIALS,RECIPES,FAMILIES,BABY_EVENTS,BABY_PERSONAL_EVENTS} from './content.ts';
+import {BUILDINGS,DECORATIONS,PATH_STYLES,PLANTS,VISITORS,ZONES,MATERIALS,RECIPES,FAMILIES,BABY_EVENTS,BABY_PERSONAL_EVENTS} from './content.ts';
 import {EVENTS} from './narratives.ts';
 import {chapterReady,occupied,afford,companion,placementError} from './engine.ts';
 import {environment,level,season,day,night,SEASONS,WEATHER} from './ecology.ts';
-import {scene,esc,jelly,buildingPreview,cellFromPoint,elementHue,MAP_W,MAP_H} from './art.ts';
+import {scene,esc,jelly,buildingPreview,roadPreview,roadMap,cellFromPoint,elementHue,MAP_W,MAP_H,PATH_TONES} from './art.ts';
 import {COMBOS} from './combat.ts';
-export const ui={tab:'home',zone:0,build:'',buildKind:'facilities',buildGroup:0,plant:0,selected:0,crop:0,overlay:'',zoom:1,rotate:0,edit:false,person:0,family:0,region:0};
+export const ui={tab:'home',zone:0,build:'',pathStyle:0,buildKind:'facilities',buildGroup:0,plant:0,selected:0,crop:0,overlay:'',zoom:1,rotate:0,edit:false,person:0,family:0,region:0};
 let lastInteraction=0;
 export const recentlyInteracted=()=>Date.now()-lastInteraction<2500;
 let host:Host;let issue:(c:GameCommand)=>void;
@@ -27,21 +27,23 @@ function buildCatalog(w:World):string {
  const groups=decor?['小径','围栏','灯光','休憩','花艺','标识','自然','纪念']:['生活','种植','生态','水景','工坊','星空'];
  const defs=decor?DECORATIONS.filter(d=>d.group===ui.buildGroup):BUILDINGS.filter(d=>d.zone===ui.buildGroup);
  const items=ui.buildKind==='stored'?stored.map(p=>({p,d:BUILDINGS.find(d=>d.id===p.def)??DECORATIONS.find(d=>d.id===p.def)!})):defs.map(d=>({p:null,d}));
- const selected=BUILDINGS.find(d=>d.id===ui.build)??DECORATIONS.find(d=>d.id===ui.build);
+ const selected=BUILDINGS.find(d=>d.id===ui.build)??DECORATIONS.find(d=>d.id===ui.build),brushes=decor&&ui.buildGroup===0&&ui.buildKind!=='stored';
  return `<details class="lw-build-catalog" ${ui.edit?'open':''}><summary><span>布置小家<small>把喜欢的风景，放进生活里</small></span><span class="lw-catalog-toggle" aria-hidden="true">＋</span></summary>
  <div class="lw-build-tabs" aria-label="建造分类">${[['facilities','设施'],['decor','装饰'],['stored',`收纳 · ${stored.length}`]].map(([kind,label])=>button(label,'build-kind',`data-kind="${kind}" aria-pressed="${ui.buildKind===kind}" class="${ui.buildKind===kind?'is-active':''}"`)).join('')}</div>
  ${ui.buildKind!=='stored'?`<div class="lw-build-groups" aria-label="物件用途">${groups.map((name,index)=>button(name,'build-group',`data-group="${index}" aria-pressed="${ui.buildGroup===index}" class="${ui.buildGroup===index?'is-active':''}"`)).join('')}</div>`:''}
- <div class="lw-build-items">${items.map(({p,d})=>{const enough=!!p||afford(w,d.cost),chosen=p?ui.selected===p.id:ui.build===d.id,owned=w.placements.filter(p=>!p.stored&&p.def===d.id).length;
+ <div class="lw-build-items">${brushes?PATH_STYLES.map((name,i)=>{const chosen=ui.build==='path'&&ui.pathStyle===i;return button(`<span class="lw-build-art">${roadPreview(i)}<span class="lw-build-check" aria-hidden="true">${chosen?'✓':'＋'}</span></span><span class="lw-build-title">${esc(name)}<small>拖动连续铺设</small></span><span class="lw-build-price">免费</span>`,'path-style',`data-style="${i}" class="lw-build-item ${chosen?'is-active':''}" aria-pressed="${chosen}" title="伙伴会优先走路面"`);}).join(''):items.map(({p,d})=>{const enough=!!p||afford(w,d.cost),chosen=p?ui.selected===p.id:ui.build===d.id,owned=w.placements.filter(p=>!p.stored&&p.def===d.id).length;
  return button(`<span class="lw-build-art">${buildingPreview(d.id)}<span class="lw-build-check" aria-hidden="true">${chosen?'✓':'＋'}</span></span><span class="lw-build-title">${esc(d.name)}<small>${p?'已收纳':'size' in d?d.size.join(' × '):'1 × 1'}</small></span><span class="lw-build-price ${enough?'':'is-short'}">${p?'取出摆放':cost(d.cost)}</span>${!enough?'<span class="lw-build-availability">材料不足</span>':owned&&!p?`<span class="lw-build-availability">已放置 ${owned}</span>`:''}`,p?'move':'prepare-build',`${p?`data-id="${p.id}"`:`data-def="${d.id}"`} class="lw-build-item ${chosen?'is-active':''}" aria-pressed="${chosen}" aria-disabled="${!enough}" title="${esc('desc' in d?d.desc:d.effect)}"`);
  }).join('')||`<div class="lw-storage-empty">${buildingPreview('house')}<b>喜欢的物件，随时放回来</b><p>点地图上的物件，就能把它收纳在这里。</p></div>`}</div>
- ${selected?`<div class="lw-build-description"><b>${esc(selected.name)}</b><p>${esc('desc' in selected?selected.desc:selected.effect)}</p></div>`:''}
+ ${brushes?`<div class="lw-build-description"><b>小径</b><p>选好材质后在地图上拖动，连成一条路。伙伴会优先走路面。</p></div>`:''}${selected?`<div class="lw-build-description"><b>${esc(selected.name)}</b><p>${esc('desc' in selected?selected.desc:selected.effect)}</p></div>`:''}
  <div class="lw-build-footer"><span>木材 <b>${Math.floor(w.stock.wood??0)}</b> · 石材 <b>${Math.floor(w.stock.stone??0)}</b></span>${button(ui.build==='path'?'停止铺路':'铺设小路','path-mode',`aria-pressed="${ui.build==='path'}"`)}</div></details>`;
 }
 function placementHint(w:World):string {
  const d=BUILDINGS.find(d=>d.id===ui.build)??DECORATIONS.find(d=>d.id===ui.build),moving=ui.edit&&ui.selected?w.placements.find(p=>p.id===ui.selected):null;
  if(!d&&!moving&&ui.build!=='path')return '';
+ if(ui.build==='path'){const swatch=(i:number,label:string)=>button(`<i aria-hidden="true" style="${i<0?'':`--road:${PATH_TONES[i].base};--rim:${PATH_TONES[i].edge}`}"></i>${label}`,'path-style',`data-style="${i}" aria-pressed="${ui.pathStyle===i}" class="${ui.pathStyle===i?'is-active':''} ${i<0?'is-eraser':''}"`);
+  return `<div class="lw-placement-hint lw-road-hint" role="status"><div><b>${ui.pathStyle<0?'擦除路面':esc(PATH_STYLES[ui.pathStyle])}</b><span>${ui.pathStyle<0?'在地图上拖动，划过的路面会被擦掉':'拖动铺路，点同款路面可擦除'}</span></div>${button('完成','cancel-build')}<div class="lw-road-swatches">${PATH_STYLES.map((name,i)=>swatch(i,esc(name))).join('')}${swatch(-1,'擦除')}</div></div>`;}
  const name=d?.name??(moving?BUILDINGS.find(d=>d.id===moving.def)?.name??DECORATIONS.find(d=>d.id===moving.def)?.name:'小路');
- return `<div class="lw-placement-hint" role="status"><div><b>${esc(name)}</b><span>${ui.build==='path'?'点地块铺路，再点一次擦除':'点地图空地放置'}</span></div>${button('取消','cancel-build')}</div>`;
+ return `<div class="lw-placement-hint" role="status"><div><b>${esc(name)}</b><span>点地图空地放置</span></div>${button('取消','cancel-build')}</div>`;
 }
 function home(w:World):string {
  const s=host.state().slimes,locked=!w.unlocked.includes(ui.zone),e=environment(w,ui.zone,6,6,s);
@@ -52,7 +54,7 @@ function home(w:World):string {
  if(p)selection+=facility(w,p.def);
  const c=w.crops.find(c=>c.id===ui.crop);if(c){const v=w.cultivars.find(v=>v.id===c.cultivar)!,d=PLANTS.find(p=>p.id===v.species)!,env=environment(w,c.zone,c.x,c.y,s);selection=`<section class="lw-detail"><div class="lw-line"><h3>${esc(v.name)}</h3>${button('关闭','deselect')}</div><p>${FAMILIES[d.family]} · ${Math.round(c.progress*100)}% · ${c.water<=0?'需要补水':`水分可维持 ${Math.ceil(c.water)} 分钟`}</p><progress max="1" value="${c.progress}"></progress><p>光照 ${Math.round(env.light)} · 湿度 ${Math.round(env.moisture)} · 肥力 ${Math.round(env.fertility)} · ${env.temperature}°</p>${note(d.use)}<div class="lw-actions">${cmd('照料 · 露水 1',{type:'care',id:c.id})}${cmd('收获',{type:'harvest',id:c.id},c.progress<1||d.id==='glowflower')}${cmd('施肥',{type:'fertilize',id:c.id,item:'fertilizer'},!(w.stock.fertilizer>0))}${cmd('使用沃土',{type:'fertilize',id:c.id,item:'soil'},!(w.stock.soil>0))}${cmd('移回种子库',{type:'uproot',id:c.id})}</div></section>`;}
  return `${ui.edit?'':companionBar(w)+wishCard(w)}<div class="lw-zone-nav">${ZONES.map(z=>button(z.name,'zone',`data-zone="${z.id}" class="${ui.zone===z.id?'is-active':''} ${w.unlocked.includes(z.id)?'':'is-locked'}"`)).join('')}</div>
- ${locked?`<div class="lw-empty"><h3>把家园延伸到这里</h3><p>需要 ${ZONES[ui.zone].threshold} 项发现，已有 ${w.discoveries.length} 项。</p>${note(cost({wood:10+ui.zone*10,stone:5+ui.zone*5}))}${cmd('开辟区域',{type:'unlock',zone:ui.zone},w.discoveries.length<ZONES[ui.zone].threshold)}</div>`:`<div class="lw-scene-wrap" style="--zoom:${ui.zoom}">${scene(w,ui.zone,s,ui.selected,ui.overlay,host.slimeHTML)}</div><div class="lw-map-tools">${button(ui.edit?'完成布置':'建造与装饰','edit')}${button('−','zoomout','aria-label="缩小地图"')}${button('+','zoomin','aria-label="放大地图"')}${button('复位','zoomreset')}<span>${ui.build?'选好了，点地图空地放置':ui.plant?'点击空地种植':ui.edit&&ui.selected?'拖动所选物件，或点击空地移动':'点击植物与设施查看'}</span></div>${placementHint(w)}${selection}
+ ${locked?`<div class="lw-empty"><h3>把家园延伸到这里</h3><p>需要 ${ZONES[ui.zone].threshold} 项发现，已有 ${w.discoveries.length} 项。</p>${note(cost({wood:10+ui.zone*10,stone:5+ui.zone*5}))}${cmd('开辟区域',{type:'unlock',zone:ui.zone},w.discoveries.length<ZONES[ui.zone].threshold)}</div>`:`<div class="lw-scene-wrap" style="--zoom:${ui.zoom}">${scene(w,ui.zone,s,ui.selected,ui.overlay,host.slimeHTML)}</div><div class="lw-map-tools">${button(ui.edit?'完成布置':'建造与装饰','edit')}${button('−','zoomout','aria-label="缩小地图"')}${button('+','zoomin','aria-label="放大地图"')}${button('复位','zoomreset')}<span>${ui.build==='path'?'拖动铺路，可以拐弯':ui.build?'选好了，点地图空地放置':ui.plant?'点击空地种植':ui.edit&&ui.selected?'拖动所选物件，或点击空地移动':'点击植物与设施查看'}</span></div>${placementHint(w)}${selection}
  <div class="lw-actions">${cmd(w.clock-w.lastGather>=300?'采集物资':`${Math.ceil((300-w.clock+w.lastGather)/60)} 分后可采集`,{type:'gather'},w.clock-w.lastGather<300)}${cmd('全部收获',{type:'harvestAll'},!w.crops.some(c=>c.progress>=1))}${cmd('批量补水',{type:'careAll'})}</div>
  ${buildCatalog(w)}
  <details><summary>这一片土地的环境</summary><div class="lw-environment-summary"><span>光照 ${Math.round(e.light)}</span><span>湿度 ${Math.round(e.moisture)}</span><span>肥力 ${Math.round(e.fertility)}</span><span>水质 ${Math.round(e.quality)}</span></div></details>`}
@@ -192,7 +194,8 @@ export function handleClick(event:Event):boolean {
   case 'build-group':ui.buildGroup=Number(el.dataset.group);ui.edit=true;break;
   case 'prepare-build':{const d=BUILDINGS.find(d=>d.id===el.dataset.def)??DECORATIONS.find(d=>d.id===el.dataset.def);if(!d)return true;if(!afford(w,d.cost)){host.toast('材料还不够，先采集一些木材和石材。');return true;}ui.build=d.id;ui.selected=0;ui.crop=0;ui.plant=0;ui.rotate=0;ui.edit=true;break;}
   case 'cancel-build':ui.build='';ui.selected=0;ui.crop=0;ui.plant=0;break;
-  case 'path-mode':ui.build=ui.build==='path'?'':'path';ui.edit=true;ui.selected=0;ui.plant=0;break;
+  case 'path-mode':ui.build=ui.build==='path'?'':'path';ui.pathStyle=Math.max(0,ui.pathStyle);ui.edit=true;ui.selected=0;ui.plant=0;break;
+  case 'path-style':ui.pathStyle=Number(el.dataset.style);ui.build='path';ui.edit=true;ui.selected=0;ui.crop=0;ui.plant=0;break;
   case 'prepare-plant':ui.plant=Number(el.dataset.id);ui.build='';ui.tab='home';ui.selected=0;ui.edit=false;host.toast('在地图上点击空地播种');break;
   case 'family':ui.family=Number(el.dataset.family);ui.plant=w.cultivars.find(v=>PLANTS.find(p=>p.id===v.species)?.family===ui.family)?.id??0;break;
   case 'choose-cultivar':ui.plant=number('lw-cultivar');break;
@@ -211,7 +214,7 @@ export function handleClick(event:Event):boolean {
  }
  if(repaint){if(a==='tab'||a==='edit')host.render();else redraw();}
  if(a==='build-kind'||a==='build-group'){const list=document.querySelector('.lw-build-items');if(list)list.scrollTop=0;}
- if(['prepare-build','move','path-mode','edit'].includes(a??'')&&ui.edit)document.querySelector('.lw-scene-wrap')?.scrollIntoView({block:'start'});return true;
+ if((['prepare-build','move','path-mode','edit'].includes(a??'')||a==='path-style'&&el.closest('.lw-build-catalog'))&&ui.edit)document.querySelector('.lw-scene-wrap')?.scrollIntoView({block:'start'});return true;
 }
 function mapAction(svg:SVGSVGElement,event:PointerEvent|MouseEvent,dragId?:number):void {
  const rect=svg.getBoundingClientRect(),[x,y]=cellFromPoint((event.clientX-rect.left)*MAP_W/rect.width,(event.clientY-rect.top)*MAP_H/rect.height);
@@ -221,7 +224,7 @@ function mapAction(svg:SVGSVGElement,event:PointerEvent|MouseEvent,dragId?:numbe
  if(object&&!ui.build){ui.plant=0;ui.selected=Number(object.dataset.lwObject);ui.crop=0;ui.rotate=host.state().world!.placements.find(p=>p.id===ui.selected)?.rotation??0;host.render();return;}
  if(crop&&!ui.build){ui.plant=0;ui.crop=Number(crop.dataset.lwCrop);ui.selected=0;host.render();return;}
  if(x<0||y<0||x>11||y>11)return;
- if(ui.build==='path')issue({type:'path',zone:ui.zone,x,y});
+ if(ui.build==='path')issue({type:'paint',zone:ui.zone,cells:[y*12+x],style:Math.max(0,ui.pathStyle),erase:ui.pathStyle<0||roadMap(host.state().world!,ui.zone).get(y*12+x)===ui.pathStyle});
  else if(ui.build)issue({type:'build',def:ui.build,zone:ui.zone,x,y,rotation:ui.rotate});
  else if(ui.plant)issue({type:'plant',cultivar:ui.plant,zone:ui.zone,x,y,explicit:true});
  else if(ui.edit&&ui.selected)issue({type:'move',id:ui.selected,zone:ui.zone,x,y,rotation:ui.rotate});
@@ -232,9 +235,21 @@ export function paintResidents():void {
 export function mount():void {
  const svg=document.querySelector<SVGSVGElement>('#livingWorld .lw-map');if(!svg)return;
  let down:{x:number;y:number;id:number}|null=null,moved=false;
- svg.addEventListener('pointerdown',e=>{lastInteraction=Date.now();const p=(e.target as Element).closest<SVGElement>('[data-lw-object]');if(ui.edit&&p){down={x:e.clientX,y:e.clientY,id:Number(p.dataset.lwObject)};ui.selected=down.id;ui.rotate=host.state().world!.placements.find(p=>p.id===down!.id)?.rotation??0;svg.setPointerCapture(e.pointerId);e.preventDefault();}});
- svg.addEventListener('pointermove',e=>{if(!down)return;const dx=e.clientX-down.x,dy=e.clientY-down.y;moved=Math.hypot(dx,dy)>5;const p=svg.querySelector<SVGElement>(`[data-lw-object="${down.id}"]`);if(p){const rect=svg.getBoundingClientRect(),[x,y]=cellFromPoint((e.clientX-rect.left)*MAP_W/rect.width,(e.clientY-rect.top)*MAP_H/rect.height),old=host.state().world!.placements.find(p=>p.id===down!.id)!;p.style.opacity=placementError(host.state().world!,{...old,x,y})?'.35':'.85';}});
- svg.addEventListener('pointerup',e=>{if(down&&moved){mapAction(svg,e,down.id);moved=false;}else mapAction(svg,e);down=null;});
- svg.addEventListener('pointercancel',()=>{down=null;moved=false;host.render();});
+ /* 铺路笔画：按下时记住起点并判定铺设或擦除，移动时补齐跳过的格子，抬起时整条路只提交一次。 */
+ let stroke:{cells:number[];erase:boolean;last:[number,number];layer:SVGGElement}|null=null;
+ const cellAt=(e:PointerEvent):[number,number]=>{const rect=svg.getBoundingClientRect();return cellFromPoint((e.clientX-rect.left)*MAP_W/rect.width,(e.clientY-rect.top)*MAP_H/rect.height);};
+ const inside=([x,y]:[number,number])=>x>=0&&y>=0&&x<12&&y<12;
+ const mark=(x:number,y:number)=>{const n=y*12+x,cell=svg.querySelector(`[data-lw-cell="${x},${y}"]`);if(!stroke||stroke.cells.includes(n)||!cell)return;stroke.cells.push(n);
+  const p=document.createElementNS('http://www.w3.org/2000/svg','path'),tone=PATH_TONES[Math.max(0,ui.pathStyle)];p.setAttribute('d',cell.getAttribute('d')!);
+  for(const [k,v] of Object.entries(stroke.erase?{fill:'#f4c7c0','fill-opacity':'.6',stroke:'#c96f63','stroke-dasharray':'4 3'}:{fill:tone.base,'fill-opacity':'.9',stroke:tone.edge}))p.setAttribute(k,v);stroke.layer.append(p);};
+ // 手指移动快时两次采样之间会跨过几格，这里沿网格一步一格补齐，保证路面不断开。
+ const walk=(to:[number,number])=>{if(!stroke)return;let [x,y]=stroke.last;while(x!==to[0]||y!==to[1]){if(Math.abs(to[0]-x)>=Math.abs(to[1]-y))x+=Math.sign(to[0]-x);else y+=Math.sign(to[1]-y);if(inside([x,y]))mark(x,y);}stroke.last=to;};
+ svg.addEventListener('pointerdown',e=>{lastInteraction=Date.now();
+  if(ui.edit&&ui.build==='path'){const c=cellAt(e);if(!inside(c))return;const layer=document.createElementNS('http://www.w3.org/2000/svg','g');layer.setAttribute('pointer-events','none');svg.append(layer);
+   stroke={cells:[],erase:ui.pathStyle<0||roadMap(host.state().world!,ui.zone).get(c[1]*12+c[0])===ui.pathStyle,last:c,layer};mark(...c);svg.setPointerCapture(e.pointerId);e.preventDefault();return;}
+const p=(e.target as Element).closest<SVGElement>('[data-lw-object]');if(ui.edit&&p){down={x:e.clientX,y:e.clientY,id:Number(p.dataset.lwObject)};ui.selected=down.id;ui.rotate=host.state().world!.placements.find(p=>p.id===down!.id)?.rotation??0;svg.setPointerCapture(e.pointerId);e.preventDefault();}});
+ svg.addEventListener('pointermove',e=>{if(stroke){lastInteraction=Date.now();walk(cellAt(e));return;}if(!down)return;const dx=e.clientX-down.x,dy=e.clientY-down.y;moved=Math.hypot(dx,dy)>5;const p=svg.querySelector<SVGElement>(`[data-lw-object="${down.id}"]`);if(p){const rect=svg.getBoundingClientRect(),[x,y]=cellFromPoint((e.clientX-rect.left)*MAP_W/rect.width,(e.clientY-rect.top)*MAP_H/rect.height),old=host.state().world!.placements.find(p=>p.id===down!.id)!;p.style.opacity=placementError(host.state().world!,{...old,x,y})?'.35':'.85';}});
+ svg.addEventListener('pointerup',e=>{if(stroke){const s=stroke;stroke=null;s.layer.remove();issue({type:'paint',zone:ui.zone,cells:s.cells,style:Math.max(0,ui.pathStyle),erase:s.erase});return;}if(down&&moved){mapAction(svg,e,down.id);moved=false;}else mapAction(svg,e);down=null;});
+ svg.addEventListener('pointercancel',()=>{down=null;moved=false;stroke=null;host.render();});
  svg.addEventListener('keydown',e=>{const person=(e.target as Element).closest<SVGElement>('[data-resident]');if(person&&(e.key==='Enter'||e.key===' ')){ui.person=Number(person.dataset.resident);e.preventDefault();host.render();return;}if(e.key==='Enter'||e.key===' '){const p=(e.target as Element).closest<SVGElement>('[data-lw-object]'),c=(e.target as Element).closest<SVGElement>('[data-lw-crop]');if(p){ui.selected=Number(p.dataset.lwObject);ui.crop=0;}if(c){ui.crop=Number(c.dataset.lwCrop);ui.selected=0;}e.preventDefault();host.render();}});
 }
