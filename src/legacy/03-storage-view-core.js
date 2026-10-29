@@ -701,7 +701,7 @@ function refreshUIIcons(root){
   const acts={settings:'settings',summon:'spark',mergeopen:'spark',cycleMap:'map',globalplan:'map',setupTeam:'person',abyssSetup:'sword',refill:'food',selectToy:'ball',toggleSpaceMode:'home',buy:'bag',buy10:'bag',feed:'food',treasure:'gift',drinkPotion:'gift',breakthrough:'bolt',claimGoal:'gift',challengeStart:'sword',petlock:'lock'};
   root.querySelectorAll('button[data-act]').forEach(b=>{
     const a=b.dataset.act;
-    if(a==='tab'){const ic=b.querySelector('.ico');if(ic)ic.innerHTML=uiIcon(nav[b.dataset.tab]);return;}
+    if(a==='tab'){const ic=b.querySelector('.ico');if(ic)ic.innerHTML=document.querySelector('#app').classList.contains('home-mode')?LivingWorld.homeIcon(b.dataset.tab):uiIcon(nav[b.dataset.tab]);return;}
     let name=acts[a];if(!name||b.querySelector('.ui-icon'))return;
     if(a==='globalplan'&&b.dataset.type==='clear')name='back';
     if(a==='selectToy'&&b.dataset.toy==='stack')name='stack';
@@ -808,6 +808,7 @@ function renderTab(){
   const map = {home:()=>LivingWorld.render(),status:renderStatus, summon:renderSummon, travel:renderTravel, space:renderSpace, bag:renderBag};
   el.innerHTML = (map[activeTab]||renderSpace)();
   refreshUIIcons(el);
+  refreshUIIcons(document.querySelector('.tabbar'));
   if(activeTab==='home')LivingWorld.mount();
   if(activeTab==='space'){initPlayground();el.dataset.spaceIdle=(S.spaceMode==='monster'?S.monsters:S.slimes.filter(s=>!isDispatched(s))).map(s=>s.id).join(',');}
   if(activeTab==='travel') setTimeout(startExploreItems, 50);

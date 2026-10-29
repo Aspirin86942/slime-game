@@ -108,3 +108,4 @@ export function prepareLegacy(s:GameState):void {if(s.world)prepareWorld(s.world
 export function gameRandom(s:GameState):number {return random(s.world??ensure(s));}
 
 export function flushPayments(s:GameState):void {const w=ensure(s);host?.progress?.(w.payments.splice(0));}
+export {artIcon as homeIcon} from './art/storybook.ts';

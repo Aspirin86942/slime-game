@@ -1,14 +1,18 @@
 // Actual Chromium input, layout, persistence and frame sampling in an isolated profile.
 const assert=require('node:assert/strict');
 const {launch,fileUrl,sleep,waitFor,report}=require('../tools/out/lib/cdp.js');
-const out='tools/out/home-v5',checks=[],errors=[];
+const out='tools/out/home-storybook',checks=[],errors=[];
 const check=(name,ok,detail)=>{checks.push({name,ok,detail});assert.ok(ok,name+': '+JSON.stringify(detail));console.log('PASS '+name);};
 (async()=>{
  const b=await launch({url:fileUrl('史莱姆.html','?battle=ui'),width:1440,height:900,dpr:1,touchEnabled:true,gpu:true});
  const {ev,client}=b;client.on('Runtime.exceptionThrown',e=>errors.push(e.exceptionDetails.exception?.description??e.exceptionDetails.text));
  const mouse=async(type,p,extra={})=>client.send('Input.dispatchMouseEvent',{type,x:p.x,y:p.y,...extra});
  const tap=async p=>{await mouse('mousePressed',p,{button:'left',clickCount:1});await mouse('mouseReleased',p,{button:'left',clickCount:1});};
- const click=async selector=>{const p=await ev(`(()=>{const e=document.querySelector(${JSON.stringify(selector)});if(!e)throw Error('Missing '+${JSON.stringify(selector)});e.scrollIntoView({block:'nearest'});const r=e.getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2};})()`);await tap(p);};
+ const click=async selector=>{
+  if(/data-panel=/.test(selector)&&await ev(`!!document.querySelector('.home-panel')`))await click('[data-lw="close"]');
+  if(/data-panel="(?:craft|storage|ecology)"/.test(selector)&&!await ev(`!!document.querySelector(${JSON.stringify(selector)})`))await click('[data-lw="more"]');
+  const p=await ev(`(()=>{const e=document.querySelector(${JSON.stringify(selector)});if(!e)throw Error('Missing '+${JSON.stringify(selector)});e.scrollIntoView({block:'nearest'});const r=e.getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2};})()`);await tap(p);
+ };
  const point=async(x,y)=>ev(`(()=>{const p=new DOMPoint(${(x+.5)*48},${(y+.5)*48}).matrixTransform(document.querySelector('.home-map').getScreenCTM());return {x:p.x,y:p.y};})()`);
  const view=()=>ev(`document.querySelector('.home-map').getAttribute('viewBox')`);
  const drag=async(a,z)=>{await mouse('mousePressed',a,{button:'left',buttons:1,clickCount:1});for(let i=1;i<=10;i++){await mouse('mouseMoved',{x:a.x+(z.x-a.x)*i/10,y:a.y+(z.y-a.y)*i/10},{button:'left',buttons:1});await sleep(18);}await mouse('mouseReleased',z,{button:'left',clickCount:1});};
@@ -17,8 +21,12 @@ const check=(name,ok,detail)=>{checks.push({name,ok,detail});assert.ok(ok,name+'
   await waitFor(()=>ev(`typeof S!=='undefined'&&S.started`),10000);
   await ev(`document.querySelector('#selftestOut')?.remove();S.name='小院主人';S.slimes=[createSlime(false),createSlime(false),createSlime(false)];S.slimes.forEach((s,i)=>{s.name=['露露','芽芽','桃桃'][i];s.size=.8;});S.started=true;for(const k of ['wood','stone','dew','petal','herb','algae','plank','dye','stardust','ingredient','fruit'])S.world.stock[k]=800;switchTab('home');`);
   await sleep(250);check('single fullscreen map, old navigation and no letterbox',await ev(`document.querySelectorAll('.home-map').length===1&&document.querySelectorAll('.tabbar button').length===6&&getComputedStyle(document.querySelector('#app'),'::before').display==='none'`));
+  const loaded=await ev(`Promise.all([...new Set([...document.querySelectorAll('.home-map image')].map(i=>i.href.baseVal))].map(src=>new Promise(resolve=>{const image=new Image();image.onload=()=>resolve(image.naturalWidth>0);image.onerror=()=>resolve(false);image.src=src})))`);
+  check('painted ground and object atlases decode locally',loaded.length>=3&&loaded.every(Boolean),loaded);
+  check('home uses painted navigation and four primary tools',await ev(`document.querySelectorAll('.tabbar .home-art-icon').length===6&&document.querySelectorAll('.home-tools>button').length===4`));
   await click('[data-lw="panel"][data-panel="build"]');await click('[data-lw="build"][data-def="woodshop"]');await click('[data-lw="rotate"]');await tap(await point(21,8));
   check('mouse places rotated facility',await ev(`S.world.placements.some(p=>p.def==='woodshop'&&p.x===21&&p.y===8&&p.rotation===1)`));
+  check('rotated painted facilities preserve their aspect ratio',await ev(`(()=>{const p=S.world.placements.find(p=>p.def==='woodshop'),m=document.querySelector('[data-home-object="'+p.id+'"] image').getScreenCTM();return Math.abs(Math.hypot(m.a,m.b)-Math.hypot(m.c,m.d))<.001;})()`));
   const id=await ev(`S.world.placements.find(p=>p.def==='woodshop').id`);await click(`[data-home-object="${id}"]`);await click('[data-lw="move"]');await drag(await point(21,8),await point(23,8));
   check('drag moves facility and keeps its ID',await ev(`S.world.placements.find(p=>p.id===${id}).x===23`));
   await click(`[data-home-object="${id}"]`);await click('[data-lw="cmd"][data-command*="store"]');
@@ -42,14 +50,27 @@ const check=(name,ok,detail)=>{checks.push({name,ok,detail});assert.ok(ok,name+'
   await ev('S.world.clock=1200;renderTab()');
   for(let i=0;i<3;i++)await click('[data-lw="zoom"][data-factor="0.8"]');await click('[data-lw="center"]');
   const toy=await ev(`S.world.placements.find(p=>p.def==='toys').id`);
-  for(const kind of ['ball','stack']){await click(`[data-home-object="${toy}"]`);await click(`[data-lw="play"][data-kind="${kind}"]`);check('home launches original '+kind+' game',await ev(`!!document.querySelector('#gameOverlay')&&Object.values(S.world.activities).some(a=>a.kind==='play')`));await click('#gClose');check(kind+' releases companions on exit',await ev(`!document.querySelector('#gameOverlay')&&!Object.values(S.world.activities).some(a=>a.kind==='play')`));await click('[data-lw="close"]');}
+  for(const kind of ['ball','stack']){
+   await click(`[data-home-object="${toy}"]`);await click(`[data-lw="play"][data-kind="${kind}"]`);
+   // Stack binds its controls after the first animation frame has measured the field.
+   const ready=await waitFor(()=>ev(`${kind==='stack'?'stackGame':'ballGame'}?.running===true`),3000);
+   check('home launches original '+kind+' game',ready&&await ev(`!!document.querySelector('#gameOverlay')&&Object.values(S.world.activities).some(a=>a.kind==='play')`));
+   await click('#gClose');check(kind+' releases companions on exit',await ev(`!document.querySelector('#gameOverlay')&&!Object.values(S.world.activities).some(a=>a.kind==='play')`));await click('[data-lw="close"]');
+  }
   await waitFor(()=>ev(`!document.querySelector('.toast.show')`),5000);
+  await tap(await point(17,6));
   for(const [width,height]of [[1440,900],[1920,1080],[390,844],[320,568],[844,390]]){
    await resize(width,height);const zoom=await ev('innerWidth/document.querySelector(".home-map").viewBox.baseVal.width');await mouse('mouseWheel',{x:width*.5,y:height*.45},{deltaY:Math.log(zoom/(width<760?1.1:1.45))/.0015,deltaX:0});await sleep(90);await click('[data-lw="center"]');const layout=await ev(`(()=>{const r=document.querySelector('.home-map').getBoundingClientRect(),nav=document.querySelector('.tabbar').getBoundingClientRect(),tool=document.querySelector('.home-tools').getBoundingClientRect();return {width:r.width,height:r.height,navBottom:nav.bottom,toolLeft:tool.left,toolRight:tool.right,scroll:document.documentElement.scrollWidth,inner:innerWidth};})()`);
    check(`viewport ${width}x${height} fills screen and keeps controls visible`,layout.width===width&&layout.height===height&&layout.navBottom<=height&&layout.toolLeft>=0&&layout.toolRight<=width&&layout.scroll===layout.inner,layout);
-   await b.shot(`${out}/home-${width}x${height}.png`);await click('[data-lw="panel"][data-panel="build"]');const panel=await ev(`(()=>{const r=document.querySelector('.home-panel').getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom};})()`);check(`catalog fits ${width}x${height}`,panel.left>=0&&panel.right<=width&&panel.top>=0&&panel.bottom<=height,panel);await b.shot(`${out}/catalog-${width}x${height}.png`);await click('[data-lw="close"]');
+   await b.shot(`${out}/home-${width}x${height}.png`);await click('[data-lw="panel"][data-panel="build"]');await click('[data-lw="category"][data-category="facilities"]');const panel=await ev(`(()=>{const r=document.querySelector('.home-panel').getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom};})()`);check(`catalog fits ${width}x${height}`,panel.left>=0&&panel.right<=width&&panel.top>=0&&panel.bottom<=height,panel);
+   if(width===844)check('landscape catalog shows a complete available item without scrolling',await ev(`(()=>{const p=document.querySelector('.home-panel'),b=p.querySelector('.home-catalog button:not(:disabled)'),r=b.getBoundingClientRect();return r.top>=p.getBoundingClientRect().top&&r.bottom<=p.getBoundingClientRect().bottom;})()`));
+   await b.shot(`${out}/catalog-${width}x${height}.png`);await click('[data-lw="close"]');
   }
-  await resize(390,844);before=await view();await b.touch.drag({x:180,y:270},{x:245,y:330});check('phone touch drag pans without selecting objects',await view()!==before);
+  await resize(390,844);await click('[data-lw="center"]');await click('[data-lw="panel"][data-panel="build"]');
+  await click('[data-lw="category"][data-category="decor"]');const decorCount=await ev(`document.querySelectorAll('.home-catalog [data-def]>svg image.painted-sprite').length`);check('all 42 decorations have painted catalog previews',decorCount===42,decorCount);await b.shot(`${out}/decor-390x844.png`);
+  await click('[data-lw="category"][data-category="paths"]');check('six painted road styles are available',await ev(`document.querySelectorAll('.home-catalog .road-swatch').length===6`));await b.shot(`${out}/paths-390x844.png`);
+  await click('[data-lw="panel"][data-panel="plants"]');check('seed catalog shows painted plants',await ev(`document.querySelectorAll('.home-plant-heading image').length===6`));await b.shot(`${out}/plants-390x844.png`);await click('[data-lw="close"]');
+  before=await view();await b.touch.drag({x:180,y:270},{x:245,y:330});check('phone touch drag pans without selecting objects',await view()!==before);
   await resize(1440,900);await click('[data-lw="center"]');await ev('S.world.clock=2800;S.theme="dark";applyTheme();renderTab()');
   await ev(`new Promise(resolve=>{const start=performance.now();function frame(){if(performance.now()-start>220)resolve(true);else requestAnimationFrame(frame);}requestAnimationFrame(frame);})`);
   await b.shot(`${out}/home-night.png`);check('night colors and dark controls render',await ev(`document.querySelector('.home-map').classList.contains('night')&&getComputedStyle(document.querySelector('.home-tools')).backgroundColor==='rgb(40, 60, 51)'&&getComputedStyle(document.querySelector('.home-season')).color==='rgb(255, 243, 212)'&&getComputedStyle(document.querySelector('.tabbar button')).color==='rgb(182, 199, 176)'`));
@@ -61,6 +82,8 @@ const check=(name,ok,detail)=>{checks.push({name,ok,detail});assert.ok(ok,name+'
   await ev(`Object.assign(S,JSON.parse(${JSON.stringify(normal)}));LivingWorld.ensure(S);S.lastActive=Date.now();localStorage.setItem(SAVE_KEY,JSON.stringify(S));`);const saved=await ev(`JSON.stringify({slimes:S.slimes.map(s=>s.id),stock:S.world.inventory.items,placements:S.world.placements,crops:S.world.crops.map(c=>c.id)})`);
   await client.send('Network.enable');await client.send('Network.emulateNetworkConditions',{offline:true,latency:0,downloadThroughput:0,uploadThroughput:0});await client.send('Page.navigate',{url:fileUrl('史莱姆.html')});await waitFor(()=>ev(`typeof S!=='undefined'&&S.started&&S.saveVersion===5`),10000);await ev(`switchTab('home')`);
   check('offline normal reload retains identities, layout and all stock',await ev(`JSON.stringify({slimes:S.slimes.map(s=>s.id),stock:S.world.inventory.items,placements:S.world.placements,crops:S.world.crops.map(c=>c.id)})`)===saved);
+  const offlineArt=await ev(`Promise.all([...new Set([...document.querySelectorAll('.home-map image')].map(i=>i.href.baseVal))].map(src=>new Promise(resolve=>{const image=new Image();image.onload=()=>resolve(image.naturalWidth>0);image.onerror=()=>resolve(false);image.src=src})))`);
+  check('all painted assets reload with networking disabled',offlineArt.length>=3&&offlineArt.every(Boolean));
   for(const tab of ['space','summon','travel','bag','status','home']){await click(`[data-act="tab"][data-tab="${tab}"]`);check('old page opens: '+tab,await ev(`activeTab===${JSON.stringify(tab)}&&document.querySelector('#content').textContent.length>20`));}
   await ev(`localStorage.setItem(SAVE_KEY,'synthetic-conflict');save();`);check('conflicting tab freezes writes and shows recovery action',await ev(`!canWrite()&&!!document.querySelector('[data-act="reloadSave"]')&&localStorage.getItem(SAVE_KEY)==='synthetic-conflict'`));
   check('no browser exceptions',errors.length===0,errors);report(out,'results.json',{checks,ordinary,dense,renderer,errors});

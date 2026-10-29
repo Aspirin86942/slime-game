@@ -4,32 +4,34 @@ import {afford,placementError} from './engine.ts';
 import {activity,resident} from './life.ts';
 import {bounds,environment,season,day,night,SEASONS,WEATHER} from './ecology.ts';
 import {scene,preview} from './home-art.ts';
-import {esc,PATH_TONES} from './art.ts';
+import {artIcon,pathPreview,plantPreview} from './art/storybook.ts';
+import {esc} from './art.ts';
 import {HOME_WIDTH,HOME_HEIGHT,TILE,constrainCamera,screenToCell,type Camera} from './map.ts';
 
 const camera:Camera={x:0,y:0,zoom:typeof innerWidth==='number'&&innerWidth>760?1.45:1.1,ready:false};
-const ui={panel:'',category:'facilities',family:0,selected:0,crop:0,person:0,tool:'',def:'',cultivar:0,rotation:0,pathStyle:0,overlay:''};
+const ui={panel:'',category:'facilities',family:0,selected:0,crop:0,person:0,tool:'',def:'',cultivar:0,rotation:0,pathStyle:0,overlay:'',more:false};
 let host:Host,issue:(command:GameCommand)=>void,lastInteraction=0,dispose:(()=>void)|null=null;
 export const recentlyInteracted=()=>Date.now()-lastInteraction<2500||!!ui.tool||!!document.activeElement?.matches('.home-world input,.home-world select');
-export function navigate(_tab?:string):void {ui.panel='';ui.tool='';}
+export function navigate(_tab?:string):void {ui.panel='';ui.tool='';ui.more=false;}
 export function redraw(renderPage=()=>host.render()):void {const scroll=document.querySelector('.home-panel-body')?.scrollTop??0;renderPage();const body=document.querySelector('.home-panel-body');if(body)body.scrollTop=scroll;}
 const btn=(text:string,action:string,attrs='',disabled=false)=>`<button class="home-button" data-lw="${action}" ${attrs} ${disabled?'disabled':''}>${text}</button>`;
 const cmd=(text:string,c:GameCommand,disabled=false)=>btn(text,'cmd',`data-command="${esc(JSON.stringify(c))}"`,disabled);
 const name=(w:World,key:string)=>key.startsWith('seed:')?`${w.cultivars.find(v=>v.id===Number(key.slice(5)))?.name??'植物'}种子`:MATERIALS[key]??key;
 const cost=(w:World,items:Record<string,number>)=>Object.entries(items).map(([k,n])=>`${esc(name(w,k))} ${Math.round(n*100)/100}`).join(' · ');
+const materialCost=(w:World,items:Record<string,number>)=>`<span class="home-material-cost">${Object.entries(items).map(([k,n])=>`<span title="${esc(name(w,k))}" aria-label="${esc(name(w,k))} ${n}">${['wood','stone','dew','feed'].includes(k)?artIcon(k):esc(name(w,k))}<b>${n}</b></span>`).join('')}</span>`;
 const options=(items:{id:string|number;name:string}[])=>items.map(p=>`<option value="${esc(p.id)}">${esc(p.name)}</option>`).join('');
 const free=(w:World)=>host.state().slimes.filter(s=>host.available(s.id)&&activity(w,s.id).kind==='home');
 function catalog(w:World):string {
  const tabs=[['facilities','设施'],['decor','装饰'],['paths','小径'],['stored','收纳']];
  let body='';
- if(ui.category==='paths')body=`<p>按住拖动即可连续铺路。双指移动地图，中键拖动也可以。</p><div class="home-catalog">${PATH_STYLES.map((n,i)=>btn(`<i class="road-swatch" style="background:${PATH_TONES[i].base}"></i><b>${esc(n)}</b>`,'path',`data-style="${i}"`)).join('')}${btn('擦除路面','path','data-style="-1"')}</div>`;
+ if(ui.category==='paths')body=`<p>按住拖动即可连续铺路。双指移动地图，中键拖动也可以。</p><div class="home-catalog">${PATH_STYLES.map((n,i)=>btn(`${pathPreview(i)}<b>${esc(n)}</b>`,'path',`data-style="${i}"`)).join('')}${btn('擦除路面','path','data-style="-1"')}</div>`;
  else if(ui.category==='stored')body=`<div class="home-catalog">${w.placements.filter(p=>p.stored).map(p=>btn(`${preview(p.def)}<b>${esc(BUILDINGS.find(d=>d.id===p.def)?.name??DECORATIONS.find(d=>d.id===p.def)?.name??p.def)}</b><small>取出摆放</small>`,'move',`data-id="${p.id}"`)).join('')||'<p>收纳的物件会在这里等你。</p>'}</div>`;
- else{const defs=ui.category==='decor'?DECORATIONS.filter(d=>d.group!==0):BUILDINGS.filter(d=>!['expedition','resonance'].includes(d.id));body=`<div class="home-catalog">${defs.map(d=>{const owned=BUILDINGS.some(b=>b.id===d.id)&&w.placements.some(p=>p.def===d.id);return btn(`${preview(d.id)}<b>${esc(d.name)}</b><small>${owned?'已拥有，可在地图或收纳中找到':cost(w,d.cost)}</small>`,'build',`data-def="${d.id}"`,!!owned||!afford(w,d.cost));}).join('')}</div>`;}
+ else{const defs=ui.category==='decor'?DECORATIONS.filter(d=>d.group!==0):BUILDINGS.filter(d=>!['expedition','resonance'].includes(d.id));body=`<div class="home-catalog">${defs.map(d=>{const owned=BUILDINGS.some(b=>b.id===d.id)&&w.placements.some(p=>p.def===d.id);return btn(`${preview(d.id)}<b>${esc(d.name)}</b><small>${owned?'已拥有':materialCost(w,d.cost)}</small>`,'build',`data-def="${d.id}"`,!!owned||!afford(w,d.cost));}).join('')}</div>`;}
  return `<nav class="home-segments">${tabs.map(([id,text])=>btn(text,'category',`data-category="${id}" aria-pressed="${ui.category===id}"`)).join('')}</nav>${body}`;
 }
 function plants(w:World):string {
  const cultivars=w.cultivars.filter(c=>PLANTS.find(p=>p.id===c.species)?.family===ui.family);
- return `<nav class="home-segments">${FAMILIES.map((f,i)=>btn(esc(f),'family',`data-family="${i}" aria-pressed="${ui.family===i}"`)).join('')}</nav><div class="home-plant-list">${cultivars.map(c=>`<article><div><b>${esc(c.name)}</b><small>${c.seeds} 颗种子${c.protected?' · 已收藏':''}</small></div>${btn('播种','plant',`data-id="${c.id}"`,c.seeds<1)}${cmd('复制留种',{type:'clone',id:c.id})}${cmd(c.protected?'取消收藏':'收藏',{type:'cultivar',id:c.id,protect:!c.protected})}<details><summary>品系与命名</summary><p>亲本：${esc(c.parents.join('、')||'原生品系')} · 产量 ${c.genes.yield} · 适应 ${c.genes.adapt}</p><input aria-label="品系名称" maxlength="24" id="home-name-${c.id}" value="${esc(c.name)}">${btn('保存名称','rename',`data-id="${c.id}"`)}</details></article>`).join('')||'<p>通过同类植物授粉，可以育成新的品系。</p>'}</div><details class="home-section"><summary>授粉育种</summary><p>建好授粉棚，让两株同类植物长到开花阶段后，就能育种。</p><label>亲本一<select id="home-parent-a">${options(w.cultivars)}</select></label><label>亲本二<select id="home-parent-b">${options(w.cultivars)}</select></label>${btn('授粉 · 露水 3','breed')}</details><div class="home-actions">${cmd('全部收获',{type:'harvestAll'})}${cmd('批量补水',{type:'careAll'})}</div>`;
+ return `<nav class="home-segments">${FAMILIES.map((f,i)=>btn(esc(f),'family',`data-family="${i}" aria-pressed="${ui.family===i}"`)).join('')}</nav><div class="home-plant-list">${cultivars.map(c=>`<article><div class="home-plant-heading">${plantPreview(PLANTS.find(p=>p.id===c.species)!,c.genes.color,c.genes.form)}<div><b>${esc(c.name)}</b><small>${c.seeds} 颗种子${c.protected?' · 已收藏':''}</small></div></div>${btn('播种','plant',`data-id="${c.id}"`,c.seeds<1)}${cmd('复制留种',{type:'clone',id:c.id})}${cmd(c.protected?'取消收藏':'收藏',{type:'cultivar',id:c.id,protect:!c.protected})}<details><summary>品系与命名</summary><p>亲本：${esc(c.parents.join('、')||'原生品系')} · 产量 ${c.genes.yield} · 适应 ${c.genes.adapt}</p><input aria-label="品系名称" maxlength="24" id="home-name-${c.id}" value="${esc(c.name)}">${btn('保存名称','rename',`data-id="${c.id}"`)}</details></article>`).join('')||'<p>通过同类植物授粉，可以育成新的品系。</p>'}</div><details class="home-section"><summary>授粉育种</summary><p>建好授粉棚，让两株同类植物长到开花阶段后，就能育种。</p><label>亲本一<select id="home-parent-a">${options(w.cultivars)}</select></label><label>亲本二<select id="home-parent-b">${options(w.cultivars)}</select></label>${btn('授粉 · 露水 3','breed')}</details><div class="home-actions">${cmd('全部收获',{type:'harvestAll'})}${cmd('批量补水',{type:'careAll'})}</div>`;
 }
 function workshop(w:World):string {
  return `<h3>制作中的物品</h3>${w.crafts.map(c=>`<div class="home-row"><span>${esc(RECIPES.find(r=>r.id===c.recipe)?.name??c.recipe)}<small>${c.ready?'可以领取':`${Math.ceil(c.remaining/60)} 分钟`}</small></span>${cmd('领取',{type:'claimCraft',id:c.id},!c.ready)}</div>`).join('')||'<p>材料会在开工时扣除，做好后可随时领取。</p>'}<h3>配方</h3>${RECIPES.map(r=>{const building=w.placements.find(p=>p.def===r.building&&!p.stored),ok=building&&building.level>=r.level;return `<article class="home-recipe"><b>${esc(r.name)}</b><p>${cost(w,r.cost)} → ${cost(w,r.output)}</p><small>${esc(BUILDINGS.find(b=>b.id===r.building)?.name??'')} · ${r.level} 级 · ${r.seconds/60} 分钟</small>${cmd('开始制作',{type:'craft',recipe:r.id,building:building?.id??0},!ok||!afford(w,r.cost))}</article>`;}).join('')}`;
@@ -65,11 +67,18 @@ function storage(w:World):string {
 function ecology(w:World):string {
  return `<p>林地遮荫，湿地保水。植物、设施与伙伴会一起改变周围环境。</p><nav class="home-segments">${[['','景色'],['light','光照'],['moisture','湿度'],['fertility','肥力'],['quality','水质']].map(([id,label])=>btn(label,'overlay',`data-overlay="${id}" aria-pressed="${ui.overlay===id}"`)).join('')}</nav><h3>生态访客 · ${Object.values(w.visitors).filter(Boolean).length}/${VISITORS.length}</h3>${VISITORS.map(v=>`<article class="home-recipe"><b>${esc(v.name)}${w.visitors[v.id]?' · 已到访':''}</b><p>${esc(v.need)}</p><small>${esc(v.service)}</small></article>`).join('')}<div class="home-actions">${cmd(w.autoReplant?'关闭自动补种':'开启自动补种',{type:'settings',replant:!w.autoReplant})}${cmd(w.reducedMotion?'恢复场景动画':'减少场景动画',{type:'settings',reduced:!w.reducedMotion})}</div>`;
 }
+function stockHTML(w:World):string {
+ return `<div class="home-stock">${['wood','stone','dew','feed'].map(k=>`<span title="${MATERIALS[k]}" aria-label="${MATERIALS[k]} ${Math.floor(w.stock[k]??0)}">${artIcon(k)}<b>${Math.floor(w.stock[k]??0)}</b></span>`).join('')}</div>`;
+}
+function toolsHTML(w:World):string {
+ const label=(icon:string,text:string)=>`${artIcon(icon)}<span>${text}</span>`;
+ return `${ui.more?`<nav class="home-more" aria-label="更多家园工具">${[['craft','制作'],['storage','仓库'],['ecology','生态']].map(([id,text])=>btn(label(id,text),'panel',`data-panel="${id}"`)).join('')}</nav>`:''}<nav class="home-tools" aria-label="家园工具">${btn(label('build','建造'),'panel','data-panel="build"')}${btn(label('plants','种植'),'panel','data-panel="plants"')}${cmd(label('gather',w.clock-w.lastGather>=300?'采集':`${Math.ceil((300-w.clock+w.lastGather)/60)}分`),{type:'gather'},w.clock-w.lastGather<300)}${btn(label('more','更多'),'more',`aria-expanded="${ui.more}" aria-label="更多家园工具"`)}</nav>`;
+}
 export function render(h:Host,dispatch:(c:GameCommand)=>void):string {
  host=h;issue=dispatch;const w=h.state().world!;
  const panels:Record<string,{title:string;body:()=>string}>={build:{title:'布置小家',body:()=>catalog(w)},plants:{title:'种子与育种',body:()=>plants(w)},craft:{title:'家园工坊',body:()=>workshop(w)},object:{title:'物件详情',body:()=>objectPanel(w)},crop:{title:'照料植物',body:()=>cropPanel(w)},slime:{title:'一起生活',body:()=>companionPanel(w)},storage:{title:'家园仓库',body:()=>storage(w)},ecology:{title:'土地与访客',body:()=>ecology(w)}};
  const panel=panels[ui.panel],toolName=ui.tool==='path'?(ui.pathStyle<0?'拖动擦除路面':`拖动铺设${PATH_STYLES[ui.pathStyle]}`):ui.tool==='plant'?'点击空地播种':ui.tool?'点击空地放置，拖动物件也可以':'';
- return `<section id="livingWorld" class="home-world ${w.reducedMotion?'reduced-motion':''}" aria-label="家园"><div class="home-scene">${scene(w,h,camera,ui.selected,ui.crop,ui.person,!!ui.tool,ui.overlay)}</div><div class="home-season"><b>${SEASONS[season(w)]}季 · 第 ${day(w)+1} 日</b><span>${WEATHER[w.weather]} · ${night(w)?'夜晚':'白天'}</span></div><div class="home-stock">${['wood','stone','dew','feed'].map(k=>`<span>${esc(MATERIALS[k])}<b>${Math.floor(w.stock[k]??0)}</b></span>`).join('')}</div><div class="home-camera">${btn('＋','zoom','data-factor="1.25" aria-label="放大地图"')}${btn('−','zoom','data-factor="0.8" aria-label="缩小地图"')}${btn('⌂','center','aria-label="回到小屋"')}</div>${toolName?`<div class="home-tool-hint" role="status"><span>${esc(toolName)}</span>${ui.tool==='build'||ui.tool==='move'?btn('旋转','rotate'):''}${btn('完成','cancel')}</div>`:''}${panel?`<aside class="home-panel" aria-label="${panel.title}"><header><h2>${panel.title}</h2>${btn('关闭','close','aria-label="关闭面板"')}</header><div class="home-panel-body">${panel.body()}</div></aside>`:''}<nav class="home-tools" aria-label="家园工具">${[['build','建造'],['plants','种植'],['craft','制作'],['storage','仓库'],['ecology','生态']].map(([id,text])=>btn(text,'panel',`data-panel="${id}" aria-pressed="${ui.panel===id}"`)).join('')}${cmd(w.clock-w.lastGather>=300?'采集':`${Math.ceil((300-w.clock+w.lastGather)/60)}分`,{type:'gather'},w.clock-w.lastGather<300)}</nav></section>`;
+ return `<section id="livingWorld" class="home-world ${w.reducedMotion?'reduced-motion':''}" aria-label="家园"><div class="home-scene">${scene(w,h,camera,ui.selected,ui.crop,ui.person,!!ui.tool,ui.overlay)}</div><div class="home-season"><b>${SEASONS[season(w)]}季 · 第 ${day(w)+1} 日</b><span>${WEATHER[w.weather]} · ${night(w)?'夜晚':'白天'}</span></div>${stockHTML(w)}<div class="home-camera">${btn('＋','zoom','data-factor="1.25" aria-label="放大地图"')}${btn('−','zoom','data-factor="0.8" aria-label="缩小地图"')}${btn('⌂','center','aria-label="回到小屋"')}</div>${toolName?`<div class="home-tool-hint" role="status"><span>${esc(toolName)}</span>${ui.tool==='build'||ui.tool==='move'?btn('旋转','rotate'):''}${btn('完成','cancel')}</div>`:''}${panel?`<aside class="home-panel" aria-label="${panel.title}"><header><h2>${panel.title}</h2>${btn('关闭','close','aria-label="关闭面板"')}</header><div class="home-panel-body">${panel.body()}</div></aside>`:''}${toolsHTML(w)}</section>`;
 }
 const value=(id:string)=>(document.getElementById(id) as HTMLInputElement|HTMLSelectElement|null)?.value??'';
 export function handleClick(event:Event):boolean {
@@ -77,7 +86,8 @@ export function handleClick(event:Event):boolean {
  const w=host.state().world!,ds=target.dataset;
  switch(ds.lw){
  case 'cmd':issue(JSON.parse(ds.command!));return true;
- case 'panel':ui.panel=ui.panel===ds.panel?'':ds.panel!;ui.tool='';break;
+ case 'panel':ui.panel=ui.panel===ds.panel?'':ds.panel!;ui.tool='';ui.more=false;break;
+ case 'more':ui.more=!ui.more;break;
  case 'close':ui.panel='';break;
  case 'category':ui.category=ds.category!;break;
  case 'family':ui.family=Number(ds.family);break;

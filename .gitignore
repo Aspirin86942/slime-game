@@ -2,6 +2,7 @@
 tools/out/shots/
 tools/out/look/
 tools/out/home-v5/
+tools/out/home-storybook/
 tools/out/downloads/
 tools/out/*.png
 tools/out/*.html

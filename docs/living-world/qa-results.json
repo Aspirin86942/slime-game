@@ -2,8 +2,8 @@
   "date": "2026-10-29",
   "product": "史莱姆.html",
   "saveVersion": 5,
-  "bytes": 820149,
-  "sha256": "5e3802a62b6d74c33d331972a64ce3386ed65b2b5e5bc272bec4ddd34704ae28",
+  "bytes": 7742393,
+  "sha256": "8b92a79e09ef9c5a3639bf60e4397b117018c769474b6bab069655d4af7535d2",
   "syncedCommit": "914f49c52ba8fb4e5d30d00862a42b673ee44f65",
   "legacyBaseline": "ae243d94a451c4ee16e258e5b6a2a39e2421a16a",
   "baseline_sha256": "60a7b01f21ac6707a399bcb461b233016e9cbae5bfedff20aa36352bf864d6f4",
@@ -19,8 +19,9 @@
     "worldAndMigration": "72/72",
     "legacyRules": "48/48",
     "mergeGrowth": "PASS",
-    "browser": "40/40",
-    "browserExceptions": 0
+    "browser": "48/48",
+    "browserExceptions": 0,
+    "paintedAssets": "2/2"
   },
   "environment": {
     "os": "win32 10.0.26200",
@@ -36,13 +37,13 @@
   "performance": {
     "sampling": "One 2.5-second requestAnimationFrame sample per scene, 1440x900, DPR 1. Desktop GPU; this is not a mobile benchmark.",
     "ordinary": {
-      "fps": 143.59219815723344,
-      "frames": 360,
+      "fps": 143.20475487654068,
+      "frames": 359,
       "p95": 7.399999999999636
     },
     "dense": {
-      "fps": 139.76887818303663,
-      "frames": 350,
+      "fps": 143.5807442268576,
+      "frames": 360,
       "p95": 7.400000000001455
     },
     "densePlants": 300,
@@ -92,7 +93,37 @@
       "ok": true
     },
     {
+      "name": "painted ground and object atlases decode locally",
+      "ok": true,
+      "detail": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "name": "home uses painted navigation and four primary tools",
+      "ok": true
+    },
+    {
       "name": "mouse places rotated facility",
+      "ok": true
+    },
+    {
+      "name": "rotated painted facilities preserve their aspect ratio",
       "ok": true
     },
     {
@@ -162,8 +193,8 @@
         "width": 1440,
         "height": 900,
         "navBottom": 892,
-        "toolLeft": 544.5,
-        "toolRight": 895.5,
+        "toolLeft": 570,
+        "toolRight": 870,
         "scroll": 1440,
         "inner": 1440
       }
@@ -172,10 +203,10 @@
       "name": "catalog fits 1440x900",
       "ok": true,
       "detail": {
-        "left": 1062,
+        "left": 1032,
         "right": 1422,
         "top": 88,
-        "bottom": 750
+        "bottom": 812
       }
     },
     {
@@ -185,8 +216,8 @@
         "width": 1920,
         "height": 1080,
         "navBottom": 1072,
-        "toolLeft": 784.5,
-        "toolRight": 1135.5,
+        "toolLeft": 810,
+        "toolRight": 1110,
         "scroll": 1920,
         "inner": 1920
       }
@@ -195,10 +226,10 @@
       "name": "catalog fits 1920x1080",
       "ok": true,
       "detail": {
-        "left": 1542,
+        "left": 1512,
         "right": 1902,
         "top": 88,
-        "bottom": 930
+        "bottom": 992
       }
     },
     {
@@ -207,9 +238,9 @@
       "detail": {
         "width": 390,
         "height": 844,
-        "navBottom": 836,
-        "toolLeft": 51,
-        "toolRight": 339,
+        "navBottom": 837,
+        "toolLeft": 52,
+        "toolRight": 338,
         "scroll": 390,
         "inner": 390
       }
@@ -218,10 +249,10 @@
       "name": "catalog fits 390x844",
       "ok": true,
       "detail": {
-        "left": 10,
-        "right": 380,
-        "top": 293.890625,
-        "bottom": 699
+        "left": 8,
+        "right": 382,
+        "top": 299.8125,
+        "bottom": 764
       }
     },
     {
@@ -230,9 +261,9 @@
       "detail": {
         "width": 320,
         "height": 568,
-        "navBottom": 560,
-        "toolLeft": 25,
-        "toolRight": 295,
+        "navBottom": 561,
+        "toolLeft": 23,
+        "toolRight": 297,
         "scroll": 320,
         "inner": 320
       }
@@ -241,10 +272,10 @@
       "name": "catalog fits 320x568",
       "ok": true,
       "detail": {
-        "left": 10,
-        "right": 310,
-        "top": 150.375,
-        "bottom": 423
+        "left": 8,
+        "right": 312,
+        "top": 152.890625,
+        "bottom": 488
       }
     },
     {
@@ -255,7 +286,7 @@
         "height": 390,
         "navBottom": 382,
         "toolLeft": 16,
-        "toolRight": 367,
+        "toolRight": 316,
         "scroll": 844,
         "inner": 844
       }
@@ -266,9 +297,26 @@
       "detail": {
         "left": 492,
         "right": 832,
-        "top": 82,
-        "bottom": 310
+        "top": 12,
+        "bottom": 306
       }
+    },
+    {
+      "name": "landscape catalog shows a complete available item without scrolling",
+      "ok": true
+    },
+    {
+      "name": "all 42 decorations have painted catalog previews",
+      "ok": true,
+      "detail": 42
+    },
+    {
+      "name": "six painted road styles are available",
+      "ok": true
+    },
+    {
+      "name": "seed catalog shows painted plants",
+      "ok": true
     },
     {
       "name": "phone touch drag pans without selecting objects",
@@ -282,8 +330,8 @@
       "name": "ordinary home reaches 55 FPS",
       "ok": true,
       "detail": {
-        "fps": 143.59219815723344,
-        "frames": 360,
+        "fps": 143.20475487654068,
+        "frames": 359,
         "p95": 7.399999999999636
       }
     },
@@ -291,13 +339,17 @@
       "name": "300 plants reach 30 FPS",
       "ok": true,
       "detail": {
-        "fps": 139.76887818303663,
-        "frames": 350,
+        "fps": 143.5807442268576,
+        "frames": 360,
         "p95": 7.400000000001455
       }
     },
     {
       "name": "offline normal reload retains identities, layout and all stock",
+      "ok": true
+    },
+    {
+      "name": "all painted assets reload with networking disabled",
       "ok": true
     },
     {
@@ -335,9 +387,9 @@
     }
   ],
   "reports": {
-    "rules": "tools/out/home-final-tests.log",
-    "browser": "tools/out/home-v5/results.json",
-    "screenshots": "tools/out/home-v5/"
+    "rules": "tools/out/home-storybook-unit.log",
+    "browser": "tools/out/home-storybook/results.json",
+    "screenshots": "tools/out/home-storybook/"
   },
   "limits": [
     "Physical phones and browsers other than Chromium were not tested.",
@@ -345,6 +397,20 @@
     "Performance numbers are short desktop samples, not a sustained-load benchmark."
   ],
   "delivery": {
-    "contents": ["source", "standalone HTML", "documentation", "acceptance records"]
+    "contents": [
+      "source",
+      "standalone HTML",
+      "documentation",
+      "acceptance records"
+    ]
+  },
+  "artStyle": "林间绘本",
+  "artwork": {
+    "sprites": 129,
+    "pathMaterials": 6,
+    "meadow": 1,
+    "source": "docs/art-2026-10-29/production",
+    "runtime": "src/assets/storybook",
+    "embedded": true
   }
 }
