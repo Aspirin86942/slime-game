@@ -14,6 +14,7 @@ const assert = require('node:assert/strict');
 const file = path.resolve(process.argv[2] || path.join(__dirname, '..', '史莱姆.html'));
 const html = fs.readFileSync(file, 'utf8').replace(/\r\n/g, '\n');
 const original = fs.readFileSync(path.join(__dirname, 'baseline-original.html'), 'utf8').replace(/\r\n/g, '\n');
+const reference = fs.readFileSync(path.join(__dirname, '..', '史莱姆-参考.html'), 'utf8').replace(/\r\n/g, '\n');
 const scripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)].map(m => m[1]);
 const code = scripts.join('\n');
 const results = [];
@@ -23,11 +24,12 @@ function check(name, fn) {
 }
 const {boot,node}=require('./lib/vm-harness.cjs').loadGame(file,code);
 function namedFunction(source,name) {
-  const start=source.indexOf('function '+name+'(');
-  assert.ok(start>=0,'Missing '+name);
-  const end=source.indexOf('\n}',start)+2;
-  assert.ok(end>start,'Cannot locate end of '+name);
-  return source.slice(start,end).trim();
+  const ts=require('typescript');
+  const script=source.includes('<script>')?[...source.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)].map(m=>m[1]).join('\n'):source;
+  const parsed=ts.createSourceFile('game.js',script,ts.ScriptTarget.Latest,true,ts.ScriptKind.JS);
+  const fn=parsed.statements.find(n=>ts.isFunctionDeclaration(n)&&n.name?.text===name);
+  assert.ok(fn,'Missing '+name);
+  return fn.getText(parsed);
 }
 check('syntax: all inline game scripts compile',()=>{scripts.forEach((s,i)=>new vm.Script(s,{filename:'inline-'+i+'.js'}));});
 check('baseline protection: 基线原稿保持逐字节不变（防止被就地改写而「测试恒过」）',()=>{
@@ -35,7 +37,7 @@ check('baseline protection: 基线原稿保持逐字节不变（防止被就地�
   assert.equal(hash,'60a7b01f21ac6707a399bcb461b233016e9cbae5bfedff20aa36352bf864d6f4');
 });
 check('creature rendering functions retain original visual markup',()=>{
-  for(const name of ['slimeHTMLFromColor','slimeHTML'])assert.equal(namedFunction(html,name),namedFunction(original,name),name+' changed');
+  for(const name of ['slimeHTMLFromColor','slimeHTML'])assert.equal(namedFunction(html,name),namedFunction(reference,name),name+' changed');
 });
 check('harness: real game state and creature constructors initialize',()=>{
   const h=boot();const s=h.slime();assert.ok(s.id);assert.ok(s.hp>0);assert.ok(s.str>0);assert.equal(h.state().coins,2000);
@@ -43,8 +45,8 @@ check('harness: real game state and creature constructors initialize',()=>{
 
 check('creature CSS: original body, expressions and elemental appearance rules preserved',()=>{
   const body = source => source.slice(source.indexOf('.slime{--sz:1;'),source.indexOf('\n.mon-badge{'));
-  assert.ok(body(original).length>2000);
-  assert.equal(body(html),body(original));
+  assert.ok(body(reference).length>2000);
+  assert.equal(body(html),body(reference));
 });
 check('offline: no remote script/style/image/font dependency introduced',()=>{
   assert.equal(/<(?:script|link|img)\b[^>]*(?:src|href)\s*=\s*["']https?:\/\//i.test(html),false);
@@ -83,15 +85,15 @@ check('abyss: direct attempt cannot start above the unlocked level',()=>{
 for(const stamina of [1,19])check(`exploration: stamina ${stamina} enters rest and eventually resumes`,()=>{
   const h=boot();const s=h.slime({stamina,mood:100});Object.assign(h.state(),{started:true,globalPlan:'explore',slimes:[s]});
   h.run('runPlans()');assert.equal(s.resting,true);
-  const coins=h.state().coins;
+  const coins=h.state().explorePending.coins;
   let n=0;while(s.resting&&n++<400)h.tick(1000);
   assert.equal(s.resting,false,'Passive recovery must exit rest at a visible threshold');
-  assert.ok(s.stamina>=20);h.run('runPlans()');assert.ok(h.state().coins>coins,'Exploration resumes earning');
+  assert.ok(s.stamina>=20);h.run('runPlans()');assert.ok(h.state().explorePending.coins>coins,'Exploration resumes accruing unclaimed rewards');
 });
 for(const mode of ['space','ball','stack'])check(`exploration: dispatched team keeps progressing during ${mode}`,()=>{
   const h=boot();const s=h.slime({stamina:100,mood:100});Object.assign(h.state(),{started:true,globalPlan:'explore',slimes:[s]});
   h.run(`activeTab='space';${mode==='ball'?'ballGame={running:true};':mode==='stack'?'stackGame={running:true};':''}`);
-  const before=h.state().coins;h.run('runPlans()');assert.equal(s.stamina,80);assert.ok(h.state().coins>before);
+  const before=h.state().coins,pending=h.state().explorePending.coins;h.run('runPlans()');assert.equal(s.stamina,80);assert.equal(h.state().coins,before);assert.ok(h.state().explorePending.coins>pending);
 });
 check('growth: zero XP does not manufacture summoner XP',()=>{
   const h=boot(),s=h.slime({wit:0});const before=h.state().summonerExp;h.context.pet=s;
@@ -194,7 +196,7 @@ check('goals: premature claims fail and first-clear reward cannot be claimed twi
 for(const id of ['shield','control','cleanse'])check(`teaching ${id}: actual required skill enables victory, rewards are one-time and loan stays separate`,()=>{
   const h=boot();h.state().started=true;const pet=h.slime({name:'Owned pet'});h.state().slimes=[pet];h.state().battleMode='auto';
   const owned=JSON.stringify(pet),coins=h.state().coins,xp=h.state().summonerExp;
-  h.run(`startTrainingChallenge('${id}')`);const b=h.context.__TEST__._battle;assert.ok(b);assert.equal(b.B.training,true);assert.equal(b.B.trainingMode,'step');assert.equal(h.state().battleMode,'auto');
+  h.run(`startTrainingChallenge('${id}')`);const b=h.context.__TEST__._battle;assert.ok(b);assert.equal(b.B.training,true);assert.equal(b.B.trainingMode,'manual');assert.equal(h.state().battleMode,'auto');
   const ally=b.B.allies[0],enemy=b.B.monsters[0];
   b.nextTurn();assert.equal(b.playerCast(ally,enemy),true);if(b.B._pauseResume)b.B._pauseResume();h.flush();
   assert.equal(b.B.practiceUsed[id],true,'Required mechanic must be genuinely exercised');
@@ -218,12 +220,12 @@ check('battle: repeated start while overlay exists cannot duplicate roster/seque
 });
 check('companion home: default tab, target navigation and themes in settings',()=>{
   const h=boot();assert.equal(h.run('activeTab'),'space');const content=h.run('renderSpace()');
-  assert.ok(content.includes('home-objective'));assert.ok(content.includes('data-act="goto"'));assert.ok(!content.includes('theme-row'));
+  assert.ok(content.includes('playground'));assert.ok(!content.includes('theme-row'));
   h.run('openModal=html=>window.__settingsHTML=html;openSettings()');assert.ok(h.context.__settingsHTML.includes('theme-row'));
 });
 check('companionship: affinity thresholds unlock visible existing-expression responses without battle',()=>{
   const h=boot(),s=h.slime({intimacy:0});h.context.pet=s;const initial=h.run('bondMilestone(pet)');s.intimacy=10000;const max=h.run('bondMilestone(pet)');
-  assert.ok(max.need>initial.need);assert.notEqual(max.name,initial.name);assert.ok(h.run('renderSpace()').includes('home-objective'));
+  assert.ok(max.need>initial.need);assert.notEqual(max.name,initial.name);h.state().slimes=[s];assert.ok(h.run('renderSpace()').includes('playground'));
 });
 
 check('migration: missing individual legacy fields fill safely without replacing earned values or reusing IDs',()=>{

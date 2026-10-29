@@ -5,17 +5,19 @@ import {activity,resident} from './life.ts';
 import {bounds,environment,season,day,night,SEASONS,WEATHER} from './ecology.ts';
 import {scene,preview} from './home-art.ts';
 import {artIcon,pathPreview,plantPreview} from './art/storybook.ts';
+import {uiIcon} from './art/ui-icons.ts';
 import {esc} from './art.ts';
-import {HOME_WIDTH,HOME_HEIGHT,TILE,constrainCamera,screenToCell,type Camera} from './map.ts';
+import {HOME_WIDTH,HOME_HEIGHT,TILE,constrainCamera,screenToCell,type Camera,type CameraFrame} from './map.ts';
 
 const camera:Camera={x:0,y:0,zoom:typeof innerWidth==='number'&&innerWidth>760?1.45:1.1,ready:false};
+let viewport:{width:number;height:number;frame:CameraFrame}|null=null,houseFocused=true,preferredZoom=camera.zoom;
 const ui={panel:'',category:'facilities',family:0,selected:0,crop:0,person:0,tool:'',def:'',cultivar:0,rotation:0,pathStyle:0,overlay:'',more:false};
 let host:Host,issue:(command:GameCommand)=>void,lastInteraction=0,dispose:(()=>void)|null=null;
 export const recentlyInteracted=()=>Date.now()-lastInteraction<2500||!!ui.tool||!!document.activeElement?.matches('.home-world input,.home-world select');
-export function navigate(_tab?:string):void {ui.panel='';ui.tool='';ui.more=false;}
+export function navigate(_tab?:string):void {dispose?.();dispose=null;ui.panel='';ui.tool='';ui.more=false;}
 export function redraw(renderPage=()=>host.render()):void {const scroll=document.querySelector('.home-panel-body')?.scrollTop??0;renderPage();const body=document.querySelector('.home-panel-body');if(body)body.scrollTop=scroll;}
-const btn=(text:string,action:string,attrs='',disabled=false)=>`<button class="home-button" data-lw="${action}" ${attrs} ${disabled?'disabled':''}>${text}</button>`;
-const cmd=(text:string,c:GameCommand,disabled=false)=>btn(text,'cmd',`data-command="${esc(JSON.stringify(c))}"`,disabled);
+const btn=(text:string,action:string,attrs='',disabled=false,primary=false)=>`<button class="btn sm home-button${primary?'':' themed'}" data-lw="${action}" ${attrs} ${disabled?'disabled':''}>${text}</button>`;
+const cmd=(text:string,c:GameCommand,disabled=false)=>btn(text,'cmd',`data-command="${esc(JSON.stringify(c))}"`,disabled,['craft','claimCraft','claimOverflow','harvest','harvestAll'].includes(c.type));
 const name=(w:World,key:string)=>key.startsWith('seed:')?`${w.cultivars.find(v=>v.id===Number(key.slice(5)))?.name??'植物'}种子`:MATERIALS[key]??key;
 const cost=(w:World,items:Record<string,number>)=>Object.entries(items).map(([k,n])=>`${esc(name(w,k))} ${Math.round(n*100)/100}`).join(' · ');
 const materialCost=(w:World,items:Record<string,number>)=>`<span class="home-material-cost">${Object.entries(items).map(([k,n])=>`<span title="${esc(name(w,k))}" aria-label="${esc(name(w,k))} ${n}">${['wood','stone','dew','feed'].includes(k)?artIcon(k):esc(name(w,k))}<b>${n}</b></span>`).join('')}</span>`;
@@ -71,14 +73,14 @@ function stockHTML(w:World):string {
  return `<div class="home-stock">${['wood','stone','dew','feed'].map(k=>`<span title="${MATERIALS[k]}" aria-label="${MATERIALS[k]} ${Math.floor(w.stock[k]??0)}">${artIcon(k)}<b>${Math.floor(w.stock[k]??0)}</b></span>`).join('')}</div>`;
 }
 function toolsHTML(w:World):string {
- const label=(icon:string,text:string)=>`${artIcon(icon)}<span>${text}</span>`;
+ const label=(icon:string,text:string)=>`${uiIcon(icon)}<span>${text}</span>`;
  return `${ui.more?`<nav class="home-more" aria-label="更多家园工具">${[['craft','制作'],['storage','仓库'],['ecology','生态']].map(([id,text])=>btn(label(id,text),'panel',`data-panel="${id}"`)).join('')}</nav>`:''}<nav class="home-tools" aria-label="家园工具">${btn(label('build','建造'),'panel','data-panel="build"')}${btn(label('plants','种植'),'panel','data-panel="plants"')}${cmd(label('gather',w.clock-w.lastGather>=300?'采集':`${Math.ceil((300-w.clock+w.lastGather)/60)}分`),{type:'gather'},w.clock-w.lastGather<300)}${btn(label('more','更多'),'more',`aria-expanded="${ui.more}" aria-label="更多家园工具"`)}</nav>`;
 }
 export function render(h:Host,dispatch:(c:GameCommand)=>void):string {
  host=h;issue=dispatch;const w=h.state().world!;
  const panels:Record<string,{title:string;body:()=>string}>={build:{title:'布置小家',body:()=>catalog(w)},plants:{title:'种子与育种',body:()=>plants(w)},craft:{title:'家园工坊',body:()=>workshop(w)},object:{title:'物件详情',body:()=>objectPanel(w)},crop:{title:'照料植物',body:()=>cropPanel(w)},slime:{title:'一起生活',body:()=>companionPanel(w)},storage:{title:'家园仓库',body:()=>storage(w)},ecology:{title:'土地与访客',body:()=>ecology(w)}};
  const panel=panels[ui.panel],toolName=ui.tool==='path'?(ui.pathStyle<0?'拖动擦除路面':`拖动铺设${PATH_STYLES[ui.pathStyle]}`):ui.tool==='plant'?'点击空地播种':ui.tool?'点击空地放置，拖动物件也可以':'';
- return `<section id="livingWorld" class="home-world ${w.reducedMotion?'reduced-motion':''}" aria-label="家园"><div class="home-scene">${scene(w,h,camera,ui.selected,ui.crop,ui.person,!!ui.tool,ui.overlay)}</div><div class="home-season"><b>${SEASONS[season(w)]}季 · 第 ${day(w)+1} 日</b><span>${WEATHER[w.weather]} · ${night(w)?'夜晚':'白天'}</span></div>${stockHTML(w)}<div class="home-camera">${btn('＋','zoom','data-factor="1.25" aria-label="放大地图"')}${btn('−','zoom','data-factor="0.8" aria-label="缩小地图"')}${btn('⌂','center','aria-label="回到小屋"')}</div>${toolName?`<div class="home-tool-hint" role="status"><span>${esc(toolName)}</span>${ui.tool==='build'||ui.tool==='move'?btn('旋转','rotate'):''}${btn('完成','cancel')}</div>`:''}${panel?`<aside class="home-panel" aria-label="${panel.title}"><header><h2>${panel.title}</h2>${btn('关闭','close','aria-label="关闭面板"')}</header><div class="home-panel-body">${panel.body()}</div></aside>`:''}${toolsHTML(w)}</section>`;
+ return `<section id="livingWorld" class="home-world ${w.reducedMotion?'reduced-motion':''}" aria-label="家园"><div class="home-scene">${scene(w,h,camera,ui.selected,ui.crop,ui.person,!!ui.tool,ui.overlay)}</div><div class="home-season"><b>家园</b><span>${SEASONS[season(w)]}季 · 第 ${day(w)+1} 日</span><span>${WEATHER[w.weather]} · ${night(w)?'夜晚':'白天'}</span></div>${stockHTML(w)}<div class="home-camera">${btn(uiIcon('plus'),'zoom','data-factor="1.25" aria-label="放大地图"')}${btn(uiIcon('minus'),'zoom','data-factor="0.8" aria-label="缩小地图"')}${btn(uiIcon('home'),'center','aria-label="回到小屋"')}</div>${toolName?`<div class="home-tool-hint" role="status"><span>${esc(toolName)}</span>${ui.tool==='build'||ui.tool==='move'?btn(uiIcon('rotate')+'旋转','rotate'):''}${btn('完成','cancel')}</div>`:''}${panel?`<aside class="home-panel" aria-label="${panel.title}"><header><h2>${panel.title}</h2>${btn(uiIcon('close'),'close','aria-label="关闭面板"')}</header><div class="home-panel-body">${panel.body()}</div></aside>`:''}${toolsHTML(w)}</section>`;
 }
 const value=(id:string)=>(document.getElementById(id) as HTMLInputElement|HTMLSelectElement|null)?.value??'';
 export function handleClick(event:Event):boolean {
@@ -110,13 +112,19 @@ export function handleClick(event:Event):boolean {
  redraw();return true;
 }
 function applyCamera():void {
- const svg=document.querySelector<SVGSVGElement>('.home-map');if(!svg)return;const rect=svg.getBoundingClientRect();constrainCamera(camera,rect.width,rect.height);svg.setAttribute('viewBox',`${camera.x} ${camera.y} ${rect.width/camera.zoom} ${rect.height/camera.zoom}`);
+ const svg=document.querySelector<SVGSVGElement>('.home-map');if(!svg)return;const rect=svg.getBoundingClientRect();constrainCamera(camera,rect.width,rect.height,viewport?.frame);svg.setAttribute('viewBox',`${camera.x} ${camera.y} ${rect.width/camera.zoom} ${rect.height/camera.zoom}`);
 }
 function center():void {
- const svg=document.querySelector<SVGSVGElement>('.home-map');if(!svg)return;const rect=svg.getBoundingClientRect(),p=host.state().world!.placements.find(p=>p.def==='house'&&!p.stored);camera.x=(p?.x??6)*TILE-rect.width/camera.zoom/2+TILE;camera.y=(p?.y??6)*TILE-rect.height/camera.zoom/2+TILE;camera.ready=true;applyCamera();updateObjects();
+ if(!viewport)return;const {width,height,frame}=viewport,p=host.state().world!.placements.find(p=>p.def==='house'&&!p.stored),[a,b]=p?bounds(p):[2,2];
+ // Include the roof, chimney and entrance when fitting the house into the clear area.
+ camera.zoom=Math.min(preferredZoom,(frame.right-frame.left)/(a*TILE+24),(frame.bottom-frame.top)/(b*TILE+TILE*2));
+ constrainCamera(camera,width,height,frame);
+ camera.x=((p?.x??6)+a/2)*TILE-(frame.left+frame.right)/2/camera.zoom;
+ camera.y=((p?.y??6)+b/2)*TILE-TILE/2-(frame.top+frame.bottom)/2/camera.zoom;
+ camera.ready=true;houseFocused=true;applyCamera();updateObjects();
 }
 function zoomAt(factor:number,x?:number,y?:number):void {
- const svg=document.querySelector<SVGSVGElement>('.home-map');if(!svg)return;const r=svg.getBoundingClientRect(),px=x??r.width/2,py=y??r.height/2,wx=camera.x+px/camera.zoom,wy=camera.y+py/camera.zoom;camera.zoom*=factor;constrainCamera(camera,r.width,r.height);camera.x=wx-px/camera.zoom;camera.y=wy-py/camera.zoom;applyCamera();updateObjects();
+ const svg=document.querySelector<SVGSVGElement>('.home-map');if(!svg)return;const r=svg.getBoundingClientRect(),f=viewport?.frame,px=x??(f?(f.left+f.right)/2:r.width/2),py=y??(f?(f.top+f.bottom)/2:r.height/2),wx=camera.x+px/camera.zoom,wy=camera.y+py/camera.zoom;houseFocused=false;camera.zoom*=factor;constrainCamera(camera,r.width,r.height,f);preferredZoom=camera.zoom;camera.x=wx-px/camera.zoom;camera.y=wy-py/camera.zoom;applyCamera();updateObjects();
 }
 let lastObjects=0;
 function updateObjects():void {
@@ -141,7 +149,24 @@ function selectAt(target:Element,x:number,y:number):void {
 export function mount():void {
  dispose?.();const svg=document.querySelector<SVGSVGElement>('.home-map');if(!svg)return;
  const controller=new AbortController(),opts={signal:controller.signal},pointers=new Map<number,{x:number;y:number}>();dispose=()=>controller.abort();
- if(!camera.ready)center();else applyCamera();
+ // Controls and the camera use the same measured, unobstructed screen area.
+ const world=svg.closest<HTMLElement>('.home-world')!;
+ const top=document.querySelector<HTMLElement>('.topbar')!,nav=document.querySelector<HTMLElement>('.tabbar')!;
+ const season=world.querySelector<HTMLElement>('.home-season')!,stock=world.querySelector<HTMLElement>('.home-stock')!,tools=world.querySelector<HTMLElement>('.home-tools')!,controls=world.querySelector<HTMLElement>('.home-camera')!;
+ const measureBars=()=>{
+  const r=world.getBoundingClientRect(),t=top.getBoundingClientRect(),n=nav.getBoundingClientRect();
+  world.style.setProperty('--home-top',`${t.bottom-r.top}px`);world.style.setProperty('--home-bottom',`${r.bottom-n.top}px`);
+  const s=season.getBoundingClientRect(),k=stock.getBoundingClientRect(),u=tools.getBoundingClientRect(),c=controls.getBoundingClientRect(),landscape=matchMedia('(max-height:500px) and (orientation:landscape)').matches;
+  const frame:CameraFrame={left:landscape?Math.max(s.right,k.right,u.right)-r.left+12:12,top:(landscape?t.bottom:Math.max(t.bottom,s.bottom,k.bottom))-r.top+12,right:c.left-r.left-12,bottom:(landscape?n.top:u.top)-r.top-12};
+  const previous=viewport,changed=!previous||previous.width!==r.width||previous.height!==r.height||Object.keys(frame).some(key=>frame[key as keyof CameraFrame]!==previous.frame[key as keyof CameraFrame]);
+  const focus=previous?{x:camera.x+(previous.frame.left+previous.frame.right)/2/camera.zoom,y:camera.y+(previous.frame.top+previous.frame.bottom)/2/camera.zoom}:null;
+  viewport={width:r.width,height:r.height,frame};
+  if(!camera.ready||changed&&houseFocused){center();return;}
+  if(changed&&focus){constrainCamera(camera,r.width,r.height,frame);camera.x=focus.x-(frame.left+frame.right)/2/camera.zoom;camera.y=focus.y-(frame.top+frame.bottom)/2/camera.zoom;}
+  applyCamera();if(changed)updateObjects();
+ };
+ const observer=new ResizeObserver(measureBars);for(const el of [top,nav,world,season,stock,tools,controls])observer.observe(el,{box:'border-box'});
+ controller.signal.addEventListener('abort',()=>observer.disconnect(),{once:true});measureBars();
  let start:{x:number;y:number;target:Element;pan:boolean}|null=null,moved=false,lastCell:[number,number]|null=null,stroke:Set<number>|null=null,erase=false;
  const position=(event:PointerEvent|WheelEvent)=>{const r=svg.getBoundingClientRect();return {x:event.clientX-r.left,y:event.clientY-r.top};};
  const clear=()=>{svg.querySelector('.home-preview')!.innerHTML='';};
@@ -158,11 +183,11 @@ export function mount():void {
  },opts);
  svg.addEventListener('pointermove',e=>{
   const p=position(e),old=pointers.get(e.pointerId);if(!old){previewAt(...screenToCell(camera,p.x,p.y));return;}lastInteraction=Date.now();
-  if(pointers.size===2){const other=[...pointers.entries()].find(([id])=>id!==e.pointerId)![1],before=Math.hypot(old.x-other.x,old.y-other.y),after=Math.hypot(p.x-other.x,p.y-other.y);pointers.set(e.pointerId,p);camera.x-=(p.x-old.x)/2/camera.zoom;camera.y-=(p.y-old.y)/2/camera.zoom;if(before>5)zoomAt(after/before,(p.x+other.x)/2,(p.y+other.y)/2);else applyCamera();return;}
+  if(pointers.size===2){houseFocused=false;const other=[...pointers.entries()].find(([id])=>id!==e.pointerId)![1],before=Math.hypot(old.x-other.x,old.y-other.y),after=Math.hypot(p.x-other.x,p.y-other.y);pointers.set(e.pointerId,p);camera.x-=(p.x-old.x)/2/camera.zoom;camera.y-=(p.y-old.y)/2/camera.zoom;if(before>5)zoomAt(after/before,(p.x+other.x)/2,(p.y+other.y)/2);else applyCamera();return;}
   pointers.set(e.pointerId,p);if(!start)return;moved ||=Math.hypot(p.x-start.x,p.y-start.y)>6;
   if(stroke){walk(...screenToCell(camera,p.x,p.y));return;}
   if(ui.tool==='move'&&!start.pan){previewAt(...screenToCell(camera,p.x,p.y));return;}
-  if(moved){camera.x-=(p.x-old.x)/camera.zoom;camera.y-=(p.y-old.y)/camera.zoom;applyCamera();if(Date.now()-lastObjects>140)updateObjects();}
+  if(moved){houseFocused=false;camera.x-=(p.x-old.x)/camera.zoom;camera.y-=(p.y-old.y)/camera.zoom;applyCamera();if(Date.now()-lastObjects>140)updateObjects();}
  },opts);
  svg.addEventListener('pointerup',e=>{
   lastInteraction=Date.now();pointers.delete(e.pointerId);if(pointers.size){start=null;stroke=null;return;}const p=position(e);
@@ -172,5 +197,6 @@ export function mount():void {
  svg.addEventListener('pointercancel',()=>{pointers.clear();start=null;stroke=null;lastCell=null;clear();},opts);
  svg.addEventListener('wheel',e=>{e.preventDefault();lastInteraction=Date.now();const p=position(e);zoomAt(Math.exp(-e.deltaY*.0015),p.x,p.y);},{...opts,passive:false});
  svg.addEventListener('keydown',e=>{if(e.key==='Escape'){ui.tool='';ui.panel='';redraw();}if(e.key==='Enter'||e.key===' '){const target=e.target as Element;if(target.closest('[data-home-object],[data-home-crop],[data-home-resident]')){e.preventDefault();selectAt(target,0,0);}}},opts);
- window.addEventListener('resize',()=>{applyCamera();updateObjects();},opts);
+ window.addEventListener('resize',measureBars,opts);
+ window.visualViewport?.addEventListener('resize',measureBars,opts);
 }

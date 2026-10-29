@@ -1,21 +1,20 @@
 (function init(){
   applyWaveMasks();
   battleSpeed = clamp(Number(S.battleSpeed)||1, 1, 10);
+  if(![1,2,5].includes(battleSpeed)) battleSpeed = 1;
   if(load() && S.started){
     if(!DIAGNOSTIC_MODE&&S.lastActive>0){settleOffline(Date.now()-S.lastActive);save();}
     battleSpeed = clamp(Number(S.battleSpeed)||1, 1, 10);
-    /* 加载时若背包里还有经验药水，自动对等级最低的史莱姆使用 */
+    if(![1,2,5].includes(battleSpeed)) battleSpeed = 1;
     if((S.bag.expPotion||0) > 0 && S.slimes.length){
       let guard = 0;
-      while((S.bag.expPotion||0) > 0 && S.slimes.length && guard++ < 200){
-        S.bag.expPotion--;
-        autoUseExpPotionSilent();
-      }
+      while((S.bag.expPotion||0) > 0 && S.slimes.length && guard++ < 200){ S.bag.expPotion--; autoUseExpPotionSilent(); }
       save();
     }
     $('#storyScreen').classList.add('hidden');
     $('#gameScreen').classList.remove('hidden');
     applyTheme();
+    applyNotch();
     checkDailyReset();
     renderTop();
     renderTab();

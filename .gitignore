@@ -15,3 +15,8 @@ tools/out/review-report.md
 node_modules/
 *.log
 tools/out/commit-msg.txt
+tools/out/reference-home/
+backup/reference-home-20261029-implementation/
+backup/magic-ui-20261029/
+backup/mobile-map-20261029/
+tools/out/magic-ui/

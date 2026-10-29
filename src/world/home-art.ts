@@ -33,7 +33,9 @@ export function scene(w:World,host:Host,camera:Camera,selected:number,crop:numbe
  const dark=night(w),shade=(c:string)=>dark?mix(c,'#243d53',.48):c,roads=new Set(w.paths[0]??[]);
  const viewWidth=typeof innerWidth==='number'?innerWidth:1920,viewHeight=typeof innerHeight==='number'?innerHeight:1080;
  const visible=(x:number,y:number)=>!camera.ready||x*TILE>camera.x-220&&x*TILE<camera.x+viewWidth/camera.zoom+220&&y*TILE>camera.y-220&&y*TILE<camera.y+viewHeight/camera.zoom+220;
- let ground=`<rect width="${HOME_WIDTH*TILE}" height="${HOME_HEIGHT*TILE}" fill="${shade('#a7bf82')}"/><image class="home-meadow" href="${artURL('ground')}" width="${HOME_WIDTH*TILE}" height="${HOME_HEIGHT*TILE}" preserveAspectRatio="none" style="filter:${dark?'brightness(.48) saturate(.65)':'saturate(.74)'}"/><rect width="${HOME_WIDTH*TILE}" height="${HOME_HEIGHT*TILE}" fill="${dark?'#304e5a':'#aac18a'}" opacity="${dark?'.2':'.46'}"/>`,road='';
+ const meadow=`<rect width="${HOME_WIDTH*TILE}" height="${HOME_HEIGHT*TILE}" fill="${shade('#a7bf82')}"/><image class="home-meadow" href="${artURL('ground')}" width="${HOME_WIDTH*TILE}" height="${HOME_HEIGHT*TILE}" preserveAspectRatio="none" style="filter:${dark?'brightness(.48) saturate(.65)':'saturate(.74)'}"/><rect width="${HOME_WIDTH*TILE}" height="${HOME_HEIGHT*TILE}" fill="${dark?'#304e5a':'#aac18a'}" opacity="${dark?'.2':'.46'}"/>`;
+ // Continue the same meadow through the camera margin; the playable tiles stay 36 by 24.
+ let ground=`<defs><pattern id="home-meadow-fill" width="${HOME_WIDTH*TILE}" height="${HOME_HEIGHT*TILE}" patternUnits="userSpaceOnUse">${meadow}</pattern></defs><rect x="${-HOME_WIDTH*TILE}" y="${-HOME_HEIGHT*TILE}" width="${HOME_WIDTH*TILE*3}" height="${HOME_HEIGHT*TILE*3}" fill="url(#home-meadow-fill)"/>`,road='';
  const occupied=new Set(w.crops.map(c=>c.y*HOME_WIDTH+c.x));
  for(const p of w.placements.filter(p=>!p.stored)){const [a,b]=bounds(p);for(let y=p.y;y<p.y+b;y++)for(let x=p.x;x<p.x+a;x++)occupied.add(y*HOME_WIDTH+x);}
  for(let y=0;y<HOME_HEIGHT;y++)for(let x=0;x<HOME_WIDTH;x++){

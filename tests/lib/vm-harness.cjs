@@ -33,7 +33,7 @@ function loadGame(file, code) {
   function boot(storageInput={},options={}) {
     const storage = new Map(Object.entries(storageInput));
     const roots = new Map();
-    const intervals = new Map(), timeouts = new Map();
+    const intervals = new Map(), timeouts = new Map(), documentListeners = new Map();
     let nextTimer=1;
     let now=options.now ?? Date.now();
     class ClockDate extends Date {
@@ -45,7 +45,8 @@ function loadGame(file, code) {
       createElement:node, createElementNS:(_,tag)=>node(tag),
       querySelector(s){if(s==='#gameOverlay')return this.body.children.find(x=>x.id==='gameOverlay'&&x.isConnected)||roots.get('#app')?.children.find(x=>x.id==='gameOverlay'&&x.isConnected)||null;if(!roots.has(s))roots.set(s,node());return roots.get(s);},
       querySelectorAll(){return [];}, getElementById(id){return this.querySelector('#'+id);},
-      addEventListener(){},removeEventListener(){}
+      addEventListener(type,fn){if(!documentListeners.has(type))documentListeners.set(type,[]);documentListeners.get(type).push(fn);},
+      removeEventListener(type,fn){documentListeners.set(type,(documentListeners.get(type)||[]).filter(f=>f!==fn));}
     };
     const context = {
       console, document, location:{search:options.search||'',href:'file://independent-test/index.html'},
@@ -66,6 +67,10 @@ function loadGame(file, code) {
     const run = source=>vm.runInContext(source,context,{filename:'review-test.js',timeout:10000});
     run(`gameRandom=()=>Math.random();renderTop=()=>{};renderTab=()=>{};updateLive=()=>{};toast=()=>{};openModal=()=>{};closeModal=()=>{};window.__TEST__={};`);
     return {context,run,storage,intervals,timeouts,
+      click(act,dataset={}){
+        const target={dataset:{act,...dataset},closest(selector){return selector==='[data-act]'?this:null;}};
+        for(const listener of documentListeners.get('click')||[])listener({target,stopPropagation(){},preventDefault(){}});
+      },
       tick(ms){
         const end=now+ms;
         while(true){

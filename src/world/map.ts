@@ -14,10 +14,13 @@ export const originalPoint=(zone:number,x:number,y:number)=>({x:x+(zone%3)*12,y:
 export const createMap=()=>({width:HOME_WIDTH,height:HOME_HEIGHT,terrain:Array.from({length:HOME_WIDTH*HOME_HEIGHT},(_,n)=>Math.floor(n%HOME_WIDTH/12)+Math.floor(n/HOME_WIDTH/12)*3)});
 
 export interface Camera {x:number;y:number;zoom:number;ready:boolean;}
-export function constrainCamera(camera:Camera,width:number,height:number):void {
- const minimum=Math.max(width/(HOME_WIDTH*TILE),height/(HOME_HEIGHT*TILE));
+export interface CameraFrame {left:number;top:number;right:number;bottom:number;}
+// Trees and roofs extend above their tiles. Keep room to bring that art below the HUD.
+export const MAP_MARGIN=TILE*3;
+export function constrainCamera(camera:Camera,width:number,height:number,frame:CameraFrame={left:0,top:0,right:width,bottom:height}):void {
+ const minimum=Math.max((frame.right-frame.left)/(HOME_WIDTH*TILE+MAP_MARGIN*2),(frame.bottom-frame.top)/(HOME_HEIGHT*TILE+MAP_MARGIN*2));
  camera.zoom=Math.max(minimum,Math.min(Math.max(3,minimum*2),camera.zoom));
- camera.x=Math.max(0,Math.min(HOME_WIDTH*TILE-width/camera.zoom,camera.x));
- camera.y=Math.max(0,Math.min(HOME_HEIGHT*TILE-height/camera.zoom,camera.y));
+ camera.x=Math.max(-MAP_MARGIN-frame.left/camera.zoom,Math.min(HOME_WIDTH*TILE+MAP_MARGIN-frame.right/camera.zoom,camera.x));
+ camera.y=Math.max(-MAP_MARGIN-frame.top/camera.zoom,Math.min(HOME_HEIGHT*TILE+MAP_MARGIN-frame.bottom/camera.zoom,camera.y));
 }
 export const screenToCell=(camera:Camera,x:number,y:number):[number,number]=>[Math.floor((camera.x+x/camera.zoom)/TILE),Math.floor((camera.y+y/camera.zoom)/TILE)];

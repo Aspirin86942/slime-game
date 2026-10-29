@@ -6,7 +6,7 @@ import {createWorld,execute,advance,placementError,companion} from '../src/world
 import {upgradeHome,prepareWorld} from '../src/world/migration.ts';
 import {validWorld} from '../src/world/storage.ts';
 import {activity,resident,route,blockedCells} from '../src/world/life.ts';
-import {mapWidth,mapHeight,cell,constrainCamera,screenToCell} from '../src/world/map.ts';
+import {mapWidth,mapHeight,cell,constrainCamera,screenToCell,MAP_MARGIN} from '../src/world/map.ts';
 import {BUILDINGS,PLANTS,RECIPES,VISITORS} from '../src/world/content.ts';
 import {environment,refreshVisitors} from '../src/world/ecology.ts';
 const clone=x=>JSON.parse(JSON.stringify(x));
@@ -35,8 +35,17 @@ test('facilities keep an entrance and all map coordinates and rotations must be 
  const w=fresh().world;const house=w.placements[0];for(const mutate of [p=>p.x=-1,p=>p.y=24,p=>p.x=.5,p=>p.rotation=1.5,p=>p.zone=2]){const p={...house};mutate(p);assert.ok(placementError(w,p));}
  for(const mutate of [w=>w.placements[0].rotation=.5,w=>w.crops.push({id:w.seq++,cultivar:10,zone:0,x:.5,y:4,progress:0,water:90,care:0,harvests:0,lastSim:0}),w=>w.version='5']){const d=stored(w);mutate(d);assert.equal(validWorld(d,[1,2]),false);}
 });
-test('camera stays covered at all supported viewport sizes and maps input to the correct tile',()=>{
- for(const [width,height] of [[320,568],[390,844],[844,390],[1440,900],[1920,1080]]){const c={x:9999,y:-999,zoom:.01,ready:true};constrainCamera(c,width,height);assert.ok(c.x>=0&&c.y>=0);assert.ok(c.x+width/c.zoom<=36*48+.001);assert.ok(c.y+height/c.zoom<=24*48+.001);const [x,y]=screenToCell(c,0,0);assert.equal(x,Math.floor(c.x/48));assert.equal(y,Math.floor(c.y/48));}
+test('camera includes map-edge artwork at all supported viewport sizes and maps input to the correct tile',()=>{
+ for(const [width,height] of [[320,568],[390,844],[844,390],[1440,900],[1920,1080]]){const c={x:9999,y:-999,zoom:.01,ready:true};constrainCamera(c,width,height);assert.ok(c.x>=-MAP_MARGIN&&c.y>=-MAP_MARGIN);assert.ok(c.x+width/c.zoom<=36*48+MAP_MARGIN+.001);assert.ok(c.y+height/c.zoom<=24*48+MAP_MARGIN+.001);const [x,y]=screenToCell(c,0,0);assert.equal(x,Math.floor(c.x/48));assert.equal(y,Math.floor(c.y/48));}
+});
+test('map edges can move inside the clear area below the header and above the tools',()=>{
+ for(const [width,height,frame] of [[390,844,{left:12,top:185,right:322,bottom:670}],[844,390,{left:308,top:92,right:772,bottom:294}]])for(const zoom of [.1,1.1,3]){
+  const c={x:-99999,y:-99999,zoom,ready:true};constrainCamera(c,width,height,frame);
+  assert.ok(-c.x*c.zoom>=frame.left);assert.ok(-c.y*c.zoom>=frame.top);
+  const point={x:(24-c.x)*c.zoom,y:(24-c.y)*c.zoom};assert.deepEqual(screenToCell(c,point.x,point.y),[0,0]);
+  c.x=99999;c.y=99999;constrainCamera(c,width,height,frame);
+  assert.ok((36*48-c.x)*c.zoom<=frame.right);assert.ok((24*48-c.y)*c.zoom<=frame.bottom);
+ }
 });
 test('V4 migration preserves all six layouts, styles, seeds, memories and in-flight earnings exactly once',()=>{
  const s=fresh(),w=createWorld(99,4);s.world=w;w.unlocked=[0,1,2,3,4,5];
@@ -88,11 +97,11 @@ test('V1 through V4 native saves migrate once, back up original bytes and retain
   const migrated=loaded.storage.get('slimeSummonerSave');assert.equal(loaded.run('load();save()'),true);assert.equal(loaded.storage.get('slimeSummonerSave'),migrated);assert.equal(loaded.storage.get(`slimeSummonerSave_v${version}_backup`),raw);
  }
 });
-test('native dispatch uses ae243d9 rewards and home workers cannot be dispatched, merged or used in battle',()=>{
- const h=native();h.run('S.globalPlan="explore";S.slimes[0].stamina=100;S.slimes[0].luck=0;');const s=h.state().slimes[0],before=h.state().coins;h.run('runPlans(true)');assert.ok(h.state().coins-before>=Math.round(Math.round(120*(1+s.agi/100))*(1+h.run('slimePower(S.slimes[0])')/300)));
+test('native dispatch keeps reference pending rewards and home workers cannot be dispatched, merged or used in battle',()=>{
+ const h=native();h.run('S.globalPlan="explore";S.slimes[0].stamina=100;S.slimes[0].luck=0;');const s=h.state().slimes[0],before=h.state().coins;h.run('runPlans(true)');assert.equal(h.state().coins,before);assert.equal(h.state().explorePending.coins,Math.round(Math.round(3*(1+s.agi/100))*(1+h.run('slimePower(S.slimes[0])')/600)));
  h.run('S.globalPlan=null;LivingWorld.dispatch({type:"assign",slime:S.slimes[0].id,building:2});');assert.equal(h.run('LivingWorld.isBusy(S,S.slimes[0].id)'),true);h.run('S.globalPlan="explore";');assert.equal(h.run('getPlan(S.slimes[0].id)'),null);h.run('abyssSetupSel=[S.slimes[0].id];startAbyssBattle();');assert.equal(h.context.__TEST__._battle,undefined);
 });
-test('one recovery clock and deterministic offline catch-up match segmented online time',()=>{
+test('one recovery clock matches segmented online time without duplicate stamina recovery',()=>{
  const a=native(),b=native();for(const h of [a,b]){h.run('S.globalPlan="explore";S.feedTrough=10;');}
  a.run('advanceWorld(3600,true)');for(let i=0;i<60;i++)b.run('advanceWorld(60,true)');assert.equal(a.run('JSON.stringify(S)'),b.run('JSON.stringify(S)'));
  const c=native();c.run('S.slimes[0].stamina=50;S.feedTrough=0;advanceWorld(10,true)');assert.ok(Math.abs(c.state().slimes[0].stamina-54)<.00001);

@@ -12,18 +12,24 @@ function advanceWorld(seconds,silent=false,includeHome=true){
     for(let i=0;i<seconds;i++){
       for(const s of S.slimes)recoverPlanTick(s);
       S.planClock=((S.planClock||0)+1)%12;
-      if(S.planClock===0)runPlans(true);
+      if(S.planClock===0)runPlans(silent);
       if(includeHome){if(S.world?.version===5)LivingWorld.tick(S,1);else LivingWorld.tickLegacy(S,1);}
     }
   }finally{bulkSimulation=previous;}
   gains.coins=S.coins-beforeCoins;gains.treasure=(S.bag.treasure||0)-beforeTreasure;gains.changed=true;return gains;
 }
-function settleOffline(ms){return advanceWorld(Math.floor(clamp(Number(ms)||0,0,43200000)/1000),true);}
+function settleOffline(ms){
+  const seconds=Math.floor(clamp(Number(ms)||0,0,43200000)/1000);
+  if(!canWrite()||!S.started||seconds<=0)return;
+  const previous=bulkSimulation;bulkSimulation=true;
+  try{return LivingWorld.tick(S,seconds);}finally{bulkSimulation=previous;}
+}
 function tickWorld(){
   const now=Date.now(),seconds=Math.floor((now-lastWorldTick)/1000);
   if(!S.started||!canWrite()||seconds<0){lastWorldTick=now;return;}
   if(seconds<1)return;lastWorldTick+=seconds*1000;
-  advanceWorld(seconds);updateLive();LivingWorld.paintResidents();
+  if(seconds>1)settleOffline((seconds-1)*1000);
+  advanceWorld(1);updateLive();if(activeTab==='home')LivingWorld.paintResidents();
   if(now-lastRecoverySave>=10000){save();lastRecoverySave=now;if(activeTab==='home')LivingWorld.refresh();}
 }
 setInterval(tickWorld,1000);

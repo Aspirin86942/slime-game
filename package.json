@@ -7,8 +7,8 @@
     "docs:content": "node --experimental-strip-types scripts/catalog.mjs",
     "typecheck": "tsc --noEmit",
     "test:world": "node --experimental-strip-types --test tests/home.test.mjs tests/world.test.mjs tests/common-life.test.mjs tests/storybook.test.mjs",
-    "test": "npm run typecheck && npm run build && npm run test:world && node tests/review-tests.cjs && node tests/merge-growth.cjs",
-    "test:browser": "node tests/home-browser.cjs"
+    "test": "npm run typecheck && npm run build && npm run test:world && node tests/review-tests.cjs && node tests/merge-growth.cjs && node --test tests/reference-home.test.cjs",
+    "test:browser": "node tests/home-browser.cjs && node tests/reference-browser.cjs && node tests/theme-browser.cjs && node tests/mobile-home-browser.cjs"
   },
   "devDependencies": { "esbuild": "0.25.12", "typescript": "5.9.3" }
 }
