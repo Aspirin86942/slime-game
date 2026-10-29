@@ -9,7 +9,9 @@ export const SEASONS=['春','夏','秋','冬'];
 export const WEATHER=['晴','细雨','薄雾','微风'];
 const cap=(v:number)=>Math.min(100,Math.max(0,v));
 export function level(w:World,id:string):number {return Math.max(0,...w.placements.filter(p=>p.def===id&&!p.stored).map(p=>p.level));}
-export function bounds(p:Placement):[number,number] {const d=BUILDINGS.find(b=>b.id===p.def);const s=d?.size??[1,1];return p.rotation%2?[s[1],s[0]]:[s[0],s[1]];}
+// 占地跟随形态 form，功能仍看 level；旧存档缺少 form 时保持 1 级占地，读档不会突然重叠。
+export const formOf=(p:Placement):number=>p.form??1;
+export function bounds(p:Placement,form=formOf(p)):[number,number] {const d=BUILDINGS.find(b=>b.id===p.def);const s=d?.forms[form-1]??d?.size??[1,1];return p.rotation%2?[s[1],s[0]]:[s[0],s[1]];}
 export function environment(w:World,zone:number,x=6,y=6,slimes:Slime[]=[]):Environment {
  const s=season(w),e:Environment={light:60,moisture:45,fertility:45,quality:45,temperature:[22,29,18,8][s],reasons:[`${SEASONS[s]}季基础温度 ${[22,29,18,8][s]}°` ]};
  if((w.version===5?biomeAt(w,x,y):zone)===2){e.light-=15;e.moisture+=15;e.reasons.push('林间树冠：光照 −15，湿度 +15');}

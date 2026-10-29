@@ -298,5 +298,107 @@
         1
       ]
     }
+  },
+  "facilities-c": {
+    "items": [
+      "house level 2: the same cream cottage expanded: a side wing with a second terracotta roof, small timber porch with two lanterns, flower boxes under two warm windows, stone chimney. About as wide as tall",
+      "house level 3: grand two-storey storybook manor version of the same cottage: cream plaster upper floor with honey timber framing, terracotta roofs with one small round turret, gilded trim on the eaves, an arched stained-glass window, climbing roses, warm glowing windows. Somewhat taller than wide",
+      "kitchen level 2: the same outdoor kitchen enlarged into a timber cookhouse: the cream canvas awning becomes a shingled half-roof, brick stove with chimney, hanging copper pans, herb strings, prep counter. Somewhat taller than wide",
+      "kitchen level 3: festive feast kitchen pavilion: carved timber frame, terracotta roof, two stone ovens glowing amber, long counter with pies and bread, string of warm lanterns, small gilded weathervane. About as wide as tall",
+      "table level 2: longer wooden dining table for four with two long benches, linen runner, small vase of flowers, two little lanterns. Clearly wider than tall",
+      "table level 3: elegant garden banquet table under a carved timber pergola with climbing flowers and hanging lanterns, gilded chair backs, cake stand and teapots. About as wide as tall",
+      "spa level 2: larger natural stone hot spring with two connected teal pools, wooden deck edge, bamboo water spout, small bench with folded towels, soft steam kept inside the cell. About as wide as tall",
+      "spa level 3: luxurious hot spring retreat: terraced stone pools, a small timber bathhouse with terracotta roof and paper lanterns, softly glowing turquoise crystals at the edge, gentle steam inside the cell. Somewhat taller than wide",
+      "bed level 2: wider raised wooden seedbed with three rows of sprouting seedlings, little picket border, watering can, plain wooden marker posts WITHOUT text. Clearly wider than tall",
+      "bed level 3: grand tiered garden bed: two levels of timber planters with lush seedlings and blossoms, small arched trellis with lanterns, tiny dew-collecting glass bulbs glowing softly. About as wide as tall",
+      "greenhouse level 2: the same timber glass greenhouse widened with a side wing, moss green pitched roofs, potted plants visible inside, small door with brass handle. About as wide as tall",
+      "greenhouse level 3: grand storybook conservatory: domed glass roof with moss green ribs and a gilded finial, two glass wings, hanging ferns, warm glowing interior. Somewhat taller than wide",
+      "pollen level 2: larger pollination shelter: timber frame with small shingled roof, five hanging flower baskets, one wooden beehive box, two butterflies. Somewhat taller than wide",
+      "pollen level 3: ornate flower pavilion: carved arched timber gazebo with terracotta roof, cascading flower baskets, two beehives, softly glowing pollen motes, gilded trim. About as wide as tall",
+      "seedbank level 2: wider timber seed cabinet: two columns of small drawers WITHOUT text, little roof with carved brackets, seed jars on top, small ladder. Somewhat taller than wide",
+      "seedbank level 3: tall seed library tower: narrow two-storey timber tower with terracotta roof, many tiny drawers WITHOUT text, round window, brass lantern, small balcony with seed jars. Clearly taller than wide"
+    ],
+    "rows": [
+      0.0,
+      0.2822966507177033,
+      0.518341307814992,
+      0.7360446570972887,
+      1.0
+    ],
+    "columns": [
+      0.0,
+      0.2567783094098884,
+      0.5047846889952153,
+      0.748006379585327,
+      1.0
+    ]
+  },
+  "facilities-d": {
+    "items": [
+      "grove level 2: nursery grove of five young leafy trees in a wooden border, stacked log pile, small chopping stump. About as wide as tall",
+      "grove level 3: majestic grove: one great old broadleaf tree with a small treehouse platform and rope ladder, surrounded by saplings and log stacks, hanging lanterns. Somewhat taller than wide",
+      "compost level 2: double timber compost bins with hinged lids, a pile of fallen leaves, small shovel. About as wide as tall",
+      "compost level 3: tidy compost station: three timber bins under a small shingled roof, mushroom clusters, wheelbarrow of rich dark soil, a few glowing fireflies. Somewhat taller than wide",
+      "insects level 2: taller two-storey insect hotel with bamboo, pinecone and log sections and a tiny terracotta roof. Narrow, clearly taller than wide",
+      "insects level 3: grand insect sanctuary: wide insect hotel with three gabled terracotta roofs, flower boxes, bee and butterfly visitors, small gilded weathervane. Somewhat taller than wide",
+      "observe level 2: raised timber lookout platform with railing, binoculars on a tripod, field notebook, small canvas shade. Somewhat taller than wide",
+      "observe level 3: observation tower: two-level timber tower with an outside stair, brass spyglass, small banner flag, map table, terracotta roof. Clearly taller than wide",
+      "channel level 2: longer narrow stone-lined water channel receding upward in the elevated view, two bamboo spouts, tiny wooden footbridge. Narrow, clearly taller than wide",
+      "channel level 3: two parallel stone water channels joined by a small stone arch, a little wooden water wheel, moss and ferns. Somewhat taller than wide",
+      "pond level 2: larger natural teal pond with stepping stones, lily pads, reeds and a small wooden dock. About as wide as tall",
+      "pond level 3: grand lotus pond: wide teal pond with a curved wooden bridge, blooming lotuses, a little stone lantern, a few glowing fireflies. Somewhat taller than wide",
+      "filter level 2: three cascading stone water-filter basins with mossy rims connected by bamboo spouts. Somewhat taller than wide",
+      "filter level 3: ornate purification fountain: tiered carved stone basins with a softly glowing turquoise crystal at the top, water cascading. Clearly taller than wide",
+      "waterbed level 2: longer raised wood aquatic planter with two lotuses and water lilies, small wooden steps. Clearly wider than tall",
+      "waterbed level 3: elegant water garden: two-tier wooden aquatic planters with lotus and iris blooms, small bamboo fountain, floating lanterns. About as wide as tall"
+    ],
+    "rows": [
+      0.0,
+      0.2711323763955343,
+      0.5350877192982456,
+      0.7416267942583732,
+      1.0
+    ],
+    "columns": [
+      0.0,
+      0.24162679425837322,
+      0.5007974481658692,
+      0.740829346092504,
+      1.0
+    ]
+  },
+  "facilities-e": {
+    "items": [
+      "woodshop level 2: covered carpenter workshop: workbench under a shingled lean-to roof, tool wall, stacked planks, sawhorse. Somewhat taller than wide",
+      "woodshop level 3: master woodshop: small timber workshop house with terracotta roof, big carved door open showing tools, finished furniture outside, hanging lantern, carved sign WITHOUT text. About as wide as tall",
+      "alchemy level 2: larger alchemy station: workbench with a copper still, shelves of amber glass flasks, hanging herbs under a small canvas roof. Somewhat taller than wide",
+      "alchemy level 3: alchemist workshop: small round tower with terracotta conical roof, glowing colored flasks in the window, copper still with soft amber glow, little herb garden. About as wide as tall",
+      "training level 2: larger fenced practice yard with two straw targets, a rack of wooden practice sticks, small flag. About as wide as tall",
+      "training level 3: grand training arena: round timber-fenced arena with banners, three straw targets, small wooden viewing stand with roof, softly glowing rune stones. Somewhat taller than wide",
+      "archive level 2: the same cream plaster library cottage with a side wing, bay window full of books, flower boxes, porch lantern. About as wide as tall",
+      "archive level 3: grand storybook library: two-storey cream plaster library with terracotta roofs, round rose window WITHOUT numerals, tall arched windows full of books, gilded trim. Somewhat taller than wide",
+      "stars level 2: raised star-gazing platform with railing, a larger brass telescope, star chart table, small canvas canopy. Somewhat taller than wide",
+      "stars level 3: observatory tower: cream stone tower with an open domed copper roof holding a big brass telescope, star-pattern banner, softly glowing star lamps. Clearly taller than wide",
+      "memorial level 2: larger memory pavilion: timber pavilion with shingled roof, framed pictures with NO readable content, flower wreaths, two lanterns. Somewhat taller than wide",
+      "memorial level 3: grand memorial hall: open carved timber hall with terracotta roof, gilded trim, flower garlands, keepsakes on shelves, warm lantern glow, NO readable text. About as wide as tall",
+      "trough level 2: longer double wooden feeding trough filled with golden grain, one small grain sack. About as wide as tall",
+      "trough level 3: cozy feeding pavilion: wooden feeding troughs under a small shingled roof, grain sacks, hanging feed scoop, flowers around. Somewhat taller than wide",
+      "toys level 2: toy corner: wooden block tower, two cloth balls, small wooden slide, toy chest. About as wide as tall",
+      "toys level 3: little playground: wooden slide and swing set, toy chest, colorful pennant bunting, soft balls. Somewhat taller than wide"
+    ],
+    "rows": [
+      0.0,
+      0.2647527910685805,
+      0.518341307814992,
+      0.7679425837320574,
+      1.0
+    ],
+    "columns": [
+      0.0,
+      0.2527910685805423,
+      0.5023923444976076,
+      0.7368421052631579,
+      1.0
+    ]
   }
 }

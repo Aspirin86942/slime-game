@@ -26,7 +26,10 @@ function grounded(sheet:string,index:number,cx:number,baseline:number,width:numb
  return sprite(sheet,index,cx-w/2,baseline-h,w,h,dark,style);
 }
 const facilityNames=['house','kitchen','table','spa','bed','greenhouse','pollen','seedbank','grove','compost','insects','observe','channel','pond','filter','waterbed','woodshop','alchemy','expedition','training','archive','stars','resonance','memorial','trough','toys'];
-export function objectFrame(def:string):[string,number]|null {
+// 可升级设施的 2、3 级形态：每张图集 8 座设施，每座的 2 级、3 级图并排，生成时同一建筑的外观更一致。
+export const GROWN_FACILITIES=facilityNames.filter(id=>id!=='expedition'&&id!=='resonance');
+export const GROWN_SHEETS=['facilities-c','facilities-d','facilities-e'];
+function baseFrame(def:string):[string,number]|null {
  const index=facilityNames.indexOf(def);
  if(index>=0)return [index<16?'facilities-a':'facilities-b',index%16];
  const match=/^decor-([1-7])-([0-5])$/.exec(def);
@@ -34,20 +37,54 @@ export function objectFrame(def:string):[string,number]|null {
  const i=(Number(match[1])-1)*6+Number(match[2]);
  return [['decor-a','decor-b','decor-c'][Math.floor(i/16)],i%16];
 }
-export function objectPreview(def:string):string {
- const frame=objectFrame(def);if(!frame||!atlases[frame[0]])return '';
+export function grownFrame(def:string,form:number):[string,number]|null {
+ const k=GROWN_FACILITIES.indexOf(def);if(k<0||form<2)return null;
+ return [GROWN_SHEETS[Math.floor(k/8)],(k%8)*2+form-2];
+}
+// 新形态图未到位时退回 1 级图，按新占地等比例放大，游戏照常可玩。
+export function objectFrame(def:string,form=1):[string,number]|null {
+ const grown=grownFrame(def,form);
+ return grown&&atlases[grown[0]]?.frames[grown[1]]?grown:baseFrame(def);
+}
+export function objectPreview(def:string,form=1):string {
+ const frame=objectFrame(def,form);if(!frame||!atlases[frame[0]])return '';
  return `<svg viewBox="0 0 100 90" aria-hidden="true">${sprite(...frame,6,4,88,80)}</svg>`;
 }
-export function paintedObject(def:string,a:number,b:number,dark:boolean,level=1):string {
- const frame=objectFrame(def);if(!frame)return '';
+/* 夜间暖光位置：相对于实际绘制的图片，x 从左、y 从上按比例取值，图片放大或换形态时光点跟着窗户走。
+   键为「设施:形态」；新形态图未到位时画面用的是 1 级图，光点也取 1 级位置。 */
+const LAMPS:Record<string,[number,number][]>={
+ 'house:1':[[.642,.73]],'kitchen:1':[[.5,.755]],
+ 'house:2':[[.61,.70],[.81,.70]],'house:3':[[.27,.48],[.76,.43],[.73,.76]],
+ 'kitchen:2':[[.72,.78],[.11,.55],[.86,.58]],'kitchen:3':[[.35,.72],[.72,.72]],
+ 'table:2':[[.25,.30],[.72,.30]],'table:3':[[.13,.49],[.5,.38],[.9,.5]],
+ 'spa:3':[[.45,.34],[.77,.34],[.15,.78]],'bed:3':[[.11,.57],[.89,.58]],
+ 'greenhouse:2':[[.46,.62],[.76,.59]],'greenhouse:3':[[.5,.7],[.1,.76],[.86,.73]],
+ 'pollen:2':[[.23,.45]],'pollen:3':[[.19,.59],[.85,.58]],
+ 'seedbank:2':[[.12,.47]],'seedbank:3':[[.67,.30],[.36,.29],[.72,.70]],
+ 'grove:3':[[.25,.57],[.88,.56],[.82,.68]],'compost:3':[[.9,.45]],
+ 'insects:3':[[.06,.65],[.94,.65]],'observe:2':[[.9,.29]],'observe:3':[[.18,.38],[.5,.40],[.11,.9]],
+ 'pond:3':[[.85,.39]],'waterbed:3':[[.83,.55],[.11,.72]],
+ 'woodshop:2':[[.2,.48],[.79,.40]],'woodshop:3':[[.14,.60],[.74,.65],[.48,.63]],
+ 'alchemy:2':[[.11,.44]],'alchemy:3':[[.51,.51],[.21,.78],[.67,.75]],
+ 'training:2':[[.28,.30],[.72,.22]],'training:3':[[.21,.43],[.76,.45],[.51,.36]],
+ 'archive:2':[[.18,.68],[.68,.70]],'archive:3':[[.30,.50],[.77,.51],[.3,.8],[.82,.81]],
+ 'stars:2':[[.21,.31],[.78,.61]],'stars:3':[[.13,.54],[.92,.53]],
+ 'memorial:2':[[.11,.53],[.87,.53],[.46,.63]],'memorial:3':[[.08,.56],[.93,.56],[.5,.67]],
+ 'trough:3':[[.19,.54]]
+};
+const lamps=(def:string,form:number,frame:[string,number])=>LAMPS[`${def}:${frame[0]===grownFrame(def,form)?.[0]?form:1}`]??[];
+export function paintedObject(def:string,a:number,b:number,dark:boolean,form=1):string {
+ const frame=objectFrame(def,form);if(!frame)return '';
  const decor=def.startsWith('decor-'),fence=def.startsWith('decor-1-');
- const base=fence?25:b*48-10,width=fence?53:decor?57:a*48+10;
- let art=grounded(...frame,a*24,base,width,fence?40:decor?76:b*48+76,dark);
- if(dark&&(def==='house'||def==='kitchen'||def.startsWith('decor-2-'))){
-  const x=a*24+(def==='house'?15:0),y=base-(def==='house'?35:26);
-  art+=`<ellipse class="home-lamplight" cx="${x}" cy="${y}" rx="23" ry="27" fill="url(#lw-window)" opacity=".46" pointer-events="none"/>`;
+ const base=fence?25:b*48-10,width=fence?53:decor?57:a*48+10,maxHeight=fence?40:decor?76:b*48+76;
+ let art=grounded(...frame,a*24,base,width,maxHeight,dark);
+ if(dark&&def.startsWith('decor-2-'))art+=`<ellipse class="home-lamplight" cx="${a*24}" cy="${base-26}" rx="23" ry="27" fill="url(#lw-window)" opacity=".46" pointer-events="none"/>`;
+ else if(dark&&!decor){
+  const f=atlases[frame[0]]?.frames[frame[1]];
+  // 多窗建筑缩小每盏光晕，避免光点叠加盖住墙面和窗框细节。
+  if(f){const w=Math.min(width,maxHeight*f[2]/f[3]),h=w*f[3]/f[2],r=Math.min(1.5,w/106)*(frame[0]===grownFrame(def,form)?.[0] ? .6 : 1);
+   art+=lamps(def,form,frame).map(([fx,fy])=>`<ellipse class="home-lamplight" cx="${(a*24-w/2+fx*w).toFixed(1)}" cy="${(base-h+fy*h).toFixed(1)}" rx="${(23*r).toFixed(1)}" ry="${(27*r).toFixed(1)}" fill="url(#lw-window)" opacity=".46" pointer-events="none"/>`).join('');}
  }
- if(level>1&&!decor)art+=`<g aria-hidden="true" fill="#e9bc61" stroke="#89613f" stroke-width=".8">${Array.from({length:level-1},(_,i)=>`<circle cx="${a*24-4+i*8}" cy="${base-6}" r="2.6"/>`).join('')}</g>`;
  return art;
 }
 export function plantFrame(def:PlantDef):[string,number] {

@@ -5,12 +5,12 @@ export interface GameState { started:boolean; saveVersion:number; slimes:Slime[]
 export interface SaveV5 extends GameState { saveVersion:5; world:World; }
 export interface SaveV4 extends GameState { saveVersion:4; world:World; }
 export interface SaveV3 extends GameState { saveVersion:3; world:World; }
-export interface BuildingDef {id:string; name:string; zone:number; icon:string; desc:string; service:string; size:[number,number]; cost:Stock; upgrades:[string,string];}
+export interface BuildingDef {id:string; name:string; zone:number; icon:string; desc:string; service:string; size:[number,number]; forms:[[number,number],[number,number],[number,number]]; cost:Stock; upgrades:[string,string];}
 export interface DecorationDef {id:string; name:string; group:number; icon:string; effect:string; cost:Stock;}
 export interface PlantDef {id:string;name:string;family:number;minutes:number;color:number;light:number;moisture:number;temp:number;product:string;use:string;parents?:[string,string];}
 export interface VisitorDef {id:string;name:string;zone:number;need:string;service:string;humidity:number;quality:number;plants:number;}
 export interface ZoneDef {id:number; name:string; area:string; color:string; threshold:number; story:string;}
-export interface Placement {id:number; def:string;zone:number;x:number;y:number;rotation:number;level:number;stored:boolean;}
+export interface Placement {id:number; def:string;zone:number;x:number;y:number;rotation:number;level:number;stored:boolean;form?:number;}
 export interface Genes {color:number;form:number;yield:number;speed:number;adapt:number;}
 export interface Cultivar {id:number;species:string;name:string;genes:Genes;parents:string[];protected:boolean;seeds:number;}
 export interface Crop {id:number;cultivar:number;zone:number;x:number;y:number;progress:number;water:number;care:number;harvests:number;lastSim:number;}

@@ -8,9 +8,12 @@ const sharp = process.argv[2] ? require(resolve(process.argv[2], 'sharp')) : req
 const source = 'docs/art-2026-10-29/production';
 const output = 'src/assets/storybook';
 const layouts = JSON.parse(await readFile(`${source}/layouts.json`, 'utf8'));
+const selected = process.argv.slice(3);
+for (const name of selected) if (!layouts[name]) throw Error(`Unknown sheet: ${name}`);
 await mkdir(output, {recursive:true});
-const manifest = {};
+const manifest = selected.length ? JSON.parse(await readFile(`${output}/manifest.json`, 'utf8')) : {};
 for (const [name, layout] of Object.entries(layouts)) {
+  if (selected.length && !selected.includes(name)) continue;
   const input = await readFile(`${source}/${name}.png`);
   const {data, info} = await sharp(input).ensureAlpha().raw().toBuffer({resolveWithObject:true});
   const {width, height} = info;

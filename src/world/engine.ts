@@ -2,7 +2,7 @@ import {mapWidth,mapHeight,cell,inside,neighbours,biomeAt} from './map.ts';
 import type {World,GameState,GameCommand,Result,GameEvent,Stock,Genes,Companion,Trip,Slime,Crop,Placement,Juvenile} from './types.ts';
 import {BUILDINGS,DECORATIONS,PATH_STYLES,PLANTS,ZONES,RECIPES,ELEMENTS,PERSONALITIES,BABY_EVENTS,BABY_PERSONAL_EVENTS} from './content.ts';
 import {EVENTS,CHARACTERS,PERSONAL_CHAINS,PAIR_EVENTS} from './narratives.ts';
-import {environment,level,bounds,refreshVisitors,day} from './ecology.ts';
+import {environment,level,bounds,formOf,refreshVisitors,day} from './ecology.ts';
 import {bindInventory,seedAccount,tripAccount} from './inventory.ts';
 import {prepareWorld,installHomeFacilities,upgradeHome} from './migration.ts';
 import {activity,atHome,resident,aim,record,lifeTick,staminaLimit,entranceCells,route,workerPresent} from './life.ts';
@@ -56,6 +56,27 @@ export function placementError(w:World,p:Placement):string|null {
  const draft={...w,placements:[...w.placements.filter(x=>x.id!==p.id),p]},reachable=passable(draft,p.zone);
  for(const b of draft.placements.filter(x=>x.zone===p.zone&&!x.stored&&BUILDINGS.some(d=>d.id===x.def))){const[width,height]=bounds(b);let access=false;for(let xx=b.x;xx<b.x+width;xx++)access ||=reachable.has((b.y-1)*mapWidth(w)+xx)||reachable.has((b.y+height)*mapWidth(w)+xx);for(let yy=b.y;yy<b.y+height;yy++)access ||= (b.x>0&&reachable.has(yy*mapWidth(w)+b.x-1))||(b.x+width<mapWidth(w)&&reachable.has(yy*mapWidth(w)+b.x+width));if(!access)return '请给设施留出通往区域边缘的入口。';}
  return null;
+}
+export interface Growth {placement:Placement|null;size:[number,number];cells:{x:number;y:number;free:boolean}[];error:string;}
+/* 下一档形态的位置：新占地必须完整包住旧占地，建筑原地长大。
+   优先底边不动、左右居中，门和正面留在原处，屋顶向上长高；放不下时依次尝试其他包住旧占地的位置。 */
+export function growth(w:World,p:Placement):Growth {
+ const form=formOf(p)+1,[a,b]=bounds(p),[A,B]=bounds(p,form),spots:{x:number;y:number;score:number}[]=[];
+ for(let dy=0;dy<=B-b;dy++)for(let dx=0;dx<=A-a;dx++)spots.push({x:p.x-dx,y:p.y-dy,score:Math.abs(dy-(B-b))*100+Math.abs(dx*2-(A-a))});
+ spots.sort((s,t)=>s.score-t.score);
+ const preferred={...p,x:spots[0].x,y:spots[0].y,form},error=placementError(w,preferred)??'';
+ const hit=spots.map(s=>({...p,x:s.x,y:s.y,form})).find(c=>!placementError(w,c))??null;
+ // 首选位置逐格标出能否使用，界面据此画出被挡住的格子。
+ const others=w.placements.filter(o=>o.id!==p.id&&o.zone===p.zone&&!o.stored).flatMap(o=>footprint(o,w)),crops=w.crops.filter(c=>c.zone===p.zone).map(c=>cell(w,c.x,c.y));
+ const cells=Array.from({length:A*B},(_,i)=>{const x=preferred.x+i%A,y=preferred.y+Math.floor(i/A);return {x,y,free:inside(w,x,y)&&!others.includes(cell(w,x,y))&&!crops.includes(cell(w,x,y))};});
+ return {placement:hit,size:[A,B],cells:hit?footprint(hit,w).map(n=>({x:n%mapWidth(w),y:Math.floor(n/mapWidth(w)),free:true})):cells,error};
+}
+function grow(w:World,p:Placement):void {
+ const g=growth(w,p),[A,B]=g.size;
+ const reason=g.error==='物件超出区域边界。'?'靠近地图边缘放不下，请先把它移到空旷处。':g.error==='请给设施留出通往区域边缘的入口。'?'扩建后会挡住设施入口，请先调整周围布局。':'周围有物件或植物挡住，请先移开。';
+ requireThat(g.placement,`扩建需要 ${A}×${B} 的空地，${reason}`);
+ Object.assign(p,{x:g.placement!.x,y:g.placement!.y,form:g.placement!.form});
+ for(const r of Object.values(w.residents)){r.arrived=false;delete r.goal;}
 }
 function plant(w:World,id:number,zone:number,x:number,y:number,explicit=false):void {
  const c=w.cultivars.find(c=>c.id===id);requireThat(c,'没有这个品系。');if(!c)return;
@@ -160,7 +181,10 @@ export function execute(state:GameState,command:GameCommand,available:(id:number
   case 'build':{requireThat(w.version!==5||!['expedition','resonance'].includes(command.def),'该设施已作为纪念装饰保留');const d=BUILDINGS.find(b=>b.id===command.def)??DECORATIONS.find(b=>b.id===command.def);requireThat(d,'未知的设施。');if(!d)break;requireThat(!BUILDINGS.some(b=>b.id===d.id)||!w.placements.some(p=>p.def===d.id),'每种功能设施保留一座，可从收纳中取回。');const p:Placement={id:next(w),def:d.id,zone:command.zone,x:command.x,y:command.y,rotation:command.rotation??0,level:1,stored:false};const err=placementError(w,p);requireThat(!err,err??'');pay(w,d.cost);w.placements.push(p);for(const r of Object.values(w.residents))r.arrived=false;message=`${d.name}已建好`;break;}
   case 'move':{const p=placement(command.id),candidate={...p,zone:command.zone,x:command.x,y:command.y,rotation:command.rotation??p.rotation,stored:false};const err=placementError(w,candidate);requireThat(!err,err??'');Object.assign(p,candidate);for(const r of Object.values(w.residents)){r.arrived=false;delete r.goal;}message='位置已保存';break;}
   case 'store':{const p=placement(command.id);requireThat(!w.crafts.some(t=>t.building===p.id),'请先领取或完成设施中的制作队列。');p.stored=true;w.workers=w.workers.filter(j=>j.building!==p.id);message='已收纳，服务已暂停';break;}
-  case 'upgrade':{const p=placement(command.id);requireThat(w.version!==5||!['expedition','resonance'].includes(p.def),'纪念装饰可移动或收纳');const d=BUILDINGS.find(d=>d.id===p.def);requireThat(d&&p.level<3&&!p.stored,'设施已满级或处于收纳中。');pay(w,Object.fromEntries(Object.entries(d!.cost).map(([k,v])=>[k,v*(p.level+1)])));p.level++;message=d!.upgrades[p.level-2];break;}
+  case 'upgrade':{const p=placement(command.id);requireThat(w.version!==5||!['expedition','resonance'].includes(p.def),'纪念装饰可移动或收纳');const d=BUILDINGS.find(d=>d.id===p.def);
+   // 旧存档里已升级但仍是原占地的设施，先免费展开到与等级对应的形态。
+   if(w.version===5&&d&&!p.stored&&formOf(p)<p.level){grow(w,p);message=`${d.name}展开了新形态`;break;}
+   requireThat(d&&p.level<3&&!p.stored,'设施已满级或处于收纳中。');pay(w,Object.fromEntries(Object.entries(d!.cost).map(([k,v])=>[k,v*(p.level+1)])));p.level++;if(w.version===5)grow(w,p);message=d!.upgrades[p.level-2];break;}
   case 'path':{requireThat((w.version===5?command.zone===0:w.unlocked.includes(command.zone))&&inside(w,command.x,command.y),'路径位置无效。');const key=String(command.zone),n=cell(w,command.x,command.y);w.paths[key]??=[];w.paths[key]=w.paths[key].includes(n)?w.paths[key].filter(v=>v!==n):[...w.paths[key],n];delete w.pathStyles?.[`${key}:${n}`];message='道路已更新';break;}
   case 'paint':{const cells=[...new Set(Array.isArray(command.cells)?command.cells:[])];requireThat((w.version===5?command.zone===0:w.unlocked.includes(command.zone))&&cells.length>0&&cells.length<=mapWidth(w)*mapHeight(w)&&cells.every(n=>Number.isInteger(n)&&n>=0&&n<mapWidth(w)*mapHeight(w))&&Number.isInteger(command.style)&&command.style>=0&&command.style<PATH_STYLES.length,'路面位置或材质无效。');
    // 一次拖动只提交一条命令：路面集合供寻路使用，材质只影响外观；碎石（0 号）是默认材质，不写入存档。

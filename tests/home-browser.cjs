@@ -12,7 +12,7 @@ const check=(name,ok,detail)=>{checks.push({name,ok,detail});assert.ok(ok,name+'
  const mouse=async(type,p,extra={})=>client.send('Input.dispatchMouseEvent',{type,x:p.x,y:p.y,...extra});
  const tap=async p=>{await mouse('mousePressed',p,{button:'left',clickCount:1});await mouse('mouseReleased',p,{button:'left',clickCount:1});};
  const click=async selector=>{
-  if(/data-panel=/.test(selector)&&await ev(`!!document.querySelector('.home-panel')`))await click('[data-lw="close"]');
+  if(/data-panel=/.test(selector)&&await ev(`!!document.querySelector('.home-panel,.home-orbit')`))await click('[data-lw="close"]');
   if(/data-panel="(?:craft|storage|ecology)"/.test(selector)&&!await ev(`!!document.querySelector(${JSON.stringify(selector)})`))await click('[data-lw="more"]');
   const p=await ev(`(()=>{const e=document.querySelector(${JSON.stringify(selector)});if(!e)throw Error('Missing '+${JSON.stringify(selector)});e.scrollIntoView({block:'nearest'});const r=e.getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2};})()`);await tap(p);
  };
@@ -41,10 +41,10 @@ const check=(name,ok,detail)=>{checks.push({name,ok,detail});assert.ok(ok,name+'
   check('rotated painted facilities preserve their aspect ratio',await ev(`(()=>{const p=S.world.placements.find(p=>p.def==='woodshop'),m=document.querySelector('[data-home-object="'+p.id+'"] image').getScreenCTM();return Math.abs(Math.hypot(m.a,m.b)-Math.hypot(m.c,m.d))<.001;})()`));
   const id=await ev(`S.world.placements.find(p=>p.def==='woodshop').id`);await click(`[data-home-object="${id}"]`);await click('[data-lw="move"]');await drag(await point(21,8),await point(23,8));
   check('drag moves facility and keeps its ID',await ev(`S.world.placements.find(p=>p.id===${id}).x===23`));
-  await click(`[data-home-object="${id}"]`);await click('[data-lw="cmd"][data-command*="store"]');
+  await click(`[data-home-object="${id}"]`);await click('[data-lw="manage-open"]');await click('[data-lw="cmd"][data-command*="store"]');
   await click('[data-lw="panel"][data-panel="build"]');await click('[data-lw="category"][data-category="stored"]');await click(`[data-lw="move"][data-id="${id}"]`);await tap(await point(21,8));
   check('stored item returns through the catalog',await ev(`!S.world.placements.find(p=>p.id===${id}).stored`));
-  await click('[data-lw="panel"][data-panel="build"]');await click('[data-lw="category"][data-category="paths"]');await click('[data-lw="path"][data-style="2"]');await drag(await point(11,7),await point(24,7));
+  await click('[data-lw="close"]');await click('[data-lw="center"]');await click('[data-lw="panel"][data-panel="build"]');await click('[data-lw="category"][data-category="paths"]');await click('[data-lw="path"][data-style="2"]');await drag(await point(11,7),await point(24,7));
   check('one dragged stroke crosses both former district seams',await ev(`[11,12,23,24].every(x=>S.world.paths[0].includes(7*36+x)&&S.world.pathStyles['0:'+(7*36+x)]===2)`));
   const roads=await ev(`JSON.stringify(S.world.paths)`),a=await point(12,6),z=await point(14,6);await b.touch.start(a.x,a.y);await b.touch.move(z.x,z.y);await client.send('Input.dispatchTouchEvent',{type:'touchCancel',touchPoints:[]});
   check('cancelled touch stroke does not change the saved roads',await ev(`JSON.stringify(S.world.paths)`)===roads);
@@ -60,7 +60,7 @@ const check=(name,ok,detail)=>{checks.push({name,ok,detail});assert.ok(ok,name+'
   await ev(`S.world.crops.find(c=>c.id===${planted}).progress=1;renderTab();`);
   const beforeHarvest=await ev('JSON.stringify(S.world.inventory.items)');await click('[data-command*="harvest"]');
   check('mature crop harvest changes inventory and cannot stay harvestable',await ev('JSON.stringify(S.world.inventory.items)')!==beforeHarvest&&await ev(`!S.world.crops.some(c=>c.id===${planted}&&c.progress>=1)`));
-  await click('[data-lw="close"]');await click('[data-home-object="2"]');await click('[data-lw="assign"]');
+  await click('[data-lw="close"]');await click('[data-home-object="2"]');await click('[data-lw="manage-open"]');await click('[data-lw="assign"]');
   check('a partner starts work from the facility panel',await ev('S.world.workers.length===1&&LivingWorld.isBusy(S,S.world.workers[0].slimeId)'));
   await click('[data-command*="unassign"]');check('resting releases a working partner',await ev('S.world.workers.length===0'));
   await click('[data-lw="close"]');
@@ -79,7 +79,7 @@ const check=(name,ok,detail)=>{checks.push({name,ok,detail});assert.ok(ok,name+'
   const toyY=await ev(`(()=>{const r=document.querySelector('[data-home-object="${toy}"]').getBoundingClientRect();return r.y+r.height/2;})()`);
   await drag({x:1100,y:600},{x:1100,y:600+450-toyY});
   for(const kind of ['ball','stack']){
-   await click(`[data-home-object="${toy}"]`);await click(`[data-lw="play"][data-kind="${kind}"]`);
+   await click(`[data-home-object="${toy}"]`);await click('[data-lw="use"]');await click(`[data-lw="play"][data-kind="${kind}"]`);
    // Stack binds its controls after the first animation frame has measured the field.
    const ready=await waitFor(()=>ev(`${kind==='stack'?'stackGame':'ballGame'}?.running===true`),3000);
    check('home launches original '+kind+' game',ready&&await ev(`!!document.querySelector('#gameOverlay')&&Object.values(S.world.activities).some(a=>a.kind==='play')`));

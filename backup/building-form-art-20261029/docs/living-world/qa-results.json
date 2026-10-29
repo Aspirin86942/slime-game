@@ -1,0 +1,2062 @@
+{
+  "date": "2026-10-29",
+  "product": "参考版魔法风与完整家园 V5",
+  "file": "史莱姆.html",
+  "saveVersion": 5,
+  "bytes": 7704895,
+  "sha256": "2ed75cf5f5402dea3c8895fa9409819e435c64dea72bbcfb14cf0cbe7a4605b6",
+  "reference": {
+    "path": "史莱姆-参考.html",
+    "sha256": "0f8774ec7664b40ef4e57338d21d77c8e3535203063f0e2a878a5dc3339255a6",
+    "unchanged": true
+  },
+  "historicalBaseline": {
+    "path": "tests/baseline-original.html",
+    "sha256": "60a7b01f21ac6707a399bcb461b233016e9cbae5bfedff20aa36352bf864d6f4",
+    "unchanged": true
+  },
+  "backup": {
+    "path": "backup/mobile-map-20261029",
+    "manifest": "backup/mobile-map-20261029/snapshot.json",
+    "files": 225,
+    "bytes": 19488262,
+    "allHashesVerified": true
+  },
+  "checks": {
+    "typescript": "PASS",
+    "build": "PASS",
+    "worldAndMigration": "73/73",
+    "paintedAssets": "2/2",
+    "legacyRules": "48/48",
+    "mergeGrowth": "PASS",
+    "referenceParity": "10/10",
+    "homeBrowser": "54/54",
+    "referenceBrowser": "62/62",
+    "themeBrowser": "283/283",
+    "browserTotal": "442/442",
+    "browserExceptions": 0,
+    "consoleErrors": 0,
+    "mobileHomeBrowser": "43/43"
+  },
+  "environment": {
+    "os": "win32 10.0.26200",
+    "node": "v26.5.1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36",
+    "renderer": "ANGLE (AMD, AMD Radeon(TM) Graphics (0x00001636) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "cpuThreads": 16,
+    "headless": true,
+    "isolatedProfile": true,
+    "touchEmulated": true,
+    "realMobileTested": false
+  },
+  "performance": {
+    "sampling": "Each scene sampled once for 2.5 seconds at 1440x900, DPR 1 on a desktop GPU.",
+    "ordinary": {
+      "fps": 60.00034967091198,
+      "frames": 151,
+      "p95": 17
+    },
+    "dense": {
+      "fps": 60.34207161130711,
+      "frames": 151,
+      "p95": 16.799999999999272
+    },
+    "densePlants": 300,
+    "ordinaryTargetFps": 55,
+    "denseTargetFps": 30
+  },
+  "content": {
+    "maps": 1,
+    "width": 36,
+    "height": 24,
+    "facilities": 24,
+    "decorations": 42,
+    "pathStyles": 6,
+    "plants": 55,
+    "recipes": 17,
+    "visitors": 18,
+    "legacyMinigames": [
+      "ball",
+      "stack"
+    ]
+  },
+  "artStyle": "林间绘本",
+  "artwork": {
+    "sprites": 129,
+    "pathMaterials": 6,
+    "meadow": 1,
+    "source": "docs/art-2026-10-29/production",
+    "runtime": "src/assets/storybook",
+    "embedded": true
+  },
+  "viewports": [
+    [
+      320,
+      568
+    ],
+    [
+      390,
+      844
+    ],
+    [
+      844,
+      390
+    ],
+    [
+      1440,
+      900
+    ],
+    [
+      1920,
+      1080
+    ]
+  ],
+  "homeBrowserChecks": [
+    {
+      "name": "single fullscreen map with shared navigation and all currencies",
+      "ok": true
+    },
+    {
+      "name": "painted ground and object atlases decode locally",
+      "ok": true,
+      "detail": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "name": "home uses shared line icons in navigation and four tools",
+      "ok": true
+    },
+    {
+      "name": "insufficient materials disable construction without spending stock",
+      "ok": true
+    },
+    {
+      "name": "overlapping construction preserves placements and materials",
+      "ok": true
+    },
+    {
+      "name": "mouse places rotated facility",
+      "ok": true
+    },
+    {
+      "name": "rotated painted facilities preserve their aspect ratio",
+      "ok": true
+    },
+    {
+      "name": "drag moves facility and keeps its ID",
+      "ok": true
+    },
+    {
+      "name": "stored item returns through the catalog",
+      "ok": true
+    },
+    {
+      "name": "one dragged stroke crosses both former district seams",
+      "ok": true
+    },
+    {
+      "name": "cancelled touch stroke does not change the saved roads",
+      "ok": true
+    },
+    {
+      "name": "drag pans map",
+      "ok": true
+    },
+    {
+      "name": "wheel zoom changes the camera",
+      "ok": true
+    },
+    {
+      "name": "pinch zoom and two-finger pan work",
+      "ok": true
+    },
+    {
+      "name": "seed catalog plants by tapping the ground",
+      "ok": true
+    },
+    {
+      "name": "plant care consumes one dew through the visible control",
+      "ok": true
+    },
+    {
+      "name": "mature crop harvest changes inventory and cannot stay harvestable",
+      "ok": true
+    },
+    {
+      "name": "a partner starts work from the facility panel",
+      "ok": true
+    },
+    {
+      "name": "resting releases a working partner",
+      "ok": true
+    },
+    {
+      "name": "open crafting panel updates ready state",
+      "ok": true
+    },
+    {
+      "name": "repeated claim clicks pay exactly once into the shared inventory",
+      "ok": true
+    },
+    {
+      "name": "ecology layer renders across the continuous map",
+      "ok": true
+    },
+    {
+      "name": "home launches original ball game",
+      "ok": true
+    },
+    {
+      "name": "ball releases companions on exit",
+      "ok": true
+    },
+    {
+      "name": "home launches original stack game",
+      "ok": true
+    },
+    {
+      "name": "stack releases companions on exit",
+      "ok": true
+    },
+    {
+      "name": "viewport 1440x900 fills screen and keeps controls visible",
+      "ok": true,
+      "detail": {
+        "width": 1440,
+        "height": 900,
+        "navBottom": 900,
+        "toolLeft": 579,
+        "toolRight": 861,
+        "scroll": 1440,
+        "inner": 1440
+      }
+    },
+    {
+      "name": "catalog fits 1440x900",
+      "ok": true,
+      "detail": {
+        "left": 1034,
+        "right": 1424,
+        "top": 91.453125,
+        "bottom": 804.546875
+      }
+    },
+    {
+      "name": "viewport 1920x1080 fills screen and keeps controls visible",
+      "ok": true,
+      "detail": {
+        "width": 1920,
+        "height": 1080,
+        "navBottom": 1080,
+        "toolLeft": 819,
+        "toolRight": 1101,
+        "scroll": 1920,
+        "inner": 1920
+      }
+    },
+    {
+      "name": "catalog fits 1920x1080",
+      "ok": true,
+      "detail": {
+        "left": 1514,
+        "right": 1904,
+        "top": 91.453125,
+        "bottom": 984.546875
+      }
+    },
+    {
+      "name": "viewport 390x844 fills screen and keeps controls visible",
+      "ok": true,
+      "detail": {
+        "width": 390,
+        "height": 844,
+        "navBottom": 844,
+        "toolLeft": 69,
+        "toolRight": 321,
+        "scroll": 390,
+        "inner": 390
+      }
+    },
+    {
+      "name": "catalog fits 390x844",
+      "ok": true,
+      "detail": {
+        "left": 8,
+        "right": 382,
+        "top": 286.359375,
+        "bottom": 750.546875
+      }
+    },
+    {
+      "name": "viewport 320x568 fills screen and keeps controls visible",
+      "ok": true,
+      "detail": {
+        "width": 320,
+        "height": 568,
+        "navBottom": 568,
+        "toolLeft": 38,
+        "toolRight": 282,
+        "scroll": 320,
+        "inner": 320
+      }
+    },
+    {
+      "name": "catalog fits 320x568",
+      "ok": true,
+      "detail": {
+        "left": 8,
+        "right": 312,
+        "top": 139.4375,
+        "bottom": 474.546875
+      }
+    },
+    {
+      "name": "viewport 844x390 fills screen and keeps controls visible",
+      "ok": true,
+      "detail": {
+        "width": 844,
+        "height": 390,
+        "navBottom": 390,
+        "toolLeft": 16,
+        "toolRight": 298,
+        "scroll": 844,
+        "inner": 844
+      }
+    },
+    {
+      "name": "catalog fits 844x390",
+      "ok": true,
+      "detail": {
+        "left": 492,
+        "right": 832,
+        "top": 89.453125,
+        "bottom": 296.546875
+      }
+    },
+    {
+      "name": "landscape catalog shows a complete available item without scrolling",
+      "ok": true
+    },
+    {
+      "name": "all 42 decorations have painted catalog previews",
+      "ok": true,
+      "detail": 42
+    },
+    {
+      "name": "six painted road styles are available",
+      "ok": true
+    },
+    {
+      "name": "seed catalog shows all plants including the first-harvest reward",
+      "ok": true
+    },
+    {
+      "name": "phone touch drag pans without selecting objects",
+      "ok": true
+    },
+    {
+      "name": "night scenery retains the shared dark theme",
+      "ok": true
+    },
+    {
+      "name": "ordinary home reaches 55 FPS",
+      "ok": true,
+      "detail": {
+        "fps": 60.00034967091198,
+        "frames": 151,
+        "p95": 17
+      }
+    },
+    {
+      "name": "300 plants reach 30 FPS",
+      "ok": true,
+      "detail": {
+        "fps": 60.34207161130711,
+        "frames": 151,
+        "p95": 16.799999999999272
+      }
+    },
+    {
+      "name": "offline normal reload retains identities, layout and all stock",
+      "ok": true
+    },
+    {
+      "name": "all painted assets reload with networking disabled",
+      "ok": true
+    },
+    {
+      "name": "old page opens: space",
+      "ok": true
+    },
+    {
+      "name": "old page opens: summon",
+      "ok": true
+    },
+    {
+      "name": "old page opens: travel",
+      "ok": true
+    },
+    {
+      "name": "old page opens: bag",
+      "ok": true
+    },
+    {
+      "name": "old page opens: status",
+      "ok": true
+    },
+    {
+      "name": "old page opens: home",
+      "ok": true
+    },
+    {
+      "name": "conflicting tab freezes writes and shows recovery action",
+      "ok": true
+    },
+    {
+      "name": "no browser exceptions or console errors",
+      "ok": true,
+      "detail": []
+    }
+  ],
+  "referenceBrowserChecks": [
+    {
+      "name": "320x568-space restores reference layout, colors and navigation icons",
+      "ok": true
+    },
+    {
+      "name": "320x568-space releases home listeners",
+      "ok": true
+    },
+    {
+      "name": "320x568-summon restores reference layout, colors and navigation icons",
+      "ok": true
+    },
+    {
+      "name": "320x568-summon releases home listeners",
+      "ok": true
+    },
+    {
+      "name": "320x568-travel restores reference layout, colors and navigation icons",
+      "ok": true
+    },
+    {
+      "name": "320x568-travel releases home listeners",
+      "ok": true
+    },
+    {
+      "name": "320x568-bag restores reference layout, colors and navigation icons",
+      "ok": true
+    },
+    {
+      "name": "320x568-bag releases home listeners",
+      "ok": true
+    },
+    {
+      "name": "320x568-status restores reference layout, colors and navigation icons",
+      "ok": true
+    },
+    {
+      "name": "320x568-status releases home listeners",
+      "ok": true
+    },
+    {
+      "name": "390x844-space restores reference layout, colors and navigation icons",
+      "ok": true
+    },
+    {
+      "name": "390x844-space releases home listeners",
+      "ok": true
+    },
+    {
+      "name": "390x844-summon restores reference layout, colors and navigation icons",
+      "ok": true
+    },
+    {
+      "name": "390x844-summon releases home listeners",
+      "ok": true
+    },
+    {
+      "name": "390x844-travel restores reference layout, colors and navigation icons",
+      "ok": true
+    },
+    {
+      "name": "390x844-travel releases home listeners",
+      "ok": true
+    },
+    {
+      "name": "390x844-bag restores reference layout, colors and navigation icons",
+      "ok": true
+    },
+    {
+      "name": "390x844-bag releases home listeners",
+      "ok": true
+    },
+    {
+      "name": "390x844-status restores reference layout, colors and navigation icons",
+      "ok": true
+    },
+    {
+      "name": "390x844-status releases home listeners",
+      "ok": true
+    },
+    {
+      "name": "844x390-space restores reference layout, colors and navigation icons",
+      "ok": true
+    },
+    {
+      "name": "844x390-space releases home listeners",
+      "ok": true
+    },
+    {
+      "name": "844x390-summon restores reference layout, colors and navigation icons",
+      "ok": true
+    },
+    {
+      "name": "844x390-summon releases home listeners",
+      "ok": true
+    },
+    {
+      "name": "844x390-travel restores reference layout, colors and navigation icons",
+      "ok": true
+    },
+    {
+      "name": "844x390-travel releases home listeners",
+      "ok": true
+    },
+    {
+      "name": "844x390-bag restores reference layout, colors and navigation icons",
+      "ok": true
+    },
+    {
+      "name": "844x390-bag releases home listeners",
+      "ok": true
+    },
+    {
+      "name": "844x390-status restores reference layout, colors and navigation icons",
+      "ok": true
+    },
+    {
+      "name": "844x390-status releases home listeners",
+      "ok": true
+    },
+    {
+      "name": "1440x900-space restores reference layout, colors and navigation icons",
+      "ok": true
+    },
+    {
+      "name": "1440x900-space releases home listeners",
+      "ok": true
+    },
+    {
+      "name": "1440x900-summon restores reference layout, colors and navigation icons",
+      "ok": true
+    },
+    {
+      "name": "1440x900-summon releases home listeners",
+      "ok": true
+    },
+    {
+      "name": "1440x900-travel restores reference layout, colors and navigation icons",
+      "ok": true
+    },
+    {
+      "name": "1440x900-travel releases home listeners",
+      "ok": true
+    },
+    {
+      "name": "1440x900-bag restores reference layout, colors and navigation icons",
+      "ok": true
+    },
+    {
+      "name": "1440x900-bag releases home listeners",
+      "ok": true
+    },
+    {
+      "name": "1440x900-status restores reference layout, colors and navigation icons",
+      "ok": true
+    },
+    {
+      "name": "1440x900-status releases home listeners",
+      "ok": true
+    },
+    {
+      "name": "1920x1080-space restores reference layout, colors and navigation icons",
+      "ok": true
+    },
+    {
+      "name": "1920x1080-space releases home listeners",
+      "ok": true
+    },
+    {
+      "name": "1920x1080-summon restores reference layout, colors and navigation icons",
+      "ok": true
+    },
+    {
+      "name": "1920x1080-summon releases home listeners",
+      "ok": true
+    },
+    {
+      "name": "1920x1080-travel restores reference layout, colors and navigation icons",
+      "ok": true
+    },
+    {
+      "name": "1920x1080-travel releases home listeners",
+      "ok": true
+    },
+    {
+      "name": "1920x1080-bag restores reference layout, colors and navigation icons",
+      "ok": true
+    },
+    {
+      "name": "1920x1080-bag releases home listeners",
+      "ok": true
+    },
+    {
+      "name": "1920x1080-status restores reference layout, colors and navigation icons",
+      "ok": true
+    },
+    {
+      "name": "1920x1080-status releases home listeners",
+      "ok": true
+    },
+    {
+      "name": "reference summon control creates one partner",
+      "ok": true
+    },
+    {
+      "name": "exploration stores rewards until the visible claim button is used",
+      "ok": true
+    },
+    {
+      "name": "claim transfers exploration coins",
+      "ok": true
+    },
+    {
+      "name": "original battle opens with manual controls and reserves partners",
+      "ok": true
+    },
+    {
+      "name": "battle mode toggles to automatic",
+      "ok": true
+    },
+    {
+      "name": "battle mode returns to manual",
+      "ok": true
+    },
+    {
+      "name": "retreat shows the reference battle result",
+      "ok": true
+    },
+    {
+      "name": "closing battle releases partners",
+      "ok": true
+    },
+    {
+      "name": "returning home creates exactly one active map listener",
+      "ok": true
+    },
+    {
+      "name": "reference settings increase the notch height",
+      "ok": true
+    },
+    {
+      "name": "reference settings restore the notch height",
+      "ok": true
+    },
+    {
+      "name": "no browser exceptions or console errors during reference comparison or play",
+      "ok": true,
+      "detail": []
+    }
+  ],
+  "persistence": {
+    "key": "slimeSummonerSave",
+    "versions": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "referenceV2Fixture": true,
+    "offlineScope": "home only",
+    "offlineCapHours": 12,
+    "legacyOfflineRewards": false,
+    "migrationBackup": "raw bytes before migration",
+    "retryAndConflictProtection": true
+  },
+  "reports": {
+    "rules": "tools/out/magic-ui/mobile/rules.log",
+    "browser": "tools/out/magic-ui/mobile/browser.log",
+    "home": "tools/out/magic-ui/home/results.json",
+    "originalPages": "tools/out/magic-ui/original-pages/results.json",
+    "themes": "tools/out/magic-ui/themes/results.json",
+    "comparison": "tools/out/magic-ui/comparison.png",
+    "screenshots": "tools/out/magic-ui/",
+    "mobile": "tools/out/magic-ui/mobile/results.json",
+    "mobileComparison": "tools/out/magic-ui/mobile/comparison.png"
+  },
+  "limits": [
+    "Touch input was emulated in Chromium; physical phones and other browsers were not tested.",
+    "Migration used isolated synthetic saves, a save produced by the reference game, and the repository V3 fixture.",
+    "Performance measurements are short desktop samples, not a sustained-load benchmark."
+  ],
+  "interface": {
+    "style": "reference magic",
+    "themes": [
+      "sunset",
+      "dark",
+      "light",
+      "peach",
+      "mint",
+      "lavender"
+    ],
+    "notchHeightsCm": [
+      0,
+      0.7,
+      1.5
+    ],
+    "viewportThemeNotchCombinations": 90,
+    "sharedBarsAndIcons": true,
+    "solidPanels": true,
+    "reducedMotion": true,
+    "themePersistence": true,
+    "saveMigrationRequired": false,
+    "cameraFocus": "Measured clear area between the shared bars, materials and tools; preserves the user zoom and focus on resize.",
+    "mapEdgeMarginTiles": 3,
+    "nativeSafeAreaInsets": true
+  },
+  "themeBrowserChecks": [
+    {
+      "name": "320x568/0cm/sunset releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "320x568/0cm/sunset shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "320x568/0cm/sunset keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "320x568/0cm/dark releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "320x568/0cm/dark shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "320x568/0cm/dark keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "320x568/0cm/light releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "320x568/0cm/light shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "320x568/0cm/light keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "320x568/0cm/peach releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "320x568/0cm/peach shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "320x568/0cm/peach keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "320x568/0cm/mint releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "320x568/0cm/mint shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "320x568/0cm/mint keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "320x568/0cm/lavender releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "320x568/0cm/lavender shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "320x568/0cm/lavender keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "320x568/0.7cm/sunset releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "320x568/0.7cm/sunset shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "320x568/0.7cm/sunset keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "320x568/0.7cm/dark releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "320x568/0.7cm/dark shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "320x568/0.7cm/dark keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "320x568/0.7cm/light releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "320x568/0.7cm/light shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "320x568/0.7cm/light keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "320x568/0.7cm/peach releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "320x568/0.7cm/peach shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "320x568/0.7cm/peach keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "320x568/0.7cm/mint releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "320x568/0.7cm/mint shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "320x568/0.7cm/mint keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "320x568/0.7cm/lavender releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "320x568/0.7cm/lavender shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "320x568/0.7cm/lavender keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "320x568/1.5cm/sunset releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "320x568/1.5cm/sunset shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "320x568/1.5cm/sunset keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "320x568/1.5cm/dark releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "320x568/1.5cm/dark shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "320x568/1.5cm/dark keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "320x568/1.5cm/light releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "320x568/1.5cm/light shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "320x568/1.5cm/light keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "320x568/1.5cm/peach releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "320x568/1.5cm/peach shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "320x568/1.5cm/peach keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "320x568/1.5cm/mint releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "320x568/1.5cm/mint shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "320x568/1.5cm/mint keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "320x568/1.5cm/lavender releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "320x568/1.5cm/lavender shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "320x568/1.5cm/lavender keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "390x844/0cm/sunset releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "390x844/0cm/sunset shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "390x844/0cm/sunset keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "390x844/0cm/dark releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "390x844/0cm/dark shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "390x844/0cm/dark keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "390x844/0cm/light releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "390x844/0cm/light shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "390x844/0cm/light keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "390x844/0cm/peach releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "390x844/0cm/peach shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "390x844/0cm/peach keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "390x844/0cm/mint releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "390x844/0cm/mint shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "390x844/0cm/mint keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "390x844/0cm/lavender releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "390x844/0cm/lavender shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "390x844/0cm/lavender keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "390x844/0.7cm/sunset releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "390x844/0.7cm/sunset shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "390x844/0.7cm/sunset keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "390x844/0.7cm/dark releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "390x844/0.7cm/dark shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "390x844/0.7cm/dark keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "390x844/0.7cm/light releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "390x844/0.7cm/light shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "390x844/0.7cm/light keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "390x844/0.7cm/peach releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "390x844/0.7cm/peach shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "390x844/0.7cm/peach keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "390x844/0.7cm/mint releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "390x844/0.7cm/mint shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "390x844/0.7cm/mint keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "390x844/0.7cm/lavender releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "390x844/0.7cm/lavender shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "390x844/0.7cm/lavender keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "390x844/1.5cm/sunset releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "390x844/1.5cm/sunset shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "390x844/1.5cm/sunset keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "390x844/1.5cm/dark releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "390x844/1.5cm/dark shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "390x844/1.5cm/dark keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "390x844/1.5cm/light releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "390x844/1.5cm/light shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "390x844/1.5cm/light keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "390x844/1.5cm/peach releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "390x844/1.5cm/peach shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "390x844/1.5cm/peach keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "390x844/1.5cm/mint releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "390x844/1.5cm/mint shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "390x844/1.5cm/mint keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "390x844/1.5cm/lavender releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "390x844/1.5cm/lavender shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "390x844/1.5cm/lavender keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "844x390/0cm/sunset releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "844x390/0cm/sunset shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "844x390/0cm/sunset keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "844x390/0cm/dark releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "844x390/0cm/dark shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "844x390/0cm/dark keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "844x390/0cm/light releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "844x390/0cm/light shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "844x390/0cm/light keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "844x390/0cm/peach releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "844x390/0cm/peach shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "844x390/0cm/peach keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "844x390/0cm/mint releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "844x390/0cm/mint shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "844x390/0cm/mint keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "844x390/0cm/lavender releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "844x390/0cm/lavender shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "844x390/0cm/lavender keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "844x390/0.7cm/sunset releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "844x390/0.7cm/sunset shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "844x390/0.7cm/sunset keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "844x390/0.7cm/dark releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "844x390/0.7cm/dark shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "844x390/0.7cm/dark keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "844x390/0.7cm/light releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "844x390/0.7cm/light shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "844x390/0.7cm/light keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "844x390/0.7cm/peach releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "844x390/0.7cm/peach shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "844x390/0.7cm/peach keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "844x390/0.7cm/mint releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "844x390/0.7cm/mint shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "844x390/0.7cm/mint keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "844x390/0.7cm/lavender releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "844x390/0.7cm/lavender shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "844x390/0.7cm/lavender keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "844x390/1.5cm/sunset releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "844x390/1.5cm/sunset shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "844x390/1.5cm/sunset keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "844x390/1.5cm/dark releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "844x390/1.5cm/dark shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "844x390/1.5cm/dark keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "844x390/1.5cm/light releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "844x390/1.5cm/light shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "844x390/1.5cm/light keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "844x390/1.5cm/peach releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "844x390/1.5cm/peach shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "844x390/1.5cm/peach keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "844x390/1.5cm/mint releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "844x390/1.5cm/mint shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "844x390/1.5cm/mint keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "844x390/1.5cm/lavender releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "844x390/1.5cm/lavender shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "844x390/1.5cm/lavender keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "1440x900/0cm/sunset releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "1440x900/0cm/sunset shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "1440x900/0cm/sunset keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "1440x900/0cm/dark releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "1440x900/0cm/dark shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "1440x900/0cm/dark keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "1440x900/0cm/light releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "1440x900/0cm/light shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "1440x900/0cm/light keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "1440x900/0cm/peach releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "1440x900/0cm/peach shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "1440x900/0cm/peach keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "1440x900/0cm/mint releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "1440x900/0cm/mint shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "1440x900/0cm/mint keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "1440x900/0cm/lavender releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "1440x900/0cm/lavender shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "1440x900/0cm/lavender keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "1440x900/0.7cm/sunset releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "1440x900/0.7cm/sunset shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "1440x900/0.7cm/sunset keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "1440x900/0.7cm/dark releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "1440x900/0.7cm/dark shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "1440x900/0.7cm/dark keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "1440x900/0.7cm/light releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "1440x900/0.7cm/light shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "1440x900/0.7cm/light keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "1440x900/0.7cm/peach releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "1440x900/0.7cm/peach shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "1440x900/0.7cm/peach keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "1440x900/0.7cm/mint releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "1440x900/0.7cm/mint shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "1440x900/0.7cm/mint keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "1440x900/0.7cm/lavender releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "1440x900/0.7cm/lavender shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "1440x900/0.7cm/lavender keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "1440x900/1.5cm/sunset releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "1440x900/1.5cm/sunset shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "1440x900/1.5cm/sunset keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "1440x900/1.5cm/dark releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "1440x900/1.5cm/dark shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "1440x900/1.5cm/dark keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "1440x900/1.5cm/light releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "1440x900/1.5cm/light shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "1440x900/1.5cm/light keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "1440x900/1.5cm/peach releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "1440x900/1.5cm/peach shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "1440x900/1.5cm/peach keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "1440x900/1.5cm/mint releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "1440x900/1.5cm/mint shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "1440x900/1.5cm/mint keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "1440x900/1.5cm/lavender releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "1440x900/1.5cm/lavender shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "1440x900/1.5cm/lavender keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "1920x1080/0cm/sunset releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "1920x1080/0cm/sunset shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "1920x1080/0cm/sunset keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "1920x1080/0cm/dark releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "1920x1080/0cm/dark shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "1920x1080/0cm/dark keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "1920x1080/0cm/light releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "1920x1080/0cm/light shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "1920x1080/0cm/light keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "1920x1080/0cm/peach releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "1920x1080/0cm/peach shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "1920x1080/0cm/peach keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "1920x1080/0cm/mint releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "1920x1080/0cm/mint shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "1920x1080/0cm/mint keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "1920x1080/0cm/lavender releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "1920x1080/0cm/lavender shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "1920x1080/0cm/lavender keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "1920x1080/0.7cm/sunset releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "1920x1080/0.7cm/sunset shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "1920x1080/0.7cm/sunset keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "1920x1080/0.7cm/dark releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "1920x1080/0.7cm/dark shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "1920x1080/0.7cm/dark keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "1920x1080/0.7cm/light releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "1920x1080/0.7cm/light shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "1920x1080/0.7cm/light keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "1920x1080/0.7cm/peach releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "1920x1080/0.7cm/peach shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "1920x1080/0.7cm/peach keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "1920x1080/0.7cm/mint releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "1920x1080/0.7cm/mint shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "1920x1080/0.7cm/mint keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "1920x1080/0.7cm/lavender releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "1920x1080/0.7cm/lavender shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "1920x1080/0.7cm/lavender keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "1920x1080/1.5cm/sunset releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "1920x1080/1.5cm/sunset shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "1920x1080/1.5cm/sunset keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "1920x1080/1.5cm/dark releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "1920x1080/1.5cm/dark shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "1920x1080/1.5cm/dark keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "1920x1080/1.5cm/light releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "1920x1080/1.5cm/light shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "1920x1080/1.5cm/light keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "1920x1080/1.5cm/peach releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "1920x1080/1.5cm/peach shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "1920x1080/1.5cm/peach keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "1920x1080/1.5cm/mint releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "1920x1080/1.5cm/mint shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "1920x1080/1.5cm/mint keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "1920x1080/1.5cm/lavender releases map observers on exit",
+      "ok": true
+    },
+    {
+      "name": "1920x1080/1.5cm/lavender shares bars and keeps map controls clear",
+      "ok": true
+    },
+    {
+      "name": "1920x1080/1.5cm/lavender keeps the themed catalog readable and scrollable",
+      "ok": true
+    },
+    {
+      "name": "sunset applies from settings to both modal and home",
+      "ok": true
+    },
+    {
+      "name": "dark applies from settings to both modal and home",
+      "ok": true
+    },
+    {
+      "name": "light applies from settings to both modal and home",
+      "ok": true
+    },
+    {
+      "name": "peach applies from settings to both modal and home",
+      "ok": true
+    },
+    {
+      "name": "mint applies from settings to both modal and home",
+      "ok": true
+    },
+    {
+      "name": "lavender applies from settings to both modal and home",
+      "ok": true
+    },
+    {
+      "name": "night changes scenery while preserving the selected UI theme",
+      "ok": true
+    },
+    {
+      "name": "reduced motion removes home transitions and animations",
+      "ok": true
+    },
+    {
+      "name": "system reduced-motion preference is respected",
+      "ok": true
+    },
+    {
+      "name": "ball inherits the selected theme from home",
+      "ok": true
+    },
+    {
+      "name": "stack inherits the selected theme from home",
+      "ok": true
+    },
+    {
+      "name": "theme selection survives a normal reload without migration",
+      "ok": true
+    },
+    {
+      "name": "no browser exceptions or console errors",
+      "ok": true
+    }
+  ],
+  "previousBackups": [
+    {
+      "path": "backup/magic-ui-20261029",
+      "manifest": "backup/magic-ui-20261029/snapshot.json",
+      "files": 225,
+      "bytes": 19759336,
+      "allHashesVerified": true
+    }
+  ],
+  "mobileHomeBrowserChecks": [
+    {
+      "name": "initial phone view shows the whole house below the resource bars",
+      "ok": true
+    },
+    {
+      "name": "320x568/0cm keeps the focused house visible after resizing",
+      "ok": true
+    },
+    {
+      "name": "320x568/0.7cm keeps the focused house visible after resizing",
+      "ok": true
+    },
+    {
+      "name": "320x568/1.5cm keeps the focused house visible after resizing",
+      "ok": true
+    },
+    {
+      "name": "390x844/0cm keeps the focused house visible after resizing",
+      "ok": true
+    },
+    {
+      "name": "390x844/0.7cm keeps the focused house visible after resizing",
+      "ok": true
+    },
+    {
+      "name": "390x844/1.5cm keeps the focused house visible after resizing",
+      "ok": true
+    },
+    {
+      "name": "844x390/0cm keeps the focused house visible after resizing",
+      "ok": true
+    },
+    {
+      "name": "844x390/0.7cm keeps the focused house visible after resizing",
+      "ok": true
+    },
+    {
+      "name": "844x390/1.5cm keeps the focused house visible after resizing",
+      "ok": true
+    },
+    {
+      "name": "1440x900/0cm keeps the focused house visible after resizing",
+      "ok": true
+    },
+    {
+      "name": "1440x900/0.7cm keeps the focused house visible after resizing",
+      "ok": true
+    },
+    {
+      "name": "1440x900/1.5cm keeps the focused house visible after resizing",
+      "ok": true
+    },
+    {
+      "name": "1920x1080/0cm keeps the focused house visible after resizing",
+      "ok": true
+    },
+    {
+      "name": "1920x1080/0.7cm keeps the focused house visible after resizing",
+      "ok": true
+    },
+    {
+      "name": "1920x1080/1.5cm keeps the focused house visible after resizing",
+      "ok": true
+    },
+    {
+      "name": "iphone-safari respects browser chrome and system safe areas",
+      "ok": true
+    },
+    {
+      "name": "iphone-safari keeps controls outside the notch",
+      "ok": true
+    },
+    {
+      "name": "iphone-safari centers the complete edge house at 14,0",
+      "ok": true
+    },
+    {
+      "name": "iphone-safari centers the complete edge house at 0,0",
+      "ok": true
+    },
+    {
+      "name": "iphone-safari centers the complete edge house at 34,22",
+      "ok": true
+    },
+    {
+      "name": "android-chrome respects browser chrome and system safe areas",
+      "ok": true
+    },
+    {
+      "name": "android-chrome keeps controls outside the notch",
+      "ok": true
+    },
+    {
+      "name": "android-chrome centers the complete edge house at 14,0",
+      "ok": true
+    },
+    {
+      "name": "android-chrome centers the complete edge house at 0,0",
+      "ok": true
+    },
+    {
+      "name": "android-chrome centers the complete edge house at 34,22",
+      "ok": true
+    },
+    {
+      "name": "small-landscape respects browser chrome and system safe areas",
+      "ok": true
+    },
+    {
+      "name": "small-landscape keeps controls outside the notch",
+      "ok": true
+    },
+    {
+      "name": "small-landscape centers the complete edge house at 14,0",
+      "ok": true
+    },
+    {
+      "name": "small-landscape centers the complete edge house at 0,0",
+      "ok": true
+    },
+    {
+      "name": "small-landscape centers the complete edge house at 34,22",
+      "ok": true
+    },
+    {
+      "name": "phone-landscape respects browser chrome and system safe areas",
+      "ok": true
+    },
+    {
+      "name": "phone-landscape keeps controls outside the notch",
+      "ok": true
+    },
+    {
+      "name": "phone-landscape centers the complete edge house at 14,0",
+      "ok": true
+    },
+    {
+      "name": "phone-landscape centers the complete edge house at 0,0",
+      "ok": true
+    },
+    {
+      "name": "phone-landscape centers the complete edge house at 34,22",
+      "ok": true
+    },
+    {
+      "name": "dragging exposes the northern and western map edges below the HUD",
+      "ok": true
+    },
+    {
+      "name": "the first map tile is reachable for planting by touch",
+      "ok": true
+    },
+    {
+      "name": "a crop at the map edge opens its care panel",
+      "ok": true
+    },
+    {
+      "name": "return to the northern house after planting remains unobstructed",
+      "ok": true
+    },
+    {
+      "name": "leaving and returning preserves the camera without a map jump",
+      "ok": true
+    },
+    {
+      "name": "offline reload shows the saved northern house in full",
+      "ok": true
+    },
+    {
+      "name": "no browser errors",
+      "ok": true
+    }
+  ]
+}

@@ -35,8 +35,17 @@ const buildingRows:[string,string,string,string,string,[number,number],string,st
  ['resonance','共鸣石','◈','成年伙伴共鸣产生幼体','resonance',[1,1],'共鸣冷却缩短','成长所需时间减少'],
  ['memorial','纪念馆','♡','陈列伙伴回忆与旅程纪念物','memory',[2,1],'留下聚餐回忆','访客舒适度增加']
 ];
-export const BUILDINGS:BuildingDef[]=buildingRows.map((r,i)=>({id:r[0],name:r[1],icon:r[2],desc:r[3],service:r[4],size:r[5],upgrades:[r[6],r[7]],zone:Math.floor(i/4),cost:{wood:12+4*Math.floor(i/4),stone:8+3*Math.floor(i/4)}}));
-BUILDINGS.push({id:'trough',name:'饲料槽',zone:0,icon:'▱',desc:'伙伴走过来分享实际存放的饲料',service:'feed',size:[1,1],cost:{wood:8,stone:4},upgrades:['伙伴安心用餐','家园的用餐角落']},{id:'toys',name:'玩具区',zone:0,icon:'◉',desc:'一起接球和叠叠乐',service:'play',size:[1,1],cost:{wood:8,stone:4},upgrades:['保留共同游戏的记录','伙伴喜欢的游乐角落']});
+/* 升级后的形态占地：2、3 级逐步扩建，每一档都能完整包住上一档，建筑看起来是原地长大。纪念设施不再升级，保持原尺寸。 */
+const growth:Record<string,[[number,number],[number,number]]>={
+ house:[[3,2],[3,3]],spa:[[3,2],[3,3]],greenhouse:[[3,2],[3,3]],grove:[[3,2],[3,3]],pond:[[3,2],[3,3]],training:[[3,2],[3,3]],archive:[[3,2],[3,3]],
+ kitchen:[[2,2],[3,2]],pollen:[[2,2],[3,2]],woodshop:[[2,2],[3,2]],alchemy:[[2,2],[3,2]],memorial:[[2,2],[3,2]],
+ table:[[3,1],[3,2]],bed:[[3,1],[3,2]],waterbed:[[3,1],[3,2]],
+ seedbank:[[2,2],[2,3]],observe:[[2,2],[2,3]],filter:[[2,2],[2,3]],stars:[[2,2],[2,3]],channel:[[1,3],[2,3]],
+ compost:[[2,1],[2,2]],trough:[[2,1],[2,2]],toys:[[2,1],[2,2]],insects:[[1,2],[2,2]]
+};
+const forms=(id:string,size:[number,number]):BuildingDef['forms']=>[size,...(growth[id]??[size,size])];
+export const BUILDINGS:BuildingDef[]=buildingRows.map((r,i)=>({id:r[0],name:r[1],icon:r[2],desc:r[3],service:r[4],size:r[5],forms:forms(r[0],r[5]),upgrades:[r[6],r[7]],zone:Math.floor(i/4),cost:{wood:12+4*Math.floor(i/4),stone:8+3*Math.floor(i/4)}}));
+BUILDINGS.push({id:'trough',name:'饲料槽',zone:0,icon:'▱',desc:'伙伴走过来分享实际存放的饲料',service:'feed',size:[1,1],forms:forms('trough',[1,1]),cost:{wood:8,stone:4},upgrades:['伙伴安心用餐','家园的用餐角落']},{id:'toys',name:'玩具区',zone:0,icon:'◉',desc:'一起接球和叠叠乐',service:'play',size:[1,1],forms:forms('toys',[1,1]),cost:{wood:8,stone:4},upgrades:['保留共同游戏的记录','伙伴喜欢的游乐角落']});
 const decorNames=[['碎石小径','苔石小径','木板步道','白砂路','落叶路','星砂路'],['矮木篱','藤编围栏','白石围栏','竹篱','蘑菇围栏','月牙围栏'],['纸灯','萤光灯','蘑菇灯','冰晶灯','星灯','暖炉灯'],['长椅','摇椅','野餐毯','秋千','躺椅','树桩桌'],['木花架','藤花门','垂吊花盆','种子风铃','水莲盆','菌菇架'],['庭院路牌','苗圃标签','访客告示','旅人留言板','星图牌','伙伴名牌'],['落叶堆','蜜源花篮','小鸟浴盆','虫洞木桩','苔石丘','浅水盆'],['种子相框','溪流石刻','小小灶台','归家门牌','霜花瓶','旅程相册']];
 /* 第一组「小径」是路面材质：在地图上拖动铺成连续道路，材质编号存进 pathStyles。 */
 export const PATH_STYLES=decorNames[0];

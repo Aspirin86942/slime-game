@@ -32,6 +32,9 @@ const paths:Record<string,string>={
   "plus": "M12 4v16M4 12h16",
   "minus": "M4 12h16",
   "close": "m6 6 12 12M6 18 18 6",
-  "rotate": "M4 10a8 8 0 1 1 1 8M4 4v6h6"
+  "rotate": "M4 10a8 8 0 1 1 1 8M4 4v6h6",
+  "move": "M12 2v20M2 12h20M8 6l4-4 4 4M8 18l4 4 4-4M6 8l-4 4 4 4M18 8l4 4-4 4",
+  "left": "m15 5-7 7 7 7",
+  "right": "m9 5 7 7-7 7"
 };
 export function uiIcon(name:string):string {return `<svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="${paths[name]||paths.spark}"/></svg>`;}

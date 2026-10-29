@@ -1,0 +1,302 @@
+{
+  "facilities-a": {
+    "items": [
+      "house: cream cottage with terracotta roof, arched door and one warm window",
+      "kitchen: outdoor timber cooking station, cream canvas awning and little stone stove",
+      "table: wooden dining table with two benches, small bowls",
+      "spa: shallow rounded natural stone hot spring with muted teal water, no steam beyond its cell",
+      "bed: rectangular raised wooden seedbed with orderly small seedlings",
+      "greenhouse: small timber framed glass greenhouse with moss green pitched roof",
+      "pollen: wooden pollination flower shelter with three hanging baskets",
+      "seedbank: narrow tall timber seed cabinet with tiny roof and labeled drawers WITHOUT text",
+      "grove: compact cluster of three leafy saplings in wooden nursery border",
+      "compost: small timber compost bin with a few fallen leaves",
+      "insects: upright little insect hotel with bamboo holes and tiny terracotta roof",
+      "observe: small wood lookout desk with binoculars and a field notebook",
+      "channel: long narrow stone-lined water trough with small pouring bamboo spout",
+      "pond: broad natural teal pond edged by stones, a few lily pads and reeds",
+      "filter: two small stone water-filter basins vertically connected by a spout",
+      "waterbed: wide raised wood aquatic planter with water and a lotus"
+    ],
+    "rows": [
+      0,
+      0.292,
+      0.536,
+      0.76,
+      1
+    ]
+  },
+  "facilities-b": {
+    "items": [
+      "woodshop: carpenter workbench, timber planks, saw, mallet",
+      "alchemy: herbal alchemy workbench with amber glass flasks, mortar and hanging herbs",
+      "expedition: small wooden travel pavilion with a rolled map and packed rucksack",
+      "training: small fenced practice yard with one straw target",
+      "archive: small cream plaster library cottage, terracotta roof, books visible in window",
+      "stars: brass telescope on a narrow raised wood platform",
+      "resonance: low natural stone holding one muted turquoise crystal",
+      "memorial: small open wooden memory pavilion with pictures and flowers, NO readable text",
+      "trough: low wooden feeding trough filled with golden grain",
+      "toys: small basket of wooden blocks with one cloth ball",
+      "nature-tree: large round-canopy broadleaf tree with visible thick trunk and layered leaves",
+      "nature-fruit: fruit tree with a smaller rounded canopy and a few red apples",
+      "nature-bush: wide dense leafy shrub with small white daisies",
+      "nature-rock: low natural mossy gray rock cluster",
+      "nature-flowers: low irregular wildflower tuft of cream daisies and a few pink blossoms",
+      "nature-reeds: cluster of green pond reeds with three brown seedheads"
+    ],
+    "rows": [
+      0,
+      0.251,
+      0.529,
+      0.787,
+      1
+    ]
+  },
+  "decor-a": {
+    "items": [
+      "pale wooden picket fence five boards",
+      "woven willow fence panel",
+      "low white stone garden wall",
+      "bamboo fence panel",
+      "short rustic fence with three little mushrooms at its base",
+      "short pale fence decorated with one crescent moon",
+      "cream paper lantern hanging from a short wooden post",
+      "warm amber glass lantern hanging from short wooden post",
+      "one warm glowing mushroom lamp",
+      "small frosted pale blue crystal lamp",
+      "one warm cream star lantern hanging on a wooden post",
+      "small terracotta brazier lamp with warm flame",
+      "wood garden bench",
+      "wood rocking chair",
+      "folded cream and moss picnic blanket with a small basket",
+      "wooden garden swing on a low timber frame"
+    ],
+    "rows": [
+      0,
+      0.244,
+      0.495,
+      0.731,
+      1
+    ]
+  },
+  "decor-b": {
+    "items": [
+      "reclining wooden deck chair with cream cushion",
+      "tree stump table with two short stump stools",
+      "wooden flower rack with three hanging pots",
+      "leafy vine arch with two timber posts",
+      "single hanging terracotta flowerpot on a short bracket",
+      "two pale blue ceramic wind chimes on little timber stand",
+      "large wide ceramic bowl holding a lotus and lily pads",
+      "wooden two-tier mushroom cultivation shelf",
+      "garden wooden direction signpost with NO writing",
+      "tiny wooden seedbed marker on short stake, NO writing",
+      "visitor notice board on two wooden posts, NO writing",
+      "rustic visitor message board with pinned blank cream notes, NO writing",
+      "dark teal star-chart sign with a gold constellation diagram, NO writing",
+      "small oval wooden companion nameplate on one post, NO writing",
+      "low pile of ochre autumn leaves",
+      "woven basket with cream and pink nectar flowers"
+    ],
+    "rows": [
+      0,
+      0.274,
+      0.508,
+      0.738,
+      1
+    ]
+  },
+  "decor-c": {
+    "items": [
+      "low pale stone birdbath with teal water and tiny bird on rim",
+      "short hollow log with small insect holes",
+      "small moss-covered stone mound",
+      "wide shallow ceramic water dish",
+      "wooden photo frame containing a pressed seed illustration",
+      "flat stream stone carved with a subtle wavy motif",
+      "small clay cooking stove with a copper pot",
+      "little house-shaped wooden door sign with a leaf emblem, NO writing",
+      "pale blue frosted vase with white flowers",
+      "closed cream journey scrapbook with wood clasp and a leaf",
+      "resource icon: three short logs tied together",
+      "resource icon: angular gray stone",
+      "resource icon: large blue dew drop",
+      "resource icon: small wooden bowl of golden grain",
+      "tool icon: small wood-handled carpenter hammer",
+      "tool icon: woven gathering basket with leaves"
+    ],
+    "rows": [
+      0,
+      0.252,
+      0.497,
+      0.74,
+      1
+    ]
+  },
+  "plants-a": {
+    "items": [
+      "cream daisy plant, three blossoms on leafy stems",
+      "white lily-of-the-valley plant with hanging bell flowers",
+      "golden sunflower plant with three flower heads",
+      "pale moon-colored evening primrose flowers",
+      "coral-red rounded petal flower plant",
+      "cream and soft pink star-shaped fluffy flower plant",
+      "lush mint herb with serrated small leaves",
+      "dew-covered broad leaf medicinal herb",
+      "warm olive-green pointed-leaf herb",
+      "pale sage herb with subtle icy blue leaf edges",
+      "upright narrow-leaf healing herb",
+      "long arching fern-like herb",
+      "white sweet radish with green leafy top, partly exposed root",
+      "small ripe red tomato plant on short wood stake",
+      "low pumpkin vine with one warm ochre pumpkin",
+      "green bean plant on small two-stick support"
+    ],
+    "rows": [
+      0,
+      0.263,
+      0.5,
+      0.73,
+      1
+    ]
+  },
+  "plants-b": {
+    "items": [
+      "low berry bush with luminous golden berries",
+      "low melon vine with one pale green melon",
+      "apple tree with rounded moss canopy and red fruit",
+      "peach tree with pink-orange fruit",
+      "slender pear-like tree with yellow-green fruit",
+      "small golden green ginkgo tree with fan leaves",
+      "snow pear tree with pale cream fruit",
+      "small jujube tree with dark red berries",
+      "cluster of three moss-capped mushrooms",
+      "cluster of orange lantern mushrooms",
+      "pale tan broad umbrella mushroom cluster",
+      "cream puffball mushroom cluster",
+      "pale translucent ear-shaped fungus cluster",
+      "muted mauve round dream-mushroom cluster",
+      "floating duckweed cluster with two tiny white flowers",
+      "pink-white lotus on broad green lily pads",
+      "tall narrow reed plant with brown seedheads"
+    ],
+    "rows": [
+      0,
+      0.274,
+      0.553,
+      0.76,
+      1
+    ],
+    "cells": {
+      "12": [
+        0,
+        0.76,
+        0.2,
+        1
+      ],
+      "13": [
+        0.2,
+        0.76,
+        0.4,
+        1
+      ],
+      "14": [
+        0.4,
+        0.76,
+        0.6,
+        1
+      ],
+      "15": [
+        0.6,
+        0.76,
+        0.8,
+        1
+      ],
+      "16": [
+        0.8,
+        0.76,
+        1,
+        1
+      ]
+    }
+  },
+  "plants-c": {
+    "items": [
+      "low graceful teal aquatic algae ribbon cluster",
+      "pale blue ice lotus on one lily pad",
+      "small crescent-shaped green water plant with cream star blossom",
+      "mature magical glowing flower with broad green leaves and one warm cream luminous blossom",
+      "one tiny green two-leaf seedling in small soil mound",
+      "one young leafy flower plant with an unopened bud",
+      "one slender young tree sapling with three leaf clusters",
+      "two very small cream mushroom sprouts",
+      "one tiny aquatic sprout on a small floating leaf",
+      "one dry seed in a small mound of earth",
+      "low grass tuft of six painterly blades",
+      "a small cluster of cream daisies, ground decoration",
+      "a tiny pink wildflower tuft, ground decoration",
+      "small smooth gray stones, ground decoration",
+      "a small clover patch, ground decoration",
+      "three ochre fallen leaves, ground decoration"
+    ],
+    "rows": [
+      0,
+      0.302,
+      0.57,
+      0.777,
+      1
+    ]
+  },
+  "ground": {
+    "items": []
+  },
+  "paths": {
+    "items": [
+      "limestone",
+      "moss-stone",
+      "wood",
+      "sand",
+      "leaves",
+      "star-sand"
+    ],
+    "cells": {
+      "0": [
+        0,
+        0,
+        0.3333333333333333,
+        0.5
+      ],
+      "1": [
+        0.3333333333333333,
+        0,
+        0.6666666666666666,
+        0.5
+      ],
+      "2": [
+        0.6666666666666666,
+        0,
+        1,
+        0.5
+      ],
+      "3": [
+        0,
+        0.5,
+        0.3333333333333333,
+        1
+      ],
+      "4": [
+        0.3333333333333333,
+        0.5,
+        0.6666666666666666,
+        1
+      ],
+      "5": [
+        0.6666666666666666,
+        0.5,
+        1,
+        1
+      ]
+    }
+  }
+}

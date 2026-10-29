@@ -1,0 +1,24 @@
+// Deterministic isolated gameplay checks; this is not a browser/visual test.
+const fs=require('fs'),vm=require('vm'),assert=require('assert');
+const html=fs.readFileSync(require('path').join(__dirname,'..','史莱姆.html'),'utf8');
+const code=[...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)].map(m=>m[1]).join('\n');
+const h=require('./lib/vm-harness.cjs').loadGame('史莱姆.html',code).boot();
+const pet=(id,opts={})=>Object.assign({id,name:'老朋友'+id,element:'水',strPotential:10,agiPotential:10,magPotential:10,str:100,agi:110,mag:120,level:5,exp:77,mood:64,stamina:37,size:1,hp:200,luck:5,wit:5,intimacy:99,personality:'乖巧',morality:18,locked:false,traits:[]},opts);
+const c=h.context;c.S=h.state();c.S.coins=10000;
+c.addSummonerExp=n=>c.summoner=(c.summoner||0)+n;
+c.Math.random=()=>.99;
+assert.equal(c.growthStat(10,5),30); assert.equal(c.growthStat(5,3),11);
+let a=pet(1),b=pet(2);c.S.slimes=[a,b];c.S.customPlans={1:{type:'explore'},2:{type:'explore'}};c.S.exploreTeam=[1,2];c.S.lastAbyssSel=[1,2];
+assert.equal(c.mergeCost(a,b),1000);assert.equal(c.mergeCost({...a,mergeCount:1},b),1500);
+assert.equal(c.growthStats(a,c.mergePreview(a,b).level).str,100);
+vm.runInContext("mergePreviewSignature='';mergeSel=[1,2];doMerge()",c);
+assert.equal(c.S.slimes.length,1);assert.strictEqual(c.S.slimes[0],a);for(const [k,v] of Object.entries({id:1,name:'老朋友1',exp:77,intimacy:99,mood:64,stamina:37,str:100,agi:110,mag:120,mergeCount:1}))assert.equal(a[k],v,k);assert.equal(c.S.coins,9000);assert(c.S.customPlans[1]);assert(!c.S.customPlans[2]);assert.equal(c.S.exploreTeam.join(),1);
+a=pet(3);b=pet(4,{locked:true});c.S.slimes=[a,b];vm.runInContext("mergePreviewSignature='';mergeSel=[3,4];doMerge()",c);assert.equal(c.S.slimes.length,2);assert.equal(c.S.coins,9000);
+b.locked=false;c.S.coins=1;vm.runInContext('doMerge()',c);assert.equal(c.S.slimes.length,2);assert.equal(c.S.coins,1);
+a=pet(5);b=pet(6,{level:7});c.S.slimes=[a,b];c.S.coins=10000;vm.runInContext("mergePreviewSignature='';mergeSel=[5,6];doMerge()",c);assert.equal(a.str,110);assert.equal(a.level,7);assert.equal(a.exp,77);
+a=pet(7);b=pet(8);c.S.slimes=[a,b];c.S.coins=10000;let seq=[.1,.99];c.Math.random=()=>seq.shift()??.99;vm.runInContext("mergePreviewSignature='';mergeSel=[7,8];doMerge()",c);assert.equal(a.str,111);assert.equal(a.strPotential,13);
+a=pet(9,{level:1,str:10,agi:10,mag:10,exp:0,wit:0});c.addExp(a,1000);assert.equal(a.level,4);assert.equal(a.exp,220);assert.equal(a.str,25);let sx=c.summoner;c.addExp(a,0);assert.equal(c.summoner,sx);
+a=pet(10,{locked:true,traits:[{n:'power',v:.2}]});b=pet(11,{traits:[{n:'power',v:9},{n:'luck',v:.1}]});c.S.slimes=[a,b];c.S.coins=10000;c.Math.random=()=>.99;vm.runInContext("mergePreviewSignature='';mergeSel=[10,11];doMerge()",c);assert.equal(a.locked,true);assert.equal(a.traits.length,1);assert.equal(a.traits[0].v,.24);
+a=pet(12,{strPotential:55,str:500,luck:25,wit:25});b=pet(13);c.S.slimes=[a,b];c.S.coins=10000;c.Math.random=()=>.1;vm.runInContext("mergePreviewSignature='';mergeSel=[12,13];doMerge()",c);assert.equal(a.strPotential,55);assert.equal(a.str,500);assert.equal(a.luck,25);assert.equal(a.wit,25);
+a=pet(14);b=pet(15);c.S.slimes=[a,b];c.S.coins=10000;vm.runInContext("mergePreviewSignature='';mergeSel=[14,15];mergePreviewSignature=mergeStateSignature(getSlime(14),getSlime(15));",c);a.level++;vm.runInContext('doMerge()',c);assert.equal(c.S.slimes.length,2);assert.equal(c.S.coins,10000);c.addExp(a,Infinity);assert.equal(a.level,6);
+console.log('PASS: unified growth, legacy stats, repeat merge, escalating cost, primary identity/experience/intimacy/resources, consumed-team cleanup, locked secondary, funds, level delta, mutation, multi-level EXP, zero EXP, locked primary, trait inheritance, over-cap legacy preservation, stale preview reconfirmation, non-finite EXP.');

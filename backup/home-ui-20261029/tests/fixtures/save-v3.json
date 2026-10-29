@@ -1,0 +1,842 @@
+{
+  "started": true,
+  "name": "",
+  "sysName": "",
+  "sysLook": {
+    "h": 200,
+    "s": 70,
+    "l": 58,
+    "eh": 200,
+    "es": 65,
+    "el": 22
+  },
+  "level": 1,
+  "summonerExp": 0,
+  "breakPending": false,
+  "coins": 2000,
+  "points": 0,
+  "taskDate": "",
+  "tasks": {
+    "rent": 0,
+    "summon": 0,
+    "feed": 0
+  },
+  "taskClaimed": {
+    "rent": false,
+    "summon": false,
+    "feed": false
+  },
+  "slimes": [
+    {
+      "id": 1,
+      "name": "小芽",
+      "element": "水",
+      "morality": -16,
+      "personality": "乖巧",
+      "mood": 70,
+      "stamina": 112,
+      "traits": [],
+      "level": 1,
+      "exp": 0,
+      "size": 0.8,
+      "resting": false,
+      "intimacy": 0,
+      "locked": false,
+      "mergeCount": 0,
+      "strPotential": 11,
+      "agiPotential": 11,
+      "magPotential": 11,
+      "luck": 4,
+      "wit": 4,
+      "str": 11,
+      "agi": 11,
+      "mag": 11,
+      "hp": 129,
+      "skill": "治疗"
+    },
+    {
+      "id": 2,
+      "name": "旧芽芽",
+      "element": "水",
+      "morality": -16,
+      "personality": "乖巧",
+      "mood": 70,
+      "stamina": 112,
+      "traits": [],
+      "level": 1,
+      "exp": 0,
+      "size": 0.8,
+      "resting": false,
+      "intimacy": 0,
+      "locked": true,
+      "mergeCount": 0,
+      "strPotential": 11,
+      "agiPotential": 11,
+      "magPotential": 11,
+      "luck": 4,
+      "wit": 4,
+      "str": 11,
+      "agi": 11,
+      "mag": 11,
+      "hp": 129,
+      "skill": "治疗"
+    },
+    {
+      "id": 3,
+      "name": "水3",
+      "element": "水",
+      "morality": -16,
+      "personality": "乖巧",
+      "mood": 70,
+      "stamina": 112,
+      "traits": [],
+      "level": 1,
+      "exp": 0,
+      "size": 0.8,
+      "resting": false,
+      "intimacy": 0,
+      "locked": false,
+      "mergeCount": 0,
+      "strPotential": 11,
+      "agiPotential": 11,
+      "magPotential": 11,
+      "luck": 4,
+      "wit": 4,
+      "str": 11,
+      "agi": 11,
+      "mag": 11,
+      "hp": 129,
+      "skill": "治疗"
+    }
+  ],
+  "monsters": [],
+  "bag": {
+    "food": 17,
+    "treasure": 2,
+    "ticket": 1,
+    "expPotion": 0,
+    "net": 0
+  },
+  "feedTrough": 9,
+  "totalEarned": 0,
+  "seq": 4,
+  "nameSeq": 3,
+  "theme": "sunset",
+  "globalPlan": "explore",
+  "customPlans": {},
+  "monItemConfigs": [
+    {
+      "label": "抚摸",
+      "mood": 8,
+      "face": "like",
+      "text": "舒服地蹭了蹭"
+    },
+    {
+      "label": "喂食",
+      "mood": 12,
+      "face": "happy",
+      "text": "开心地吃了"
+    },
+    {
+      "label": "玩耍",
+      "mood": 15,
+      "face": "jump",
+      "text": "欢快地蹦跳"
+    },
+    {
+      "label": "说教",
+      "mood": -5,
+      "face": "deadpan",
+      "text": "歪着头听不懂"
+    }
+  ],
+  "saveVersion": 3,
+  "world": {
+    "version": 3,
+    "clock": 0,
+    "rng": 3632208386,
+    "seq": 101,
+    "stock": {
+      "wood": 80,
+      "stone": 60,
+      "dew": 40,
+      "food": 22
+    },
+    "unlocked": [
+      0
+    ],
+    "placements": [
+      {
+        "id": 1,
+        "def": "house",
+        "zone": 0,
+        "x": 2,
+        "y": 1,
+        "rotation": 0,
+        "level": 1,
+        "stored": false
+      },
+      {
+        "id": 2,
+        "def": "bed",
+        "zone": 0,
+        "x": 6,
+        "y": 2,
+        "rotation": 0,
+        "level": 1,
+        "stored": false
+      }
+    ],
+    "paths": {
+      "0": [
+        5,
+        17,
+        29,
+        41,
+        53,
+        65,
+        77,
+        89,
+        101,
+        113,
+        125,
+        137
+      ]
+    },
+    "cultivars": [
+      {
+        "id": 10,
+        "species": "plant-0-0",
+        "name": "晨露花",
+        "genes": {
+          "color": 315,
+          "form": 2,
+          "yield": 2,
+          "speed": 2,
+          "adapt": 2
+        },
+        "parents": [],
+        "protected": false,
+        "seeds": 2
+      },
+      {
+        "id": 11,
+        "species": "plant-0-1",
+        "name": "铃兰",
+        "genes": {
+          "color": 326,
+          "form": 2,
+          "yield": 2,
+          "speed": 2,
+          "adapt": 2
+        },
+        "parents": [],
+        "protected": false,
+        "seeds": 2
+      },
+      {
+        "id": 12,
+        "species": "plant-0-2",
+        "name": "日光菊",
+        "genes": {
+          "color": 337,
+          "form": 2,
+          "yield": 2,
+          "speed": 2,
+          "adapt": 2
+        },
+        "parents": [],
+        "protected": false,
+        "seeds": 2
+      },
+      {
+        "id": 13,
+        "species": "plant-0-3",
+        "name": "月见花",
+        "genes": {
+          "color": 348,
+          "form": 2,
+          "yield": 2,
+          "speed": 2,
+          "adapt": 2
+        },
+        "parents": [],
+        "protected": false,
+        "seeds": 2
+      },
+      {
+        "id": 14,
+        "species": "plant-0-4",
+        "name": "绯瓣花",
+        "genes": {
+          "color": 359,
+          "form": 2,
+          "yield": 2,
+          "speed": 2,
+          "adapt": 2
+        },
+        "parents": [],
+        "protected": false,
+        "seeds": 2
+      },
+      {
+        "id": 15,
+        "species": "plant-0-5",
+        "name": "星绒花",
+        "genes": {
+          "color": 10,
+          "form": 2,
+          "yield": 2,
+          "speed": 2,
+          "adapt": 2
+        },
+        "parents": [],
+        "protected": false,
+        "seeds": 2
+      },
+      {
+        "id": 16,
+        "species": "plant-1-0",
+        "name": "薄荷",
+        "genes": {
+          "color": 155,
+          "form": 2,
+          "yield": 2,
+          "speed": 2,
+          "adapt": 2
+        },
+        "parents": [],
+        "protected": false,
+        "seeds": 2
+      },
+      {
+        "id": 17,
+        "species": "plant-1-1",
+        "name": "甘露草",
+        "genes": {
+          "color": 166,
+          "form": 2,
+          "yield": 2,
+          "speed": 2,
+          "adapt": 2
+        },
+        "parents": [],
+        "protected": false,
+        "seeds": 2
+      },
+      {
+        "id": 18,
+        "species": "plant-1-2",
+        "name": "暖叶草",
+        "genes": {
+          "color": 177,
+          "form": 2,
+          "yield": 2,
+          "speed": 2,
+          "adapt": 2
+        },
+        "parents": [],
+        "protected": false,
+        "seeds": 2
+      },
+      {
+        "id": 19,
+        "species": "plant-1-3",
+        "name": "霜叶草",
+        "genes": {
+          "color": 188,
+          "form": 2,
+          "yield": 2,
+          "speed": 2,
+          "adapt": 2
+        },
+        "parents": [],
+        "protected": false,
+        "seeds": 2
+      },
+      {
+        "id": 20,
+        "species": "plant-1-4",
+        "name": "清心草",
+        "genes": {
+          "color": 199,
+          "form": 2,
+          "yield": 2,
+          "speed": 2,
+          "adapt": 2
+        },
+        "parents": [],
+        "protected": false,
+        "seeds": 2
+      },
+      {
+        "id": 21,
+        "species": "plant-1-5",
+        "name": "回声草",
+        "genes": {
+          "color": 210,
+          "form": 2,
+          "yield": 2,
+          "speed": 2,
+          "adapt": 2
+        },
+        "parents": [],
+        "protected": false,
+        "seeds": 2
+      },
+      {
+        "id": 22,
+        "species": "plant-2-0",
+        "name": "甜萝卜",
+        "genes": {
+          "color": 20,
+          "form": 2,
+          "yield": 2,
+          "speed": 2,
+          "adapt": 2
+        },
+        "parents": [],
+        "protected": false,
+        "seeds": 2
+      },
+      {
+        "id": 23,
+        "species": "plant-2-1",
+        "name": "蜜番茄",
+        "genes": {
+          "color": 31,
+          "form": 2,
+          "yield": 2,
+          "speed": 2,
+          "adapt": 2
+        },
+        "parents": [],
+        "protected": false,
+        "seeds": 2
+      },
+      {
+        "id": 24,
+        "species": "plant-2-2",
+        "name": "月南瓜",
+        "genes": {
+          "color": 42,
+          "form": 2,
+          "yield": 2,
+          "speed": 2,
+          "adapt": 2
+        },
+        "parents": [],
+        "protected": false,
+        "seeds": 2
+      },
+      {
+        "id": 25,
+        "species": "plant-2-3",
+        "name": "脆豆",
+        "genes": {
+          "color": 53,
+          "form": 2,
+          "yield": 2,
+          "speed": 2,
+          "adapt": 2
+        },
+        "parents": [],
+        "protected": false,
+        "seeds": 2
+      },
+      {
+        "id": 26,
+        "species": "plant-2-4",
+        "name": "光莓",
+        "genes": {
+          "color": 64,
+          "form": 2,
+          "yield": 2,
+          "speed": 2,
+          "adapt": 2
+        },
+        "parents": [],
+        "protected": false,
+        "seeds": 2
+      },
+      {
+        "id": 27,
+        "species": "plant-2-5",
+        "name": "雨瓜",
+        "genes": {
+          "color": 75,
+          "form": 2,
+          "yield": 2,
+          "speed": 2,
+          "adapt": 2
+        },
+        "parents": [],
+        "protected": false,
+        "seeds": 2
+      },
+      {
+        "id": 28,
+        "species": "plant-3-0",
+        "name": "苹果树",
+        "genes": {
+          "color": 90,
+          "form": 2,
+          "yield": 2,
+          "speed": 2,
+          "adapt": 2
+        },
+        "parents": [],
+        "protected": false,
+        "seeds": 2
+      },
+      {
+        "id": 29,
+        "species": "plant-3-1",
+        "name": "蜜桃树",
+        "genes": {
+          "color": 101,
+          "form": 2,
+          "yield": 2,
+          "speed": 2,
+          "adapt": 2
+        },
+        "parents": [],
+        "protected": false,
+        "seeds": 2
+      },
+      {
+        "id": 30,
+        "species": "plant-3-2",
+        "name": "风梨树",
+        "genes": {
+          "color": 112,
+          "form": 2,
+          "yield": 2,
+          "speed": 2,
+          "adapt": 2
+        },
+        "parents": [],
+        "protected": false,
+        "seeds": 2
+      },
+      {
+        "id": 31,
+        "species": "plant-3-3",
+        "name": "银杏",
+        "genes": {
+          "color": 123,
+          "form": 2,
+          "yield": 2,
+          "speed": 2,
+          "adapt": 2
+        },
+        "parents": [],
+        "protected": false,
+        "seeds": 2
+      },
+      {
+        "id": 32,
+        "species": "plant-3-4",
+        "name": "雪梨树",
+        "genes": {
+          "color": 134,
+          "form": 2,
+          "yield": 2,
+          "speed": 2,
+          "adapt": 2
+        },
+        "parents": [],
+        "protected": false,
+        "seeds": 2
+      },
+      {
+        "id": 33,
+        "species": "plant-3-5",
+        "name": "星枣树",
+        "genes": {
+          "color": 145,
+          "form": 2,
+          "yield": 2,
+          "speed": 2,
+          "adapt": 2
+        },
+        "parents": [],
+        "protected": false,
+        "seeds": 2
+      },
+      {
+        "id": 34,
+        "species": "plant-4-0",
+        "name": "苔菇",
+        "genes": {
+          "color": 35,
+          "form": 2,
+          "yield": 2,
+          "speed": 2,
+          "adapt": 2
+        },
+        "parents": [],
+        "protected": false,
+        "seeds": 2
+      },
+      {
+        "id": 35,
+        "species": "plant-4-1",
+        "name": "灯笼菇",
+        "genes": {
+          "color": 46,
+          "form": 2,
+          "yield": 2,
+          "speed": 2,
+          "adapt": 2
+        },
+        "parents": [],
+        "protected": false,
+        "seeds": 2
+      },
+      {
+        "id": 36,
+        "species": "plant-4-2",
+        "name": "雨伞菇",
+        "genes": {
+          "color": 57,
+          "form": 2,
+          "yield": 2,
+          "speed": 2,
+          "adapt": 2
+        },
+        "parents": [],
+        "protected": false,
+        "seeds": 2
+      },
+      {
+        "id": 37,
+        "species": "plant-4-3",
+        "name": "绒球菇",
+        "genes": {
+          "color": 68,
+          "form": 2,
+          "yield": 2,
+          "speed": 2,
+          "adapt": 2
+        },
+        "parents": [],
+        "protected": false,
+        "seeds": 2
+      },
+      {
+        "id": 38,
+        "species": "plant-4-4",
+        "name": "晶耳",
+        "genes": {
+          "color": 79,
+          "form": 2,
+          "yield": 2,
+          "speed": 2,
+          "adapt": 2
+        },
+        "parents": [],
+        "protected": false,
+        "seeds": 2
+      },
+      {
+        "id": 39,
+        "species": "plant-4-5",
+        "name": "梦孢菇",
+        "genes": {
+          "color": 90,
+          "form": 2,
+          "yield": 2,
+          "speed": 2,
+          "adapt": 2
+        },
+        "parents": [],
+        "protected": false,
+        "seeds": 2
+      },
+      {
+        "id": 40,
+        "species": "plant-5-0",
+        "name": "浮萍",
+        "genes": {
+          "color": 185,
+          "form": 2,
+          "yield": 2,
+          "speed": 2,
+          "adapt": 2
+        },
+        "parents": [],
+        "protected": false,
+        "seeds": 2
+      },
+      {
+        "id": 41,
+        "species": "plant-5-1",
+        "name": "水莲",
+        "genes": {
+          "color": 196,
+          "form": 2,
+          "yield": 2,
+          "speed": 2,
+          "adapt": 2
+        },
+        "parents": [],
+        "protected": false,
+        "seeds": 2
+      },
+      {
+        "id": 42,
+        "species": "plant-5-2",
+        "name": "芦苇",
+        "genes": {
+          "color": 207,
+          "form": 2,
+          "yield": 2,
+          "speed": 2,
+          "adapt": 2
+        },
+        "parents": [],
+        "protected": false,
+        "seeds": 2
+      },
+      {
+        "id": 43,
+        "species": "plant-5-3",
+        "name": "净水藻",
+        "genes": {
+          "color": 218,
+          "form": 2,
+          "yield": 2,
+          "speed": 2,
+          "adapt": 2
+        },
+        "parents": [],
+        "protected": false,
+        "seeds": 2
+      },
+      {
+        "id": 44,
+        "species": "plant-5-4",
+        "name": "冰灯莲",
+        "genes": {
+          "color": 229,
+          "form": 2,
+          "yield": 2,
+          "speed": 2,
+          "adapt": 2
+        },
+        "parents": [],
+        "protected": false,
+        "seeds": 2
+      },
+      {
+        "id": 45,
+        "species": "plant-5-5",
+        "name": "星舟草",
+        "genes": {
+          "color": 240,
+          "form": 2,
+          "yield": 2,
+          "speed": 2,
+          "adapt": 2
+        },
+        "parents": [],
+        "protected": false,
+        "seeds": 2
+      }
+    ],
+    "crops": [],
+    "juveniles": [],
+    "companions": {
+      "2": {
+        "slimeId": 2,
+        "role": "园丁",
+        "interest": "花草",
+        "memories": [
+          {
+            "id": "sprout-0",
+            "title": "旧日",
+            "text": "确实留下的回忆",
+            "at": 0
+          }
+        ],
+        "friends": {},
+        "story": {},
+        "mentor": null,
+        "daily": 0,
+        "day": 0
+      }
+    },
+    "workers": [],
+    "crafts": [],
+    "visitors": {},
+    "discoveries": [],
+    "trips": [
+      {
+        "id": 100,
+        "region": 0,
+        "route": 0,
+        "team": [
+          3
+        ],
+        "mode": "offline",
+        "duration": 300,
+        "nextAt": 75,
+        "node": 0,
+        "events": [
+          "event-0-3",
+          "event-0-0",
+          "event-0-7",
+          "event-0-10"
+        ],
+        "pending": null,
+        "bag": {},
+        "log": [
+          "水3从家园出发。"
+        ],
+        "ready": false
+      }
+    ],
+    "journals": [],
+    "chapters": {
+      "sprout": 6
+    },
+    "recruited": {
+      "sprout": 2
+    },
+    "flags": [],
+    "camps": [],
+    "regionStory": {},
+    "mini": null,
+    "miniRewards": {},
+    "lastGather": -300,
+    "lastResonance": -1800,
+    "weather": 0,
+    "weatherAt": 3600,
+    "reducedMotion": false,
+    "autoReplant": false,
+    "notices": [
+      "队伍已出发，重要选择会等待你",
+      "欢迎回家。采集材料、种下第一株植物，或邀请伙伴去草甸看看。"
+    ],
+    "pending": {
+      "food": 7,
+      "wood": 2
+    }
+  },
+  "spaceMode": "free",
+  "abyssLevel": 1,
+  "abyssUnlocked": 1,
+  "summonPity": 0,
+  "sweepUsed": 0,
+  "lastActive": 1793073600000,
+  "planClock": 7,
+  "lastAbyssSel": [],
+  "exploreMapIndex": 0,
+  "exploreTeam": [
+    1
+  ],
+  "stackRecord": 0,
+  "battleSpeed": 1,
+  "battleMode": "auto"
+}

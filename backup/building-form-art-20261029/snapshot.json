@@ -1,0 +1,810 @@
+{
+  "created": "2026-10-29T16:03:04.524914+00:00",
+  "files": [
+    {
+      "path": "src/world/art/storybook.ts",
+      "bytes": 10365,
+      "sha256": "dbec70460fdc059d6f676c89877a4cabd3ff610844a7a4f3e8bec6bf4f2bc207"
+    },
+    {
+      "path": "src/world/home-view.ts",
+      "bytes": 31792,
+      "sha256": "78bc26e37fb834c658af58f63d84eae37dd8958525e09886e283275cc70bd6fe"
+    },
+    {
+      "path": "scripts/prepare-home-art.mjs",
+      "bytes": 2356,
+      "sha256": "ae9d890075fce2223295f798541e9ffeefa028d5386d559926d1de2bda129d63"
+    },
+    {
+      "path": "tests/storybook.test.mjs",
+      "bytes": 1727,
+      "sha256": "1a0c3418a261f3c2d2dd05c369e9d4a0089da2b3669c312f18306a6d01812dbc"
+    },
+    {
+      "path": "tests/building-forms.test.mjs",
+      "bytes": 6172,
+      "sha256": "e311a650ec8b79a7dba2118f213f1e3b1776bb861570fd42d69e9ff44c98915a"
+    },
+    {
+      "path": "package.json",
+      "bytes": 831,
+      "sha256": "84814742c9e3db4f20743589f12e6f98376aa12bba5c32aa7a6011f4b9df83f5"
+    },
+    {
+      "path": "CLAUDE.md",
+      "bytes": 5110,
+      "sha256": "bdb030372a2560f0bd6b9e599fad9cd2cf74f30e528dc2839f2189a79254bf10"
+    },
+    {
+      "path": "README.md",
+      "bytes": 5266,
+      "sha256": "9069845547b977959632d287ed83b767b8ad0341d1bc699edabd2b25b1b7fe1d"
+    },
+    {
+      "path": "docs/art-2026-10-27/美术规范.md",
+      "bytes": 3672,
+      "sha256": "34d21b1b69506c281100eed1ee348011ef8d70416750b9570b98614e5436349d"
+    },
+    {
+      "path": "docs/art-2026-10-29/README.md",
+      "bytes": 3468,
+      "sha256": "a7677faefc092230c76617ac34cd064b652d2f4a86b8a04f11b14fdd7c984757"
+    },
+    {
+      "path": "docs/art-2026-10-29/production/layouts.json",
+      "bytes": 9936,
+      "sha256": "1e7ef3e0d9d03ef5089cb3e5da2ab800f1cf84730d711e164f96263351a826eb"
+    },
+    {
+      "path": "docs/art-2026-10-29/production/building-forms-prompts.md",
+      "bytes": 16249,
+      "sha256": "b9ff36e06e269e4a9e196797c8e6c72af85d5e0e6e8343f4f48461f4f6a5ea71"
+    },
+    {
+      "path": "docs/living-world/QA.md",
+      "bytes": 5899,
+      "sha256": "0ad9351efaa5806b76235b95aee8f5ecf7cd2c5009453341085dbf1111f25e27"
+    },
+    {
+      "path": "docs/living-world/qa-results.json",
+      "bytes": 52782,
+      "sha256": "ca04efc3c425cd3113618a1b4b9a66dd6a5f450b06cc12833094bce50d78400c"
+    },
+    {
+      "path": "史莱姆.html",
+      "bytes": 7712550,
+      "sha256": "101a3c0aac47063a486acb64efd0d195f6da3436bd80380ebca0e8dc712dbd46"
+    },
+    {
+      "path": "src/assets/storybook/decor-a-0.webp",
+      "bytes": 28092,
+      "sha256": "fea035df53aa1942cee4cf58f2db5e01c87b6a94d8611bf0461b0fafd1e3822f"
+    },
+    {
+      "path": "src/assets/storybook/decor-a-1.webp",
+      "bytes": 35192,
+      "sha256": "0b22841f62c1dc8125ecdb5151b30022ed3206df83b02724c4dd3f0993245370"
+    },
+    {
+      "path": "src/assets/storybook/decor-a-10.webp",
+      "bytes": 37046,
+      "sha256": "20b0bf943a57e7fac4a6f6cd4000b3f96e0c4e47b55cc15c83d30d024d9c719c"
+    },
+    {
+      "path": "src/assets/storybook/decor-a-11.webp",
+      "bytes": 29038,
+      "sha256": "031552ef90b8a2619b2fb5e97d42c692ac3af0d9793ad82faa9d6bcbaec001ac"
+    },
+    {
+      "path": "src/assets/storybook/decor-a-12.webp",
+      "bytes": 28926,
+      "sha256": "0439fe427d5cbe4081ab29c0c071478304dc56dc38329de4bb8235ce7f4c1472"
+    },
+    {
+      "path": "src/assets/storybook/decor-a-13.webp",
+      "bytes": 35414,
+      "sha256": "c146d39507f4179c71415f07aa1db781fe925402bf879c1101858081b5d415d9"
+    },
+    {
+      "path": "src/assets/storybook/decor-a-14.webp",
+      "bytes": 27328,
+      "sha256": "54b4796ff1578e40dab8e08e766951b7ab3bf2cd9732617c34f9feead1c0e246"
+    },
+    {
+      "path": "src/assets/storybook/decor-a-15.webp",
+      "bytes": 44020,
+      "sha256": "8ac40e033d1ca9706985688a5d0e805c7ac73dde3dbd0c88a8836f98a69d85e5"
+    },
+    {
+      "path": "src/assets/storybook/decor-a-2.webp",
+      "bytes": 27600,
+      "sha256": "d6c8228635e95e4875768852cdc1bc43b9e0aa85d712c62ca783b7f599025dcc"
+    },
+    {
+      "path": "src/assets/storybook/decor-a-3.webp",
+      "bytes": 37054,
+      "sha256": "d1511ea571166b2580a4aefb59a726e81bd71b8417416a25179a62b141e8e9c4"
+    },
+    {
+      "path": "src/assets/storybook/decor-a-4.webp",
+      "bytes": 33516,
+      "sha256": "e5c5f6ff7e2c4577dd2d30e91e089d41189834be511157534887794e5d386f21"
+    },
+    {
+      "path": "src/assets/storybook/decor-a-5.webp",
+      "bytes": 31834,
+      "sha256": "016a3d3edc825d0730fceb7c84b7697f1d1dcda405c0f5a18ea17bf14eeab4f5"
+    },
+    {
+      "path": "src/assets/storybook/decor-a-6.webp",
+      "bytes": 33170,
+      "sha256": "e4599b8ffb2be74439aa93d9b81beddbaac5d9bb64aa731a75c89b89585db947"
+    },
+    {
+      "path": "src/assets/storybook/decor-a-7.webp",
+      "bytes": 35820,
+      "sha256": "89f52b3f7212b73d61ae0368e1efbda2c81b1496c0bd1fe215a165ad1ec09716"
+    },
+    {
+      "path": "src/assets/storybook/decor-a-8.webp",
+      "bytes": 23620,
+      "sha256": "1df548247da95059e66fae81b8702d0077c0081738c8dc71164675b89d5a832e"
+    },
+    {
+      "path": "src/assets/storybook/decor-a-9.webp",
+      "bytes": 23792,
+      "sha256": "13bd14a5f4a70c31e5816717f996f5e77956c79b673639cfc85c4a1787e49180"
+    },
+    {
+      "path": "src/assets/storybook/decor-a.webp",
+      "bytes": 522654,
+      "sha256": "abe6ae03a98cdbe784813c073749a558f63350c3641d5fafae58b12229c460f1"
+    },
+    {
+      "path": "src/assets/storybook/decor-b-0.webp",
+      "bytes": 34354,
+      "sha256": "014a38779ed8a2549ff746a4d1cbb7f1c2b6692f08d22367bf32b5150d0c57bb"
+    },
+    {
+      "path": "src/assets/storybook/decor-b-1.webp",
+      "bytes": 30466,
+      "sha256": "4f6db1bf03fdb1745802aab505d11eab606104f1e9450dc048adbfe21282c44e"
+    },
+    {
+      "path": "src/assets/storybook/decor-b-10.webp",
+      "bytes": 37586,
+      "sha256": "e65275f582ab232e2194ef5cecf0d0ea3ef78c95cfaf5f6873282fd012ac61a8"
+    },
+    {
+      "path": "src/assets/storybook/decor-b-11.webp",
+      "bytes": 33812,
+      "sha256": "8e63fde84f04047cee985dcb1ee735b57de445b9a5a1564b75fc38caac1a0cb5"
+    },
+    {
+      "path": "src/assets/storybook/decor-b-12.webp",
+      "bytes": 34036,
+      "sha256": "e82c537830fa623e7c79291ab38a8f5638724bd6ad01ee38e5f3c900c9756892"
+    },
+    {
+      "path": "src/assets/storybook/decor-b-13.webp",
+      "bytes": 32072,
+      "sha256": "4cd326964c311a829d87e4c4a06d8f5ae30db881358d5c4d60ecde2877865a98"
+    },
+    {
+      "path": "src/assets/storybook/decor-b-14.webp",
+      "bytes": 24432,
+      "sha256": "e945cb76fbacbae51c27790410650573d0e7107173a97eaaa9347514f70c192d"
+    },
+    {
+      "path": "src/assets/storybook/decor-b-15.webp",
+      "bytes": 40098,
+      "sha256": "5c8dd3589f6bbf783dceb3bc4eb40c5c3731febe8b4494df14470143e92db2a7"
+    },
+    {
+      "path": "src/assets/storybook/decor-b-2.webp",
+      "bytes": 52894,
+      "sha256": "ef37961cbaa04ba177fe508a2f37d43ab8617fbdc0c5975567c52971e568d37c"
+    },
+    {
+      "path": "src/assets/storybook/decor-b-3.webp",
+      "bytes": 50304,
+      "sha256": "391bc1b3ff8b2b0e0c3e9a0cc62c56679a67feea5b5a18c403c015069d760a18"
+    },
+    {
+      "path": "src/assets/storybook/decor-b-4.webp",
+      "bytes": 32884,
+      "sha256": "ea371c941f9cb526f1c590d271a0e957ebc3787a02f771d5edd81d19444aa07c"
+    },
+    {
+      "path": "src/assets/storybook/decor-b-5.webp",
+      "bytes": 37996,
+      "sha256": "a006c78a823bce5e939e1053c4a5012ba90c2e6f5be348edc3a91eaec147a598"
+    },
+    {
+      "path": "src/assets/storybook/decor-b-6.webp",
+      "bytes": 28036,
+      "sha256": "658b11b3a9d6ecb6ec1576cf8fe0df427683569f09f65c15c4546e4e41e2ddce"
+    },
+    {
+      "path": "src/assets/storybook/decor-b-7.webp",
+      "bytes": 44254,
+      "sha256": "c0ae44f5a484b9f7e9f7dd668ad5f5a49af9e7a5ec2263e5c62f2132b4e54dcd"
+    },
+    {
+      "path": "src/assets/storybook/decor-b-8.webp",
+      "bytes": 24554,
+      "sha256": "712dfeba7a16504a21c683aa4f932309746947cf1d2ca45bbe02a70038abcb5b"
+    },
+    {
+      "path": "src/assets/storybook/decor-b-9.webp",
+      "bytes": 15376,
+      "sha256": "4e92152a4baac03b01b38f8ede37c5d6cbdedcb07fc2c3c9a79548a4eda0a2ee"
+    },
+    {
+      "path": "src/assets/storybook/decor-b.webp",
+      "bytes": 559536,
+      "sha256": "3f195f72e0f1fa3ddd42fdfd925f0c9932cddce6ac307ac7847a93c4032db2aa"
+    },
+    {
+      "path": "src/assets/storybook/decor-c-0.webp",
+      "bytes": 32698,
+      "sha256": "ade801a0e4c3c4c25a35da823664d3d24bf64eb53d3169d7e8dab140a091b42e"
+    },
+    {
+      "path": "src/assets/storybook/decor-c-1.webp",
+      "bytes": 30086,
+      "sha256": "3e40cc645a7dbf17669849f71c4cefbd3c05f1fa74cb20dfd5572ebffca33877"
+    },
+    {
+      "path": "src/assets/storybook/decor-c-10.webp",
+      "bytes": 24110,
+      "sha256": "b956839427bee8ea684ea15c58e2e1c361fc4497bc3ac6a63eb1481d9fa0969a"
+    },
+    {
+      "path": "src/assets/storybook/decor-c-11.webp",
+      "bytes": 21294,
+      "sha256": "638aa5292652048feb0aca143390b538329fb2b99d1c6103fdd808766ef3d790"
+    },
+    {
+      "path": "src/assets/storybook/decor-c-12.webp",
+      "bytes": 14952,
+      "sha256": "dd12c44dabe0b36ab1524702b9121447948929604cd3e3309347223eb1a88a13"
+    },
+    {
+      "path": "src/assets/storybook/decor-c-13.webp",
+      "bytes": 23472,
+      "sha256": "a43e9ffb527927eddcf3d3bbdc7f830bd84ff178299cb5cf1d36f719c0ba0814"
+    },
+    {
+      "path": "src/assets/storybook/decor-c-14.webp",
+      "bytes": 18566,
+      "sha256": "07e714d5fb9fabb55edcdccd40fe13f94c0918ce472baadab01fdfde32127f6c"
+    },
+    {
+      "path": "src/assets/storybook/decor-c-15.webp",
+      "bytes": 34164,
+      "sha256": "acf7d143000793ac2e01fa674c172596cdd07d774ca64f05a2427e7664fe7a73"
+    },
+    {
+      "path": "src/assets/storybook/decor-c-2.webp",
+      "bytes": 34454,
+      "sha256": "197d0a4350868b66e66611e062cebf7d20472b4485074d8c2813c39f15958a08"
+    },
+    {
+      "path": "src/assets/storybook/decor-c-3.webp",
+      "bytes": 24752,
+      "sha256": "80bf508129006b73252214360357acba562b53c57859366f9979da157d168591"
+    },
+    {
+      "path": "src/assets/storybook/decor-c-4.webp",
+      "bytes": 28540,
+      "sha256": "d7def4ab90021a7e4a4328c4ae47cac209993de9e1998e65f55131fa241abe65"
+    },
+    {
+      "path": "src/assets/storybook/decor-c-5.webp",
+      "bytes": 21558,
+      "sha256": "fc989234c1e75f5311f43ff8e345caa9445ae9757c61aa996d8f7ca7ca5b6637"
+    },
+    {
+      "path": "src/assets/storybook/decor-c-6.webp",
+      "bytes": 34444,
+      "sha256": "53c269a6f816e7913e7fc18ea8d56d55bd314a4612af145805a93e068ecd3f5a"
+    },
+    {
+      "path": "src/assets/storybook/decor-c-7.webp",
+      "bytes": 27088,
+      "sha256": "367efb8d867cb6b1dd16913d72e4741961666c218d658e287fc4b7f38b124c7b"
+    },
+    {
+      "path": "src/assets/storybook/decor-c-8.webp",
+      "bytes": 30472,
+      "sha256": "140c40d3cb82e8d823d80435016c2ce85859b58b88668e29029eac908050d4e1"
+    },
+    {
+      "path": "src/assets/storybook/decor-c-9.webp",
+      "bytes": 27134,
+      "sha256": "2b1efae4662cae7b7aa146eefd5ab6a96f7a7030f5c5def8e8edd0a5359bb7fd"
+    },
+    {
+      "path": "src/assets/storybook/decor-c.webp",
+      "bytes": 440446,
+      "sha256": "92d3fb779452d7ac93ba8bdce7774be4d8aa09dd0f21c3a2e72f5bbae5077a21"
+    },
+    {
+      "path": "src/assets/storybook/facilities-a-0.webp",
+      "bytes": 41526,
+      "sha256": "4125f2a74d0f8f202880eee903fa7cbec94cc0b0cb4e2b5aa0b794911e9fd986"
+    },
+    {
+      "path": "src/assets/storybook/facilities-a-1.webp",
+      "bytes": 45486,
+      "sha256": "bf0240e81d6e2441996ad55a81b34ea7b28a5493dd80c3c3108ce5a16460448c"
+    },
+    {
+      "path": "src/assets/storybook/facilities-a-10.webp",
+      "bytes": 33986,
+      "sha256": "91256bdda05661c7d95f605c2041e68e38e49da4b81db9701a5f4cab54d5dfbd"
+    },
+    {
+      "path": "src/assets/storybook/facilities-a-11.webp",
+      "bytes": 35890,
+      "sha256": "6e7175bbd8f17b079cd2bdd00148e4e89782f3b4093b485a157033f5ee22d531"
+    },
+    {
+      "path": "src/assets/storybook/facilities-a-12.webp",
+      "bytes": 31460,
+      "sha256": "50a993d43197b37db10edd5eae2c1a42e0a01e26a65d40ca71ef280745f51003"
+    },
+    {
+      "path": "src/assets/storybook/facilities-a-13.webp",
+      "bytes": 43072,
+      "sha256": "2025cbe5d91ba07410deba82683762bc2f47e946f0372ef0684ac084e68bc950"
+    },
+    {
+      "path": "src/assets/storybook/facilities-a-14.webp",
+      "bytes": 39358,
+      "sha256": "eaa37537f1e4f881b0b551f618a43b547fa2307a10490e2cf7eab74842112f5e"
+    },
+    {
+      "path": "src/assets/storybook/facilities-a-15.webp",
+      "bytes": 34614,
+      "sha256": "131890e8103c1d43ba6ee8cefcf279234e4ea2d48ea3b38bd57b1515b4f32c3a"
+    },
+    {
+      "path": "src/assets/storybook/facilities-a-2.webp",
+      "bytes": 31004,
+      "sha256": "d419f8776afce51aa021abdf59825530c5c42da1092214bcb8ffdcfd2248b7a6"
+    },
+    {
+      "path": "src/assets/storybook/facilities-a-3.webp",
+      "bytes": 42190,
+      "sha256": "06c3293221f253f2a7c8a00d11c26308922f686ecb934320fe703ca5ef2d704c"
+    },
+    {
+      "path": "src/assets/storybook/facilities-a-4.webp",
+      "bytes": 31578,
+      "sha256": "a2f999bf7b9e40b6259dfe32e8f40e7e50ccb6e92f4254493b09cfc4bf907401"
+    },
+    {
+      "path": "src/assets/storybook/facilities-a-5.webp",
+      "bytes": 45612,
+      "sha256": "e34952cd449a301168436f7ace38873c784dde256d86a65334cec7d200f8431a"
+    },
+    {
+      "path": "src/assets/storybook/facilities-a-6.webp",
+      "bytes": 46982,
+      "sha256": "14be7ac475bde055069b89abb6332df1318bfa2237c34811ed7056cfe1583dcd"
+    },
+    {
+      "path": "src/assets/storybook/facilities-a-7.webp",
+      "bytes": 33840,
+      "sha256": "34b06b2102326ced59dc681d905ec0f27f4e8a8f0361a9b2362998c746991d72"
+    },
+    {
+      "path": "src/assets/storybook/facilities-a-8.webp",
+      "bytes": 44448,
+      "sha256": "e41b450a3c2f125af3d42062106f6a3badddca8176a725249aa31e28b919dbf2"
+    },
+    {
+      "path": "src/assets/storybook/facilities-a-9.webp",
+      "bytes": 26836,
+      "sha256": "be0ef57ba58d8b180c6eb50846e063617897f3af8f2eb63781f9bf347a490d9c"
+    },
+    {
+      "path": "src/assets/storybook/facilities-a.webp",
+      "bytes": 609128,
+      "sha256": "ab42f9e6f5150a0c84c0561571267948caa7a6ea4440e44aa2e15be2259d5d5d"
+    },
+    {
+      "path": "src/assets/storybook/facilities-b-0.webp",
+      "bytes": 31764,
+      "sha256": "e0fc023430fc1e7f501d22bd3b5a994d1d2a0d6b6e15c80e4b72ba711d406990"
+    },
+    {
+      "path": "src/assets/storybook/facilities-b-1.webp",
+      "bytes": 48956,
+      "sha256": "c5f87b3833e45a9f71ab79253583ac1fc22d44909ebdb589829a5fa30b2f52b9"
+    },
+    {
+      "path": "src/assets/storybook/facilities-b-10.webp",
+      "bytes": 56594,
+      "sha256": "ca3e3b45baa95b0c2d6ed33f55093a1cf8ec3ecabcdc6d66f06cccb399b62488"
+    },
+    {
+      "path": "src/assets/storybook/facilities-b-11.webp",
+      "bytes": 45526,
+      "sha256": "e7c653518c12d5bf2be6fa64b01ef796e790930b63c0f78069d47c5752b20618"
+    },
+    {
+      "path": "src/assets/storybook/facilities-b-12.webp",
+      "bytes": 31454,
+      "sha256": "deafe964bf02d41c6b65eda8d17e40b9b63303f7d2506b2d19ab5614ed7fce20"
+    },
+    {
+      "path": "src/assets/storybook/facilities-b-13.webp",
+      "bytes": 22372,
+      "sha256": "d8c0b0c91dd37e9fe0e46ac6d4278d4b939d7e570a3948182a5660c940952c4c"
+    },
+    {
+      "path": "src/assets/storybook/facilities-b-14.webp",
+      "bytes": 36202,
+      "sha256": "e82b517bf7a437308ef8b9955cbc45712d14b1974de003808250f86fcf5b6627"
+    },
+    {
+      "path": "src/assets/storybook/facilities-b-15.webp",
+      "bytes": 37458,
+      "sha256": "9330bbd622add4dd576e1e4548520c9ef91af7765c1379ab9afa8312303e8a6a"
+    },
+    {
+      "path": "src/assets/storybook/facilities-b-2.webp",
+      "bytes": 40484,
+      "sha256": "54f39d19fc0698db78a3b4afca505a0b091aff57be683eed646fe2c7c3dac93e"
+    },
+    {
+      "path": "src/assets/storybook/facilities-b-3.webp",
+      "bytes": 32362,
+      "sha256": "a67b13bf372a3e08b3072625087d431ac2863e8ce67b8a2e269547254444ba14"
+    },
+    {
+      "path": "src/assets/storybook/facilities-b-4.webp",
+      "bytes": 42406,
+      "sha256": "5b15640e4e975bcb2e0f427d40a54cc662357906024ee1466972204ab7b08576"
+    },
+    {
+      "path": "src/assets/storybook/facilities-b-5.webp",
+      "bytes": 37958,
+      "sha256": "cc0b4d54cb426fe9f9e65c0c8bab6e1e9faae469bc85ef257ab64e0f591e8541"
+    },
+    {
+      "path": "src/assets/storybook/facilities-b-6.webp",
+      "bytes": 28982,
+      "sha256": "6c9c537b50a951fd730c3214fb328dd2a30ac69c2d0c38f840e063bb7fdf4371"
+    },
+    {
+      "path": "src/assets/storybook/facilities-b-7.webp",
+      "bytes": 53530,
+      "sha256": "ffcab43d5a4a995260d0eb09b696ae54c8d508bd20f0076ba87cb46a4da8f23a"
+    },
+    {
+      "path": "src/assets/storybook/facilities-b-8.webp",
+      "bytes": 23572,
+      "sha256": "37e8646094f11e03f494e3e5364d092a34e78df00e12c7c35ea5a886b002ebb8"
+    },
+    {
+      "path": "src/assets/storybook/facilities-b-9.webp",
+      "bytes": 28226,
+      "sha256": "9e885e1dfd9477448d362337f7b65f35f1cd6bbe2b44f4b57f1d5641e68aadcc"
+    },
+    {
+      "path": "src/assets/storybook/facilities-b.webp",
+      "bytes": 603750,
+      "sha256": "ae959b538daf05fc7e6ac41014e0e52fbfc2dba5d3ab55e0fce4a0baeff2aa96"
+    },
+    {
+      "path": "src/assets/storybook/ground.webp",
+      "bytes": 223956,
+      "sha256": "39176a4201029ccbade8614331bbc2884a39dc874db210c5f496a11e223a92b8"
+    },
+    {
+      "path": "src/assets/storybook/manifest.json",
+      "bytes": 9936,
+      "sha256": "85588bae6eebc64162253dc9cfee3010cd83a30d5b2129b45a6bba2e21c7c7f2"
+    },
+    {
+      "path": "src/assets/storybook/paths-0.webp",
+      "bytes": 56892,
+      "sha256": "03175d99d642d02fa0e9d80315cdcf2abaabc026c488d458dcdd8c4af50424d8"
+    },
+    {
+      "path": "src/assets/storybook/paths-1.webp",
+      "bytes": 81784,
+      "sha256": "0390ff3311b70add703282ae60d7aba19cc6632d3b1750c871211b69342d4025"
+    },
+    {
+      "path": "src/assets/storybook/paths-2.webp",
+      "bytes": 52520,
+      "sha256": "abf89efc044c994ba5af6f1c8ac79a2f2c747d976552713a3f88653764007652"
+    },
+    {
+      "path": "src/assets/storybook/paths-3.webp",
+      "bytes": 56216,
+      "sha256": "e68fc6f2f539384044b439cfcc81108d868272e62d97b3664d09d47d62b018bb"
+    },
+    {
+      "path": "src/assets/storybook/paths-4.webp",
+      "bytes": 73290,
+      "sha256": "5e8aea049b6aa5ea5303256c2c61f8cabcef6b77d4def1eb86d9d76e6f3a5f7c"
+    },
+    {
+      "path": "src/assets/storybook/paths-5.webp",
+      "bytes": 81698,
+      "sha256": "cff134f2464ec099ee45d6353ac5416589959b23b88105e3260487e952c8614b"
+    },
+    {
+      "path": "src/assets/storybook/paths.webp",
+      "bytes": 410540,
+      "sha256": "fe26495e97cf91fb2792fe741868e2befd49ac25e9f60114626a6b5e9bb35714"
+    },
+    {
+      "path": "src/assets/storybook/plants-a-0.webp",
+      "bytes": 42084,
+      "sha256": "71af927554ae9617439f98a450b9ca3a802d7c5a764c73ffd92e28a926f613ee"
+    },
+    {
+      "path": "src/assets/storybook/plants-a-1.webp",
+      "bytes": 39798,
+      "sha256": "4c67cfabd61aa72bbdc67f6319b9da480f748f74669649529da11916aa8bf5a3"
+    },
+    {
+      "path": "src/assets/storybook/plants-a-10.webp",
+      "bytes": 52370,
+      "sha256": "e333aef3619859517b530b5673cf37a4e854ab2f2d19aa578fdf23eeee6c72f9"
+    },
+    {
+      "path": "src/assets/storybook/plants-a-11.webp",
+      "bytes": 52648,
+      "sha256": "63e2f847894deb47dd3e56ee088205d43801a34105150085ebed383d6b269f1a"
+    },
+    {
+      "path": "src/assets/storybook/plants-a-12.webp",
+      "bytes": 46054,
+      "sha256": "3774e6059cab0afb21d0b6bb394551fbcb66d563c247ebab928dd02eed2db469"
+    },
+    {
+      "path": "src/assets/storybook/plants-a-13.webp",
+      "bytes": 48020,
+      "sha256": "bf76ac0ec683453cc946d8711ac5c5e9bcb350ac3bd146b89545e7e3dcf6509e"
+    },
+    {
+      "path": "src/assets/storybook/plants-a-14.webp",
+      "bytes": 41226,
+      "sha256": "2ed3ec0c7210c4c12b346b0f6e965767094522e1cc1b9d35672851392847ca97"
+    },
+    {
+      "path": "src/assets/storybook/plants-a-15.webp",
+      "bytes": 50668,
+      "sha256": "cc138876bfd9e7eb949029b5bc665bcb22586ead46c286790960c6e9efbbc61a"
+    },
+    {
+      "path": "src/assets/storybook/plants-a-2.webp",
+      "bytes": 48650,
+      "sha256": "a31f9818ec7814b26abd6ba573dbe19f0b1b05f1d7b57f2f8e3f64fe7928cd81"
+    },
+    {
+      "path": "src/assets/storybook/plants-a-3.webp",
+      "bytes": 41576,
+      "sha256": "9f26652f8c94d4dbea16e2a035bc3adf5435862c2d5cffa6955b8175c714b494"
+    },
+    {
+      "path": "src/assets/storybook/plants-a-4.webp",
+      "bytes": 41590,
+      "sha256": "d721410ed28fb53e33cd4bc9944bf1a83b15a5c70c077e1f8751e9e0ef8f547d"
+    },
+    {
+      "path": "src/assets/storybook/plants-a-5.webp",
+      "bytes": 45416,
+      "sha256": "db9d1d656e37017bee5670850fd56d55fcd234f079ed78433cfd42dbe1d8e2c9"
+    },
+    {
+      "path": "src/assets/storybook/plants-a-6.webp",
+      "bytes": 42144,
+      "sha256": "1081bc78e36621e1656fc5ba325fe558f2feb998b19ff129c1c645477622e8ab"
+    },
+    {
+      "path": "src/assets/storybook/plants-a-7.webp",
+      "bytes": 42990,
+      "sha256": "1b7aa40d2e3640d448aa43f7580b34b9f7c0418a8dc5e18ac4daa6b13340b460"
+    },
+    {
+      "path": "src/assets/storybook/plants-a-8.webp",
+      "bytes": 46234,
+      "sha256": "b46585430736da41c386fd63f659736dbdd707998d31a92b3229ab38c6cad6d3"
+    },
+    {
+      "path": "src/assets/storybook/plants-a-9.webp",
+      "bytes": 43094,
+      "sha256": "a020d8b1b0c6ddd49bba95a8103d4d48a7ce9da25e9cd930b1feb1d97e969291"
+    },
+    {
+      "path": "src/assets/storybook/plants-a.webp",
+      "bytes": 738308,
+      "sha256": "ce0c50888dbf650d26bce8100be86b15d6b6fe9679fb51921869c8f35465b8ba"
+    },
+    {
+      "path": "src/assets/storybook/plants-b-0.webp",
+      "bytes": 40312,
+      "sha256": "20d82806669b4c5a4abddadf791077dbee3951014d0db366a9548c92a8481c6e"
+    },
+    {
+      "path": "src/assets/storybook/plants-b-1.webp",
+      "bytes": 39288,
+      "sha256": "d7cf3c6685438bb56168a69a1024efe9550db8f989c106aa64c1256ac19bfdaa"
+    },
+    {
+      "path": "src/assets/storybook/plants-b-10.webp",
+      "bytes": 33074,
+      "sha256": "94fb097e5d38f55fdba417d2ffddfe0d56a85efc3e598472dbe6cd67ebf878c6"
+    },
+    {
+      "path": "src/assets/storybook/plants-b-11.webp",
+      "bytes": 33760,
+      "sha256": "59168be6d30eb13bb098cb575ed5c6979cc6dbe436afc86f19399f83158f5d57"
+    },
+    {
+      "path": "src/assets/storybook/plants-b-12.webp",
+      "bytes": 24886,
+      "sha256": "fcfc25b7c2ab12d9cdf2efa156d5e255fefd5c119b9cc2433dce96b625465fcf"
+    },
+    {
+      "path": "src/assets/storybook/plants-b-13.webp",
+      "bytes": 24262,
+      "sha256": "7fe422f6e0a3439d37670261e7e51bfaf208cbc7b85f108455abcc3a9ad4f3e8"
+    },
+    {
+      "path": "src/assets/storybook/plants-b-14.webp",
+      "bytes": 25098,
+      "sha256": "4c6ba1cf5e03d1567c3ecdf492b524a54f6b6fc173d10ecb682493ba9296b066"
+    },
+    {
+      "path": "src/assets/storybook/plants-b-15.webp",
+      "bytes": 26918,
+      "sha256": "36fca7e0eb348a9dc09fc8924ccdbd83a2f101c638cc17f21b749ed04951a14e"
+    },
+    {
+      "path": "src/assets/storybook/plants-b-16.webp",
+      "bytes": 45838,
+      "sha256": "dd889910121810f6be524ab3143efbf3df9bab368d33618a895d85596a98f063"
+    },
+    {
+      "path": "src/assets/storybook/plants-b-2.webp",
+      "bytes": 54138,
+      "sha256": "8e5d51c310ebbac666c4a666e35fe90eedac71b52f1b0a0a999b846d3cd5ed74"
+    },
+    {
+      "path": "src/assets/storybook/plants-b-3.webp",
+      "bytes": 52250,
+      "sha256": "91c88857bbc9643f58f8f5441f7ab6e1ee171dd86165943d5baee7f7d26a5b86"
+    },
+    {
+      "path": "src/assets/storybook/plants-b-4.webp",
+      "bytes": 54428,
+      "sha256": "0a73a863342598639de0d6cea87861a22819339e06e1a4b5c6eac0945e962ce3"
+    },
+    {
+      "path": "src/assets/storybook/plants-b-5.webp",
+      "bytes": 57290,
+      "sha256": "25499ba83a3734df7d2e87a88574a80ed1e4b0b04fb52a4d874c4b8bb5b28388"
+    },
+    {
+      "path": "src/assets/storybook/plants-b-6.webp",
+      "bytes": 55866,
+      "sha256": "16f3bf53cdf530e5e1a89b4a735d1126a721f8316482c689f0d17e677f97d557"
+    },
+    {
+      "path": "src/assets/storybook/plants-b-7.webp",
+      "bytes": 65530,
+      "sha256": "cd290d80ad3d47382f47b9181078a035a73980e2a2fd7734241d1b07d6a503e7"
+    },
+    {
+      "path": "src/assets/storybook/plants-b-8.webp",
+      "bytes": 34056,
+      "sha256": "90e2490f3b15c17c28b66bfa5fb26e0f340a98223677cc5ff9586d3ed16b0290"
+    },
+    {
+      "path": "src/assets/storybook/plants-b-9.webp",
+      "bytes": 34544,
+      "sha256": "41c71d3b7eb3978bc7a590931cd456b8a20a64142e966029c5ef177b99d8447d"
+    },
+    {
+      "path": "src/assets/storybook/plants-b.webp",
+      "bytes": 711252,
+      "sha256": "daebac8fa3bd12934adfdd5dbaac5981e8158808866343cac9fbb687828186a5"
+    },
+    {
+      "path": "src/assets/storybook/plants-c-0.webp",
+      "bytes": 44076,
+      "sha256": "5017e6905f122af66625c51259aeeccabd95af77adff97f626632aae78482e42"
+    },
+    {
+      "path": "src/assets/storybook/plants-c-1.webp",
+      "bytes": 28842,
+      "sha256": "335007715648400e602a61bc5ebd6a5913c29ff080d6c9dc0a5e6107250df092"
+    },
+    {
+      "path": "src/assets/storybook/plants-c-10.webp",
+      "bytes": 28434,
+      "sha256": "7893abb7d856cc01804ae44c95dc9b3b63bd94a5b4de076c501e89b63faaef41"
+    },
+    {
+      "path": "src/assets/storybook/plants-c-11.webp",
+      "bytes": 28746,
+      "sha256": "9131449598ca18395c93788eb960baa9fe2ab3e004f71fd237a85039369d646d"
+    },
+    {
+      "path": "src/assets/storybook/plants-c-12.webp",
+      "bytes": 30760,
+      "sha256": "a7e05f7c5ba429f33e95929904ad08c41611c3073bc33f6b869d8b95c3696e2d"
+    },
+    {
+      "path": "src/assets/storybook/plants-c-13.webp",
+      "bytes": 19342,
+      "sha256": "29eee95da2caf294855a05039767c5ef9fba9f9bbe16a8366650d84bee8b279c"
+    },
+    {
+      "path": "src/assets/storybook/plants-c-14.webp",
+      "bytes": 32086,
+      "sha256": "a3f5855c85c013e04577d9fd1953d1908a5bb1de88a64b0848205e39f294a7f9"
+    },
+    {
+      "path": "src/assets/storybook/plants-c-15.webp",
+      "bytes": 24598,
+      "sha256": "7f2d84229af3d05cfe8be913c3936bbd18e02fbf2a19d3235e59bbeabb751cfc"
+    },
+    {
+      "path": "src/assets/storybook/plants-c-2.webp",
+      "bytes": 33390,
+      "sha256": "0ff4624cd5ac0e724cd2dcbddb34c40878382443fa9a875ae464c264ea211a76"
+    },
+    {
+      "path": "src/assets/storybook/plants-c-3.webp",
+      "bytes": 49808,
+      "sha256": "5400c2c7e6751fb098181d2767437097b60315cc0132374d0d08745d712c9b6f"
+    },
+    {
+      "path": "src/assets/storybook/plants-c-4.webp",
+      "bytes": 18108,
+      "sha256": "bc04cb6ad777f86afefb5fbf5ed699e2308db6ea20c70794452898724e63b755"
+    },
+    {
+      "path": "src/assets/storybook/plants-c-5.webp",
+      "bytes": 36468,
+      "sha256": "bc43f820af04c333ab4552845b1ad1859510d4a8b31e164ab24cd72f1ec2a510"
+    },
+    {
+      "path": "src/assets/storybook/plants-c-6.webp",
+      "bytes": 31618,
+      "sha256": "64a974b2a474406eaefc87c0dee15e148f9300feb1c755edf25bad5f2cd70721"
+    },
+    {
+      "path": "src/assets/storybook/plants-c-7.webp",
+      "bytes": 14004,
+      "sha256": "92e12d5a54322bc593f769bbc3de2f3995c9edc5de20256c169cc51ae28e91b2"
+    },
+    {
+      "path": "src/assets/storybook/plants-c-8.webp",
+      "bytes": 21116,
+      "sha256": "0ced1f199a9808d1cf027898cd8dbfe6417f207fe89c4120d273bee94f401278"
+    },
+    {
+      "path": "src/assets/storybook/plants-c-9.webp",
+      "bytes": 13784,
+      "sha256": "cebe583653b9bda74f763e3a69c9537b2b4bbd8904792354f5f70a29137f1381"
+    },
+    {
+      "path": "src/assets/storybook/plants-c.webp",
+      "bytes": 465910,
+      "sha256": "d053dfe9b22345d2739e6cc185aefe81337d12707955d347191b33512822bb3e"
+    }
+  ]
+}

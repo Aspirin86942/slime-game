@@ -69,7 +69,7 @@ export function validWorld(value:unknown,slimeIds:number[]=[]):value is World {
    if(!typed.evidence.every(e=>obj(e)&&id(e.id)&&str(e.type)&&arr(e.participants,20)&&e.participants.every(n=>slimeIds.includes(n)||!!typed.archives[n])&&num(e.at)))return false;
   }
   if(typed.version===5){
-   if(typed.placements.some(p=>![p.level,p.rotation].every(Number.isInteger))||Object.keys(typed.pathStyles??{}).some(k=>!k.startsWith('0:')))return false;
+   if(typed.placements.some(p=>![p.level,p.rotation].every(Number.isInteger)||p.form!==undefined&&!(Number.isInteger(p.form)&&p.form>=1&&p.form<=p.level))||Object.keys(typed.pathStyles??{}).some(k=>!k.startsWith('0:')))return false;
    if(typed.retired!==undefined&&!obj(typed.retired))return false;
    if(Object.values(typed.stories).some(s=>s.status==='active')||typed.workers.some(j=>typed.placements.some(p=>p.id===j.building&&(p.stored||['expedition','resonance'].includes(p.def)))))return false;
    const map=typed.map;if(!obj(map)||map.width!==HOME_WIDTH||map.height!==HOME_HEIGHT||!arr(map.terrain,HOME_WIDTH*HOME_HEIGHT)||map.terrain.length!==HOME_WIDTH*HOME_HEIGHT||!map.terrain.every(n=>Number.isInteger(n)&&num(n,0,5)))return false;
