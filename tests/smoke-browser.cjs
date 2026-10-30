@@ -32,9 +32,9 @@ let aborted = false;
 
 // R3：陪伴页的 tab id 是 space，不是 companion。
 const PAGES = ['space', 'home', 'summon', 'travel', 'bag', 'status'];
-// 截图抽样：R18 降到每 4 档一张家园截图；失败截图不受影响。
-const SAMPLE_SHOT_EVERY = 4;
-// R18：弹层态只在七个手机竖屏档 + land-844 + desktop-m 上跑。
+// 截图抽样：每档两屏（家园 + 一张旧玩法页），旧玩法页按档案轮换，六页都有出镜。
+const LEGACY_PAGES = ['space', 'summon', 'travel', 'bag', 'status'];
+// 弹层态只在七个手机竖屏档 + land-844 + desktop-m 上跑。
 const OVERLAY_PROFILES = new Set([...profiles.matrix({ group: 'phones' }), 'land-844', 'desktop-m']);
 // 每页的固定 HUD、滚动内容与 required selectors（数字是 querySelectorAll 的元素数下限）。
 // 固定 HUD 参与溢出/压盖/比例/命中/安全区；滚动内容只做横向溢出与兄弟压盖，
@@ -317,6 +317,7 @@ async function checkSafeAreaProbe(session, name, failures) {
 async function checkPages(session, name, index, failures) {
   const phone = PHONE_PROFILES.has(name);
   const minHit = DESKTOP_PROFILES.has(name) ? MIN_HIT_DESKTOP : MIN_HIT_PHONE;
+  const shotPage = LEGACY_PAGES[index % LEGACY_PAGES.length];
   const coverage = {
     profile: name,
     pages: [],
@@ -333,6 +334,7 @@ async function checkPages(session, name, index, failures) {
     const selectors = measuredSelectorsFor(page);
     const consoleStart = session.consoleErrors.length;
     await session.ev(`switchTab(${JSON.stringify(page)})`);
+    await session.frame();
     await session.frame();
     // 页面侧最低证据：活动页真的切过去了、required selector 真的有元素。
     const state = await session.ev(pageStateExpression(required));
@@ -409,8 +411,8 @@ async function checkPages(session, name, index, failures) {
     coverage.pageChecks += 1;
     coverage.totalMeasured += snapshot.elements.length;
     coverage.totalRequired += Object.keys(required).length;
-    // R18：抽样截图从每档两屏降到每 4 档一张家园截图；失败截图照旧逐场景保留。
-    if (page === 'home' && index % SAMPLE_SHOT_EVERY === 0) {
+    // 抽样截图与任务 6 口径一致：每档「家园 + 一张旧玩法页」，两屏。
+    if (page === 'home' || page === shotPage) {
       await session.shot(path.join(name, `${page}.png`)).catch(error => {
         console.log(`  (截图跳过 ${name}/${page}: ${error.message})`);
       });
@@ -543,6 +545,55 @@ function outsideViewport(rect, viewport) {
     || rect.right > viewport.width + 0.5 || rect.bottom > viewport.height + 0.5;
 }
 
+// measure 对缺失选择器直接跳过，safeAreaFailures 对零面积元素也跳过；
+// 所以 spec.safe 也要像 spec.controls 一样显式检查「存在 + 有面积」，缺一即 FAIL。
+function presenceProblems(bySelector, selectors, label) {
+  const missing = [];
+  const zero = [];
+  let present = 0;
+  for (const selector of selectors) {
+    const element = bySelector.get(selector);
+    if (!element) {
+      missing.push(selector);
+      continue;
+    }
+    const rect = element.rect;
+    if (!(rect.width > 0 && rect.height > 0)) {
+      zero.push(`${selector} ${rect.width}×${rect.height}`);
+      continue;
+    }
+    present += 1;
+  }
+  const problems = [];
+  if (missing.length) problems.push(`缺少${label}：${missing.join(', ')}`);
+  if (zero.length) problems.push(`${label}尺寸为 0：${zero.join(', ')}`);
+  return { problems, present };
+}
+
+// 必须可点的控件：存在、有面积之外，矩形要在视口内，中心点要有真实命中证据。
+// occlusionFailures 对 hitSelector=null 直接跳过，这里把「不可命中」补成显式失败。
+function clickabilityProblems(bySelector, selectors, viewport) {
+  const { problems } = presenceProblems(bySelector, selectors, '可点控件');
+  const outside = [];
+  const unhittable = [];
+  let checked = 0;
+  for (const selector of selectors) {
+    const element = bySelector.get(selector);
+    if (!element) continue;
+    const rect = element.rect;
+    if (!(rect.width > 0 && rect.height > 0)) continue;
+    if (outsideViewport(rect, viewport)) outside.push(`${selector} ${formatRect(rect)}`);
+    if (!element.hitSelector) {
+      unhittable.push(`${selector} 中心点没有命中任何元素`);
+    } else {
+      checked += 1;
+    }
+  }
+  if (outside.length) problems.push(`可点控件越出视口：${outside.join(', ')}`);
+  if (unhittable.length) problems.push(`可点控件中心点不可命中：${unhittable.join(', ')}`);
+  return { problems, checked };
+}
+
 // 已放置设施：中心点确实命中它自己（不选被顶栏、底栏或另一个 SVG 物件盖住的目标）。
 async function pickFacility(session) {
   return session.ev(`(() => {
@@ -565,6 +616,7 @@ async function checkHomeOverlay(session, name, spec, target, failures) {
   const problems = [];
   let snapshot = null;
   let containerRect = null;
+  let detailCounts = null;
   try {
     if (spec.pickFacility) {
       if (!target) problems.push('没有可点击的已放置设施');
@@ -599,13 +651,18 @@ async function checkHomeOverlay(session, name, spec, target, failures) {
         if (!(element.clientHeight > 0)) problems.push('滚动容器高度为 0');
       }
       for (const failure of safeAreaFailures(pick(snapshot, spec.safe))) problems.push(`安全区：${failure.reason}`);
+      const safePresence = presenceProblems(bySelector, spec.safe, '安全区元素');
+      problems.push(...safePresence.problems);
+      const controlCheck = clickabilityProblems(bySelector, spec.controls, snapshot.viewport);
+      problems.push(...controlCheck.problems);
       const controls = pick(snapshot, spec.controls);
       for (const failure of occlusionFailures(controls)) problems.push(`遮挡：${failure.reason}`);
-      const measured = new Set(snapshot.elements.map(element => element.selector));
-      const missing = spec.controls.filter(selector => !measured.has(selector));
-      if (missing.length) problems.push(`缺少可点控件：${missing.join(', ')}`);
-      const zero = controls.elements.filter(element => !(element.rect.width > 0 && element.rect.height > 0));
-      if (zero.length) problems.push(`可点控件尺寸为 0：${zero.map(element => element.selector).join(', ')}`);
+      detailCounts = {
+        safePresent: safePresence.present,
+        safeExpected: spec.safe.length,
+        controlChecked: controlCheck.checked,
+        controlExpected: spec.controls.length,
+      };
     }
   } catch (error) {
     problems.push(`打开或测量失败：${(error && error.message) || String(error)}`);
@@ -652,6 +709,7 @@ async function checkHomeOverlay(session, name, spec, target, failures) {
     controls: spec.controls,
     safe: spec.safe,
     measured: snapshot ? snapshot.elements.map(element => element.selector) : [],
+    counts: detailCounts,
     snapshot,
     problems,
     consoleErrors: newErrors,
@@ -660,8 +718,8 @@ async function checkHomeOverlay(session, name, spec, target, failures) {
   console.log(
     (ok ? 'PASS ' : 'FAIL ') + label +
     `  container=${containerRect ? formatRect(containerRect) : 'none'}` +
-    ` controls=${spec.controls.length}` +
-    ` safe=${spec.safe.length}` +
+    ` controls=${detailCounts ? `${detailCounts.controlChecked}/${detailCounts.controlExpected}` : `0/${spec.controls.length}`}` +
+    ` safe=${detailCounts ? `${detailCounts.safePresent}/${detailCounts.safeExpected}` : `0/${spec.safe.length}`}` +
     ` errors=${newErrors.length}` +
     (ok ? '' : `  problems=${problems.length}`)
   );
