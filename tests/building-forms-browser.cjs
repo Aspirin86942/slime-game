@@ -17,6 +17,8 @@ const zeroSafeArea={top:0,right:0,bottom:0,left:0};
 (async()=>{
  const session=await start({profile:'desktop-s',url:'史莱姆.html?battle=ui',gpu:true,outDir:out});
  const {ev,client}=session,errors=session.consoleErrors;
+ // 地图点位点击在原脚本里走鼠标输入；底座 tapPoint 是触摸，这里恢复最小的本地鼠标点位助手。
+ const mouseTap=async p=>{await client.send('Input.dispatchMouseEvent',{type:'mousePressed',...p,button:'left',clickCount:1});await client.send('Input.dispatchMouseEvent',{type:'mouseReleased',...p,button:'left',clickCount:1});};
  const imageHash=selector=>ev(`(async()=>{const src=document.querySelector(${JSON.stringify(selector)}).href.baseVal;await new Promise((resolve,reject)=>{const i=new Image();i.onload=resolve;i.onerror=reject;i.src=src;});return Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',await (await fetch(src)).arrayBuffer())),n=>n.toString(16).padStart(2,'0')).join('');})()`);
  // 图集整页与回到桌面仍用一次性的自定义尺寸，指标和零安全区同样经底座表达。
  const resize=async(width,height)=>{const device=await session.metrics({width,height,name:`${width}x${height}`},{dpr:1,mobile:width<760,safeArea:zeroSafeArea});await sleep(160);return device;};
@@ -64,7 +66,7 @@ const zeroSafeArea={top:0,right:0,bottom:0,left:0};
   await session.tap(houseSelector);await session.tap('[data-lw="manage-open"]');await session.tap('[data-command*="store"]');await session.tap('[data-lw="close"]');await session.tap('[data-panel="build"]');await session.tap('[data-category="stored"]');
   check('stored upgraded house keeps its form in the catalog',await imageHash(`[data-lw="move"][data-id="${house}"] image`)===houseHash);
   await session.tap(`[data-lw="move"][data-id="${house}"]`);
-  await session.tapPoint(await ev(`(()=>{const p=new DOMPoint(6.5*48,5.5*48).matrixTransform(document.querySelector('.home-map').getScreenCTM());return {x:p.x,y:p.y};})()`));
+  await mouseTap(await ev(`(()=>{const p=new DOMPoint(6.5*48,5.5*48).matrixTransform(document.querySelector('.home-map').getScreenCTM());return {x:p.x,y:p.y};})()`));
   check('restoring the house preserves the level-three image and form',await ev(`S.world.placements.find(p=>p.id===${house}).form===3&&!S.world.placements.find(p=>p.id===${house}).stored`)&&await imageHash(houseSelector+' image')===houseHash);
   await ev(`LivingWorld.dispatch({type:'move',id:${kitchen},zone:0,x:10,y:5,rotation:1})`);
   check('rotating an upgraded kitchen preserves image proportions',await ev(`(()=>{const e=document.querySelector('[data-home-object="${kitchen}"] image'),m=e.getScreenCTM();return Math.abs(Math.hypot(m.a,m.b)-Math.hypot(m.c,m.d))<.001;})()`));
