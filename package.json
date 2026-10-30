@@ -10,7 +10,7 @@
     "test:harness": "node --test tests/lib/browser/*.test.cjs",
     "smoke": "node tests/smoke-browser.cjs",
     "test": "npm run typecheck && npm run build && npm run test:world && node tests/review-tests.cjs && node tests/merge-growth.cjs && node --test tests/reference-home.test.cjs",
-    "test:browser": "node tests/home-browser.cjs && node tests/reference-browser.cjs && node tests/theme-browser.cjs && node tests/mobile-home-browser.cjs && node tests/building-forms-browser.cjs && node tests/home-actions-browser.cjs && node tests/estate-browser.cjs && node tests/seasons-browser.cjs"
+    "test:browser": "node tests/home-browser.cjs && node tests/reference-browser.cjs && node tests/theme-browser.cjs && node tests/mobile-home-browser.cjs && node tests/building-forms-browser.cjs && node tests/home-actions-browser.cjs && node tests/estate-browser.cjs && node tests/seasons-browser.cjs && node tests/smoke-browser.cjs"
   },
   "devDependencies": { "esbuild": "0.25.12", "typescript": "5.9.3" }
 }
