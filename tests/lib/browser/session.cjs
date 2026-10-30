@@ -134,6 +134,11 @@ async function start({ profile, url, seed, gpu = true, outDir } = {}) {
     const point = await base.ev(`(() => {
       const el = document.querySelector(${JSON.stringify(selector)});
       if (!el) return null;
+      // 迁移脚本的目标常位于折叠的 <details> 或滚动区外：先展开全部祖先，再居中滚入视口。
+      for (let node = el.parentElement; node; node = node.parentElement) {
+        if (node.tagName === 'DETAILS') node.open = true;
+      }
+      el.scrollIntoView({ block: 'center', inline: 'nearest' });
       const r = el.getBoundingClientRect();
       return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
     })()`);
