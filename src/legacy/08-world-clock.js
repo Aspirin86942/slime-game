@@ -43,5 +43,5 @@ LivingWorld.connect({
   slimeHTML:s=>slimeHTML(s,{mood:'idle'}),
   open:page=>page.startsWith('detail:')?openDetail(Number(page.slice(7))):switchTab(page),
   play:(kind,id)=>{const s=getSlime(id);if(kind==='ball'&&s)startBallGame(s);else if(kind==='stack')startStackGame();},
-  progress:events=>{for(const e of events){if(e.type==='income'){S.coins+=e.amount||0;S.totalEarned+=e.amount||0;}if(['experience','feed'].includes(e.type))for(const id of e.participants||[]){const s=getSlime(id);if(s)addExp(s,e.amount||0);}if(e.type==='pet')addTaskProgress('pet',1);if(e.type==='feed')addTaskProgress('feed',1);if(e.type==='collection'){addTaskProgress('rent',1);recordRegionExplore(Math.floor(Number(e.object)/2));}}}
+  progress:events=>{for(const e of events){if(e.type==='income'){S.coins+=e.amount||0;S.totalEarned+=e.amount||0;}if(e.type==='points')S.points+=e.amount||0;if(['experience','feed'].includes(e.type))for(const id of e.participants||[]){const s=getSlime(id);if(s)addExp(s,e.amount||0);}if(e.type==='pet')addTaskProgress('pet',1);if(e.type==='feed')addTaskProgress('feed',1);if(e.type==='collection'){addTaskProgress('rent',1);recordRegionExplore(Math.floor(Number(e.object)/2));}}}
 });

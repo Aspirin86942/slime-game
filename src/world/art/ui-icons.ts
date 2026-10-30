@@ -35,6 +35,11 @@ const paths:Record<string,string>={
   "rotate": "M4 10a8 8 0 1 1 1 8M4 4v6h6",
   "move": "M12 2v20M2 12h20M8 6l4-4 4 4M8 18l4 4 4-4M6 8l-4 4 4 4M18 8l4 4-4 4",
   "left": "m15 5-7 7 7 7",
-  "right": "m9 5 7 7-7 7"
+  "right": "m9 5 7 7-7 7",
+  "research": "M12 6C10 4 7 4 3 5v14c4-1 7-1 9 1 2-2 5-2 9-1V5c-4-1-7-1-9 1ZM12 6v14",
+  "order": "M8 3h8v4H8ZM6 5H4v16h16V5h-2M8 13l3 3 5-6",
+  "coin": "M12 3a9 9 0 1 1 0 18 9 9 0 0 1 0-18ZM8.5 9.5h7M8.5 14.5h7M12 7v10",
+  "flag": "M5 21V3M5 4h13l-3 4.5L18 13H5",
+  "axe": "m14 3 7 7-4 3-6-6ZM12 8 3 17l4 4 9-9"
 };
 export function uiIcon(name:string):string {return `<svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="${paths[name]||paths.spark}"/></svg>`;}

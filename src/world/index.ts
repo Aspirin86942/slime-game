@@ -4,7 +4,7 @@ import {render as view,mount as mountView,handleClick as click,navigate as navig
 export {createWorld,execute,advance,occupied} from './engine.ts';
 export {validWorld} from './storage.ts';
 export {comboFor,COMBOS} from './combat.ts';
-export {BUILDINGS,PLANTS,VISITORS} from './content.ts';
+export {BUILDINGS,PLANTS,VISITORS,TECHS} from './content.ts';
 import {prepareWorld,upgradeWorld,upgradeHome} from './migration.ts';
 import {attachLegacyInventory} from './inventory.ts';
 import {activity,resident,record} from './life.ts';

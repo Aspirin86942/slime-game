@@ -11,6 +11,12 @@ export const neighbours=(w:World,n:number)=>{
  return [[x-1,y],[x+1,y],[x,y-1],[x,y+1]].filter(([x,y])=>inside(w,x,y)).map(([x,y])=>cell(w,x,y));
 };
 export const originalPoint=(zone:number,x:number,y:number)=>({x:x+(zone%3)*12,y:y+Math.floor(zone/3)*12});
+/* 开垦地块：地图按 6×6 格分成 6 列 4 行。新家园只开放中间四块（x 12–23，y 6–17），其余是待开垦的密林。 */
+export const PLOT=6,PLOT_COLUMNS=HOME_WIDTH/PLOT,PLOT_ROWS=HOME_HEIGHT/PLOT,PLOT_COUNT=PLOT_COLUMNS*PLOT_ROWS;
+export const START_PLOTS=[8,9,14,15];
+export const plotAt=(x:number,y:number)=>Math.floor(y/PLOT)*PLOT_COLUMNS+Math.floor(x/PLOT);
+export const plotOrigin=(n:number):[number,number]=>[n%PLOT_COLUMNS*PLOT,Math.floor(n/PLOT_COLUMNS)*PLOT];
+export const plotNeighbours=(n:number)=>{const x=n%PLOT_COLUMNS,y=Math.floor(n/PLOT_COLUMNS);return [[x-1,y],[x+1,y],[x,y-1],[x,y+1]].filter(([a,b])=>a>=0&&b>=0&&a<PLOT_COLUMNS&&b<PLOT_ROWS).map(([a,b])=>b*PLOT_COLUMNS+a);};
 export const createMap=()=>({width:HOME_WIDTH,height:HOME_HEIGHT,terrain:Array.from({length:HOME_WIDTH*HOME_HEIGHT},(_,n)=>Math.floor(n%HOME_WIDTH/12)+Math.floor(n/HOME_WIDTH/12)*3)});
 
 export interface Camera {x:number;y:number;zoom:number;ready:boolean;}

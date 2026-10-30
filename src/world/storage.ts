@@ -1,8 +1,8 @@
-import {HOME_WIDTH,HOME_HEIGHT,inside,mapWidth,mapHeight} from './map.ts';
+import {HOME_WIDTH,HOME_HEIGHT,PLOT_COUNT,plotAt,inside,mapWidth,mapHeight} from './map.ts';
 import {bounds} from './ecology.ts';
 import {prepareWorld} from './migration.ts';
 import type {World} from './types.ts';
-import {BUILDINGS,DECORATIONS,PATH_STYLES,PLANTS,RECIPES,PERSONALITIES,ELEMENTS,VISITORS} from './content.ts';
+import {BUILDINGS,DECORATIONS,PATH_STYLES,PLANTS,RECIPES,PERSONALITIES,ELEMENTS,VISITORS,TECHS} from './content.ts';
 import {EVENTS,CHARACTERS,PERSONAL_CHAINS,PAIR_EVENTS} from './narratives.ts';
 const obj=(v:unknown):v is Record<string,unknown>=>!!v&&typeof v==='object'&&!Array.isArray(v);
 const num=(v:unknown,min=0,max=1e12):v is number=>typeof v==='number'&&Number.isFinite(v)&&v>=min&&v<=max;
@@ -39,7 +39,7 @@ export function validWorld(value:unknown,slimeIds:number[]=[]):value is World {
   if(!typed.unlocked.includes(0)||!unique(typed.unlocked)||!typed.unlocked.every(z=>Number.isInteger(z)&&z>=0&&z<6))return false;
   if(!typed.placements.every(p=>[...BUILDINGS,...DECORATIONS].some(d=>d.id===p.def)&&num(p.zone,0,5)&&num(p.x,0,mapWidth(typed)-1)&&num(p.y,0,mapHeight(typed)-1)&&num(p.rotation,0,3)&&num(p.level,1,3)&&typeof p.stored==='boolean'))return false;
   if(!typed.cultivars.every(c=>PLANTS.some(p=>p.id===c.species)&&str(c.name,80)&&num(c.seeds,0,9999)&&typeof c.protected==='boolean'&&arr(c.parents)&&c.parents.every(p=>str(p,80))&&obj(c.genes)&&num(c.genes.color,0,360)&&['form','yield','speed','adapt'].every(k=>num((c.genes as unknown as Record<string,unknown>)[k],1,5))))return false;
-  if(!typed.crops.every(c=>typed.cultivars.some(v=>v.id===c.cultivar)&&num(c.zone,0,5)&&num(c.x,0,mapWidth(typed)-1)&&num(c.y,0,mapHeight(typed)-1)&&num(c.progress,0,1)&&num(c.water,0,180)&&num(c.care,0,.21)&&num(c.harvests)&&num(c.lastSim)))return false;
+  if(!typed.crops.every(c=>typed.cultivars.some(v=>v.id===c.cultivar)&&num(c.zone,0,5)&&num(c.x,0,mapWidth(typed)-1)&&num(c.y,0,mapHeight(typed)-1)&&num(c.progress,0,1)&&num(c.water,0,180)&&num(c.care,0,.21)&&num(c.harvests)&&num(c.lastSim)&&(c.legacy===undefined||typeof c.legacy==='boolean')))return false;
   if(!typed.juveniles.every(j=>str(j.name,80)&&ELEMENTS.includes(j.element)&&PERSONALITIES.includes(j.personality)&&num(j.born)&&num(j.stage,0,1)&&arr(j.care)&&arr(j.traits)&&arr(j.choices)&&typeof j.active==='boolean'&&(j.mentor===null||slimeIds.includes(j.mentor))))return false;
   if(!typed.workers.every(j=>slimeIds.includes(j.slimeId)&&typed.placements.some(p=>p.id===j.building)))return false;
   if(!typed.crafts.every(c=>RECIPES.some(r=>r.id===c.recipe)&&typed.placements.some(p=>p.id===c.building)&&num(c.remaining)&&typeof c.ready==='boolean'&&(c.participants===undefined||arr(c.participants,3)&&c.participants.every(id=>slimeIds.includes(id)||!!typed.archives?.[id]))))return false;
@@ -79,6 +79,18 @@ export function validWorld(value:unknown,slimeIds:number[]=[]):value is World {
    for(const p of typed.placements){if(p.zone!==0||!inside(typed,p.x,p.y))return false;if(p.stored)continue;const [a,b]=bounds(p);if(p.x+a>HOME_WIDTH||p.y+b>HOME_HEIGHT)return false;for(let y=p.y;y<p.y+b;y++)for(let x=p.x;x<p.x+a;x++){const n=y*HOME_WIDTH+x;if(occupied.has(n))return false;occupied.add(n);}}
    for(const c of typed.crops){if(c.zone!==0||!inside(typed,c.x,c.y))return false;const n=c.y*HOME_WIDTH+c.x;if(occupied.has(n))return false;occupied.add(n);}
    if(Object.values(typed.residents).some(r=>r.zone!==0))return false;
+   // 家园扩展状态：缺失时读档后按旧档规则补齐；存在时逐项校验，地块外的建筑和作物视为坏档。
+   const e=typed.estate;
+   if(e!==undefined){
+    if(!obj(e)||e.rev!==1||!arr(e.tech,TECHS.length)||!e.tech.every(t=>TECHS.some(x=>x.id===t))||!unique(e.tech as unknown as number[]))return false;
+    if(!arr(e.research,4)||!e.research.every(r=>obj(r)&&TECHS.some(x=>x.id===r.id)&&!e.tech.includes(r.id)&&num(r.remaining,0,1e6))||new Set(e.research.map(r=>r.id)).size!==e.research.length)return false;
+    if(!arr(e.plots,PLOT_COUNT)||!e.plots.every(n=>Number.isInteger(n)&&num(n,0,PLOT_COUNT-1))||!unique(e.plots))return false;
+    if(!arr(e.orders,3)||!e.orders.every(o=>obj(o)&&id(o.id)&&num(o.slime)&&stock(o.need)&&num(o.coins)&&num(o.points)&&num(o.notes))||!num(e.nextOrder))return false;
+    if(!obj(e.daily)||!num(e.daily.window)||!stock(e.daily.made)||!num(e.daily.sold)||!Number.isInteger(e.daily.orders)||!num(e.daily.orders,0,99)||!obj(e.yields)||!Object.entries(e.yields).every(([k,v])=>typed.placements.some(p=>String(p.id)===k&&!p.stored)&&stock(v)))return false;
+    const open=new Set(e.plots);
+    for(const p of typed.placements){if(p.stored)continue;const [a,b]=bounds(p);for(let y=p.y;y<p.y+b;y++)for(let x=p.x;x<p.x+a;x++)if(!open.has(plotAt(x,y)))return false;}
+    if(typed.crops.some(c=>!open.has(plotAt(c.x,c.y))))return false;
+   }
   }
   return true;
  }catch{return false;}

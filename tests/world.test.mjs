@@ -15,7 +15,7 @@ const fill=s=>{for(const k of ['wood','stone','dew','food','petal','herb','fruit
 const build=(s,def,x=0,y=6)=>{run(s,{type:'build',def,zone:0,x,y});return s.world.placements.at(-1).id;};
 
 test('complete, unique content and valid references',()=>{
- assert.equal(BUILDINGS.length,26);assert.equal(DECORATIONS.length,48);assert.equal(PLANTS.length,55);assert.equal(VISITORS.length,18);assert.equal(EVENTS.length,72);assert.equal(CHARACTERS.flatMap(c=>c.chapters).length,48);assert.equal(PERSONAL_CHAINS.length,42);assert.equal(PAIR_EVENTS.length,24);assert.equal(BABY_EVENTS.length,12);assert.equal(BABY_PERSONAL_EVENTS.length,24);
+ assert.equal(BUILDINGS.length,32);assert.equal(DECORATIONS.length,48);assert.equal(PLANTS.length,55);assert.equal(VISITORS.length,18);assert.equal(EVENTS.length,72);assert.equal(CHARACTERS.flatMap(c=>c.chapters).length,48);assert.equal(PERSONAL_CHAINS.length,42);assert.equal(PAIR_EVENTS.length,24);assert.equal(BABY_EVENTS.length,12);assert.equal(BABY_PERSONAL_EVENTS.length,24);
  for(const list of [BUILDINGS,DECORATIONS,PLANTS,VISITORS,EVENTS,CHARACTERS,PERSONAL_CHAINS,PAIR_EVENTS])assert.equal(new Set(list.map(d=>d.id)).size,list.length);
  for(const p of PLANTS.filter(p=>p.parents)){assert.equal(p.parents.length,2);assert.ok(p.parents.every(id=>PLANTS.some(x=>x.id===id&&x.family===p.family)));}
  for(const r of RECIPES)assert.ok(BUILDINGS.some(b=>b.id===r.building));

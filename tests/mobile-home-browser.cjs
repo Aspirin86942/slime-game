@@ -26,7 +26,7 @@ const check=(name,ok,detail)=>{checks.push({name,ok,detail});assert.ok(ok,name+'
   await client.send('Page.addScriptToEvaluateOnNewDocument',{source:'window.__intervals=[];const originalInterval=window.setInterval;window.setInterval=(...a)=>{const id=originalInterval(...a);__intervals.push(id);return id;};'});
   await client.send('Page.navigate',{url:fileUrl(process.argv[2]||'史莱姆.html','?battle=ui')});
   assert.ok(await waitFor(()=>ev("typeof S!=='undefined'&&S.started"),10000));
-  await ev(`__intervals.forEach(clearInterval);document.querySelector('#selftestOut')?.remove();S.world.clock=1200;switchTab('home');`);await frame();
+  await ev(`__intervals.forEach(clearInterval);document.querySelector('#selftestOut')?.remove();S.world.clock=1200;S.world.estate.plots=Array.from({length:24},(_,i)=>i);S.world.estate.tech=LivingWorld.TECHS.map(t=>t.id);switchTab('home');`);await frame();
   await clearHouse('initial phone view shows the whole house below the resource bars');
   for(const [width,height]of [[320,568],[390,844],[844,390],[1440,900],[1920,1080]])for(const notch of [0,.7,1.5]){
    await metrics(width,height);await ev(`S.notchHeight=${notch};applyNotch()`);await frame();

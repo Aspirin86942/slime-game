@@ -1,6 +1,7 @@
 import {mapWidth,mapHeight,cell,inside,neighbours,biomeAt} from './map.ts';
 import type {World,GameState,GameCommand,Result,GameEvent,Stock,Genes,Companion,Trip,Slime,Crop,Placement,Juvenile} from './types.ts';
-import {BUILDINGS,DECORATIONS,PATH_STYLES,PLANTS,ZONES,RECIPES,ELEMENTS,PERSONALITIES,BABY_EVENTS,BABY_PERSONAL_EVENTS} from './content.ts';
+import {BUILDINGS,DECORATIONS,PATH_STYLES,PLANTS,ZONES,RECIPES,ELEMENTS,PERSONALITIES,BABY_EVENTS,BABY_PERSONAL_EVENTS,TECHS,VALUES,LEGACY_TASTES} from './content.ts';
+import {estate,freshEstate,feature,buildingOpen,familyOpen,recipeOpen,decorLevel,slots,workerCap,affinityBonus,bufferHours,craftQueue,researchQueue,researchSpeed,bridgeCap,marketCap,affine,biomeBonus,homeLevel,techProblem,techFor,plotOpen,footprintOpen,clearing,orderTemplates,ordersLeft,plantFamily,ROUND} from './estate.ts';
 import {EVENTS,CHARACTERS,PERSONAL_CHAINS,PAIR_EVENTS} from './narratives.ts';
 import {environment,level,bounds,formOf,refreshVisitors,day} from './ecology.ts';
 import {bindInventory,seedAccount,tripAccount} from './inventory.ts';
@@ -21,8 +22,46 @@ export function createWorld(seed=0x51a7,version:3|4|5=5):World {
  const positions:Record<string,[number,number]>={house:[14,8],bed:[19,9],trough:[14,12],toys:[18,13]};
  for(const p of w.placements)[p.x,p.y]=positions[p.def];
  w.paths={'0':[...Array.from({length:12},(_,i)=>cell(w,17,i+6)),...Array.from({length:8},(_,i)=>cell(w,i+13,11))]};
- w.paths[0]=[...new Set(w.paths[0])];return w;
+ w.paths[0]=[...new Set(w.paths[0])];
+ w.estate=freshEstate(w);w.stock.notes=6;fillOrders(w,[]);return w;
 }
+/** 委托空位按时间补齐；只抽当前家园做得出来的物品，数量随家园等级增长。 */
+function fillOrders(w:World,slimes:Slime[]):void {
+ const e=estate(w);
+ // 本轮完成份数已满时不再补新委托，下一轮自动恢复。
+ while(e.orders.length<Math.min(3,ordersLeft(w))&&w.clock>=e.nextOrder){
+  const pool=orderTemplates(w);if(!pool.length)break;
+  const [item,amount]=pool[Math.floor(random(w)*pool.length)],n=Math.max(1,Math.round(amount*(1+Math.floor(homeLevel(w)/3)*.5))),value=(VALUES[item]??10)*n;
+  e.orders.push({id:next(w),slime:slimes.length?slimes[Math.floor(random(w)*slimes.length)].id:0,need:{[item]:n},coins:Math.round(value*1.6/10)*10,points:Math.min(20,4+Math.ceil(value/80)),notes:value>=200?2:1});
+ }
+}
+const crewOf=(w:World,p:Placement,slimes:Slime[])=>w.workers.filter(j=>j.building===p.id&&workerPresent(w,j.slimeId,p.id)).map(j=>slimes.find(s=>s.id===j.slimeId)).filter((s):s is Slime=>!!s);
+/* 每 5 分钟的产出：等级决定基础量，地形对口 +25%，元素对口伙伴每位 +25%（专精后 +50%），心情低于 40 的伙伴只发挥一半。
+   每位精神饱满的驻场伙伴另外多带回 1 份主产物，延续旧版「帮忙 +1」的手感。 */
+export function yieldOf(w:World,p:Placement,slimes:Slime[]):Stock {
+ const service=BUILDINGS.find(b=>b.id===p.def)?.service,crew=crewOf(w,p,slimes);let base:Stock={};
+ if(service==='wood')base={wood:4*p.level+(w.visitors['visitor-8']?2:0)};
+ if(service==='quarry')base={stone:4*p.level};
+ if(service==='water')base={dew:3*p.level};
+ if(service==='stars')base={stardust:p.level+(w.visitors['visitor-17']?1:0)+(p.level===3&&w.weather===2?1:0)};
+ if(service==='ore')base={ore:2*p.level,...(p.level===3||feature(w,'deep')?{stardust:1}:{})};
+ if(service==='honey'){const r=p.level===3?6:4,flowers=w.crops.filter(c=>c.progress>=.7&&plantFamily(w.cultivars.find(v=>v.id===c.cultivar)?.species??'')===0&&Math.abs(c.x-p.x)+Math.abs(c.y-p.y)<=r).length;base={honey:p.level+(flowers>=3?1:0)+(flowers>=6?1:0)};}
+ if(service==='essence'&&crew.length)base={essence:p.level+(crew.length>=2&&p.level===3?1:0)};
+ const keys=Object.keys(base);if(!keys.length)return {};
+ const mult=(biomeBonus(w,p)?1.25:1)*(1+crew.filter(s=>affine(s,p.def)).reduce((n,s)=>n+affinityBonus(w)*(s.mood>=40?1:.5),0));
+ const out:Stock=Object.fromEntries(keys.map(k=>[k,Math.round(base[k]*mult)]));out[keys[0]]+=crew.filter(s=>s.mood>=40).length;return out;
+}
+/** 产出先暂存在建筑里，地图上冒出气泡等玩家收取；仓库与科技决定能存几小时，研究「自动入库」后直接进仓库。 */
+function stash(w:World,p:Placement,out:Stock):void {
+ if(!Object.keys(out).length)return;
+ if(feature(w,'auto')){produce(w,out);return;}
+ const bag=estate(w).yields[p.id]??={},ticks=bufferHours(w)*12;
+ for(const[k,v]of Object.entries(out))bag[k]=Math.min(v*ticks,(bag[k]??0)+v);
+}
+function collect(w:World,id:number):number {
+ const e=estate(w),bag=e.yields[id];delete e.yields[id];if(!bag)return 0;reward(w,bag);return Object.values(bag).reduce((n,v)=>n+v,0);
+}
+const craftSpeed=(w:World,p:Placement,slimes:Slime[])=>1+crewOf(w,p,slimes).reduce((n,s)=>n+.1+(affine(s,p.def)?affinityBonus(w):0)*(s.mood>=40?1:.5),0);
 export function companion(w:World,s:Slime):Companion {
  return w.companions[s.id]??=( {slimeId:s.id,role:'园丁',interest:['花草','美食','星空','旅行'][s.id%4],memories:[],friends:{},story:{},mentor:null,daily:0,day:0});
 }
@@ -51,6 +90,7 @@ export function placementError(w:World,p:Placement):string|null {
  if(!Number.isInteger(p.rotation)||p.rotation<0||p.rotation>3)return '旋转方向无效。';
  if(w.version===5?p.zone!==0:!w.unlocked.includes(p.zone))return '先解锁这个区域。';
  const[a,b]=bounds(p);if(!Number.isInteger(p.x)||!Number.isInteger(p.y)||p.x<0||p.y<0||p.x+a>mapWidth(w)||p.y+b>mapHeight(w))return '物件超出区域边界。';
+ if(!footprintOpen(w,p))return '这片林地还没有开垦。';
  const cells=footprint(p,w),others=w.placements.filter(x=>x.id!==p.id&&x.zone===p.zone&&!x.stored);
  if(others.some(o=>footprint(o,w).some(c=>cells.includes(c)))||w.crops.some(c=>c.zone===p.zone&&cells.includes(cell(w,c.x,c.y))))return '这里已有设施或植物。';
  const draft={...w,placements:[...w.placements.filter(x=>x.id!==p.id),p]},reachable=passable(draft,p.zone);
@@ -81,15 +121,15 @@ function grow(w:World,p:Placement):void {
 function plant(w:World,id:number,zone:number,x:number,y:number,explicit=false):void {
  const c=w.cultivars.find(c=>c.id===id);requireThat(c,'没有这个品系。');if(!c)return;
  requireThat(explicit||!c.protected,'这个品系已收藏，请单独选择种植。');requireThat(c.seeds>0,'种子不足，可收获或复制留种。');requireThat(w.version===5?zone===0:w.unlocked.includes(zone),'区域尚未解锁。');
- requireThat(inside(w,x,y),'地块超出范围。');
+ requireThat(inside(w,x,y),'地块超出范围。');requireThat(plotOpen(w,x,y),'这片林地还没有开垦。');
  requireThat(!w.crops.some(c=>c.zone===zone&&c.x===x&&c.y===y)&&!w.placements.some(p=>!p.stored&&p.zone===zone&&footprint(p,w).includes(cell(w,x,y))),'这里已有植物或设施。');
- const d=PLANTS.find(p=>p.id===c.species)!;requireThat(d.family!==5||w.placements.some(p=>!p.stored&&p.zone===zone&&['pond','waterbed'].includes(p.def)),'水生植物需要本区的水塘或水生种植台。');
+ const d=PLANTS.find(p=>p.id===c.species)!;requireThat(w.version!==5||familyOpen(w,d.family),`先研究「${techFor('family',d.family)?.name??'栽培'}」`);requireThat(d.family!==5||w.placements.some(p=>!p.stored&&p.zone===zone&&['pond','waterbed'].includes(p.def)),'水生植物需要本区的水塘或水生种植台。');
  c.seeds--;w.crops.push({id:next(w),cultivar:id,zone,x,y,progress:0,water:180,care:0,harvests:0,lastSim:w.clock});
 }
 function harvest(w:World,c:Crop):void {
  requireThat(c.progress>=1,'植物还没有成熟。');const v=w.cultivars.find(v=>v.id===c.cultivar)!,d=PLANTS.find(p=>p.id===v.species)!;requireThat(d.id!=='glowflower','这株纪念花会一直开放，可移回种子库重新安放。');
- reward(w,{[d.product]:2+v.genes.yield+(w.visitors['visitor-1']?1:0)});reward(w,{['seed:'+v.id]:1+(level(w,'seedbank')>=3?1:0)+(w.visitors['visitor-0']?1:0)+(w.visitors['visitor-14']?1:0)+(d.family===5&&w.placements.some(p=>p.zone===c.zone&&p.def==='waterbed'&&!p.stored&&p.level===3)?1:0)});discover(w,d.id);if(w.version===5&&!w.flags.includes('home:glow-seed')){w.flags.push('home:glow-seed');let glow=w.cultivars.find(v=>v.species==='glowflower');if(!glow){const def=PLANTS.find(p=>p.id==='glowflower')!;glow={id:next(w),species:def.id,name:def.name,genes:genes(def.color),parents:[],protected:false,seeds:0};w.cultivars.push(glow);seedAccount(w,glow);}reward(w,{['seed:'+glow.id]:1});}w.flags.includes('harvest')||w.flags.push('harvest');c.harvests++;
- if(d.family===3){c.progress=0;c.water=180;c.care=0;}
+ reward(w,{[d.product]:2+v.genes.yield+(w.visitors['visitor-1']?1:0)+(d.parents&&feature(w,'master')?1:0)});reward(w,{['seed:'+v.id]:1+(level(w,'seedbank')>=3?1:0)+(w.visitors['visitor-0']?1:0)+(w.visitors['visitor-14']?1:0)+(d.family===5&&w.placements.some(p=>p.zone===c.zone&&p.def==='waterbed'&&!p.stored&&p.level===3)?1:0)});discover(w,d.id);if(w.version===5&&!w.flags.includes('home:glow-seed')){w.flags.push('home:glow-seed');let glow=w.cultivars.find(v=>v.species==='glowflower');if(!glow){const def=PLANTS.find(p=>p.id==='glowflower')!;glow={id:next(w),species:def.id,name:def.name,genes:genes(def.color),parents:[],protected:false,seeds:0};w.cultivars.push(glow);seedAccount(w,glow);}reward(w,{['seed:'+glow.id]:1});}w.flags.includes('harvest')||w.flags.push('harvest');c.harvests++;
+ if(d.family===3){c.progress=0;c.water=180;c.care=0;delete c.legacy;}
  else{w.crops=w.crops.filter(x=>x.id!==c.id);if(w.autoReplant&&!v.protected)plant(w,v.id,c.zone,c.x,c.y);}
 }
 function addJuvenile(w:World,element:Juvenile['element'],name?:string):void {
@@ -121,22 +161,37 @@ export function advance(w:World,seconds:number,slimes:Slime[],onEvents?:(events:
    const cultivar=w.cultivars.find(c=>c.id===crop.cultivar)!,def=PLANTS.find(p=>p.id===cultivar.species)!,e=environment(w,crop.zone,crop.x,crop.y,slimes);
    const auto=w.weather===1||w.placements.some(p=>!p.stored&&p.zone===crop.zone&&((['bed','channel'].includes(p.def)&&p.level>=2)||['pond','waterbed'].includes(p.def))&&Math.abs(p.x-crop.x)+Math.abs(p.y-crop.y)<=(p.level===3?3:2))||w.workers.some(j=>workerPresent(w,j.slimeId,j.building)&&w.placements.some(p=>p.id===j.building&&!p.stored&&p.zone===crop.zone&&['bed','channel'].includes(p.def)));
    if(auto)crop.water=180;
-   const available=Math.min(cropDt,crop.water*60),mismatch=(Math.abs(e.light-def.light)+Math.abs(e.moisture-def.moisture)+Math.abs(e.temperature-def.temp)*2)/(180+cultivar.genes.adapt*10);
+   const [light,moisture,temp]=crop.legacy?LEGACY_TASTES(def):[def.light,def.moisture,def.temp],available=Math.min(cropDt,crop.water*60),mismatch=(Math.abs(e.light-light)+Math.abs(e.moisture-moisture)+Math.abs(e.temperature-temp)*2)/(180+cultivar.genes.adapt*10);
    const rate=Math.max(.25,1-mismatch+(w.visitors['visitor-3']?.08:0))*(1+(cultivar.genes.speed-2)*.08)*(1+e.fertility/250)*(def.family===5&&w.visitors['visitor-10']?1.15:1)*(def.family===5&&w.placements.some(p=>p.zone===crop.zone&&p.def==='waterbed'&&!p.stored&&p.level>=2)?1.12:1)*(level(w,'insects')===3&&Object.values(w.visitors).some(Boolean)?1.05:1);
    crop.progress=Math.min(1,crop.progress+available/growDuration(w,crop)*rate);crop.water=auto?180:Math.max(0,crop.water-cropDt/60);
   }
-  for(const b of w.placements.filter(p=>!p.stored)){let left=dt;for(const task of w.crafts.filter(t=>t.building===b.id&&!t.ready)){const used=Math.min(left,task.remaining);task.remaining-=used;left-=used;if(task.remaining<=0)task.ready=true;if(left<=0)break;}}
+  for(const b of w.placements.filter(p=>!p.stored)){const tasks=w.crafts.filter(t=>t.building===b.id&&!t.ready);if(!tasks.length)continue;let left=dt*craftSpeed(w,b,slimes);for(const task of tasks){const used=Math.min(left,task.remaining);task.remaining-=used;left-=used;if(task.remaining<=0)task.ready=true;if(left<=0)break;}}
+  if(w.version===5&&dt>0){const e=estate(w);if(e.research.length){const speed=researchSpeed(w,slimes,(id,b)=>workerPresent(w,id,b));for(const r of e.research.slice(0,researchQueue(w)))r.remaining=Math.max(0,r.remaining-dt*speed);
+   for(const r of e.research.filter(r=>r.remaining<=0)){e.tech.push(r.id);w.notices.unshift(`研究完成：${TECHS.find(t=>t.id===r.id)?.name??r.id}`);}e.research=e.research.filter(r=>r.remaining>0);}}
   w.clock=boundary;lifeTick(w,slimes,available);if(w.version!==5)collectionTick(w,slimes);if(onEvents&&w.payments.length)onEvents(w.payments.splice(0));
   for(const t of w.trips)if(t.ready&&!t.returned)returnTrip(w,slimes,t);
   if(w.clock%3600===0){w.flags=w.flags.filter(f=>!f.startsWith('meal:')||f.startsWith(`meal:${day(w)}:`));w.miniRewards=Object.fromEntries(Object.entries(w.miniRewards).filter(([k])=>k.startsWith(`${day(w)}:`)));}
   if(w.clock>=w.weatherAt){w.weather=Math.floor(random(w)*4);w.weatherAt+=3600;}
   if(dt>0&&w.clock%300===0){
-   for(const p of w.placements.filter(p=>!p.stored)){const service=BUILDINGS.find(b=>b.id===p.def)?.service;const bonus=w.workers.filter(j=>j.building===p.id&&workerPresent(w,j.slimeId,p.id)).length;
-    if(service==='wood')produce(w,{wood:4*p.level+bonus+(w.visitors['visitor-8']?2:0)});if(service==='stone')produce(w,{stone:3*p.level+bonus});if(service==='water')produce(w,{dew:3*p.level+bonus});if(service==='stars')produce(w,{stardust:p.level+(w.visitors['visitor-17']?1:0)+(p.level===3&&w.weather===2?1:0)});
+   for(const p of w.placements.filter(p=>!p.stored)){
+    if(w.version===5){stash(w,p,yieldOf(w,p,slimes));
+     const service=BUILDINGS.find(b=>b.id===p.def)?.service,crew=crewOf(w,p,slimes);
+     // 训练场把经验交给原版成长；档案馆有伙伴整理时每 10 分钟写出研究笔记。
+     if(service==='training')for(const s of crew)w.payments.push({type:'experience',text:'训练场练习',participants:[s.id],amount:6*p.level*(affine(s,p.def)?2:1)});
+     if(service==='archive'&&crew.length&&w.clock%600===0)reward(w,{notes:p.level});
+     continue;}
+    const service=BUILDINGS.find(b=>b.id===p.def)?.service;const bonus=w.workers.filter(j=>j.building===p.id&&workerPresent(w,j.slimeId,p.id)).length;
+    if(service==='wood')produce(w,{wood:4*p.level+bonus+(w.visitors['visitor-8']?2:0)});if(service==='stone'||service==='training')produce(w,{stone:3*p.level+bonus});if(service==='water')produce(w,{dew:3*p.level+bonus});if(service==='stars')produce(w,{stardust:p.level+(w.visitors['visitor-17']?1:0)+(p.level===3&&w.weather===2?1:0)});
    }
+   // 驻场会慢慢消耗心情，最低降到 30；温泉和互动可以恢复。
+   if(w.version===5&&w.clock%900===0)for(const j of w.workers){const s=slimes.find(s=>s.id===j.slimeId);if(s&&s.mood>30&&workerPresent(w,j.slimeId,j.building))s.mood=Math.max(30,s.mood-1);}
+   const met=w.discoveries.filter(d=>d.startsWith('visitor-')).length;
    refreshVisitors(w,slimes);
-   if(w.visitors['visitor-11'])reward(w,{notes:1});if(w.visitors['visitor-12'])reward(w,{fruit:1});if(w.visitors['visitor-13'])reward(w,{herb:1});
-   if(w.visitors['visitor-16']){const seed=w.cultivars.find(c=>c.species==='plant-3-4');if(seed)reward(w,{['seed:'+seed.id]:1});}
+   const twice=w.version===5&&feature(w,'symbiosis')?2:1,newcomers=w.discoveries.filter(d=>d.startsWith('visitor-')).length-met;
+   if(w.version===5&&newcomers>0)reward(w,{notes:newcomers*(feature(w,'observe')?4:2)});
+   if(w.visitors['visitor-11'])reward(w,{notes:twice});if(w.visitors['visitor-12'])reward(w,{fruit:twice});if(w.visitors['visitor-13'])reward(w,{herb:twice});
+   if(w.visitors['visitor-16']){const seed=w.cultivars.find(c=>c.species==='plant-3-4');if(seed)reward(w,{['seed:'+seed.id]:twice});}
+   if(w.version===5)fillOrders(w,slimes.filter(s=>available(s.id)));
    const rest=level(w,'spa');if(rest)for(const s of slimes.filter(s=>available(s.id)&&atHome(w,s.id)&&w.residents[s.id]?.arrived&&w.placements.some(p=>p.def==='spa'&&p.id===w.residents[s.id]?.target&&!p.stored))){s.mood=Math.min(100,s.mood+rest);}
    for(let i=0;i<w.workers.length;i++)for(let j=i+1;j<w.workers.length;j++)if(w.workers[i].building===w.workers[j].building&&workerPresent(w,w.workers[i].slimeId,w.workers[i].building)&&workerPresent(w,w.workers[j].slimeId,w.workers[j].building))friends(w,slimes,w.workers[i].slimeId,w.workers[j].slimeId,1);
   }
@@ -178,16 +233,18 @@ export function execute(state:GameState,command:GameCommand,available:(id:number
 
   case 'gather':{requireThat(w.clock-w.lastGather>=300,'采集点正在恢复，请稍后再来。');reward(w,{wood:8,stone:6,dew:4,ingredient:1,feed:1});if(!w.cultivars.some(c=>c.seeds>0&&c.species!=='glowflower'))w.cultivars.find(c=>c.species==='plant-2-0')!.seeds++;w.lastGather=w.clock;message='带回材料、食材和基础饲料';break;}
   case 'unlock':{const z=ZONES[command.zone];requireThat(z&&!w.unlocked.includes(z.id)&&w.discoveries.length>=z.threshold,'发现数量不足，或区域已经开放。');pay(w,{wood:10+10*z.id,stone:5+5*z.id});w.unlocked.push(z.id);w.paths[z.id]=Array.from({length:12},(_,i)=>i*12+5);message=`${z.name}已开放`;break;}
-  case 'build':{requireThat(w.version!==5||!['expedition','resonance'].includes(command.def),'该设施已作为纪念装饰保留');const d=BUILDINGS.find(b=>b.id===command.def)??DECORATIONS.find(b=>b.id===command.def);requireThat(d,'未知的设施。');if(!d)break;requireThat(!BUILDINGS.some(b=>b.id===d.id)||!w.placements.some(p=>p.def===d.id),'每种功能设施保留一座，可从收纳中取回。');const p:Placement={id:next(w),def:d.id,zone:command.zone,x:command.x,y:command.y,rotation:command.rotation??0,level:1,stored:false};const err=placementError(w,p);requireThat(!err,err??'');pay(w,d.cost);w.placements.push(p);for(const r of Object.values(w.residents))r.arrived=false;message=`${d.name}已建好`;break;}
+  case 'build':{requireThat(w.version!==5||!['expedition','resonance'].includes(command.def),'该设施已作为纪念装饰保留');const d=BUILDINGS.find(b=>b.id===command.def)??DECORATIONS.find(b=>b.id===command.def);requireThat(d,'未知的设施。');if(!d)break;requireThat(!BUILDINGS.some(b=>b.id===d.id)||!w.placements.some(p=>p.def===d.id),'每种功能设施保留一座，可从收纳中取回。');
+   if(w.version===5){requireThat(!BUILDINGS.some(b=>b.id===d.id)||buildingOpen(w,d.id),`先研究「${techFor('building',d.id)?.name??'相关科技'}」`);requireThat(homeLevel(w)>=decorLevel(d.id),`家园 ${decorLevel(d.id)} 级开放这组装饰`);}const p:Placement={id:next(w),def:d.id,zone:command.zone,x:command.x,y:command.y,rotation:command.rotation??0,level:1,stored:false};const err=placementError(w,p);requireThat(!err,err??'');pay(w,d.cost);w.placements.push(p);for(const r of Object.values(w.residents))r.arrived=false;message=`${d.name}已建好`;break;}
   case 'move':{const p=placement(command.id),candidate={...p,zone:command.zone,x:command.x,y:command.y,rotation:command.rotation??p.rotation,stored:false};const err=placementError(w,candidate);requireThat(!err,err??'');Object.assign(p,candidate);for(const r of Object.values(w.residents)){r.arrived=false;delete r.goal;}message='位置已保存';break;}
-  case 'store':{const p=placement(command.id);requireThat(!w.crafts.some(t=>t.building===p.id),'请先领取或完成设施中的制作队列。');p.stored=true;w.workers=w.workers.filter(j=>j.building!==p.id);message='已收纳，服务已暂停';break;}
+  case 'store':{const p=placement(command.id);requireThat(!w.crafts.some(t=>t.building===p.id),'请先领取或完成设施中的制作队列。');if(w.version===5)collect(w,p.id);p.stored=true;w.workers=w.workers.filter(j=>j.building!==p.id);message='已收纳，服务已暂停';break;}
   case 'upgrade':{const p=placement(command.id);requireThat(w.version!==5||!['expedition','resonance'].includes(p.def),'纪念装饰可移动或收纳');const d=BUILDINGS.find(d=>d.id===p.def);
    // 旧存档里已升级但仍是原占地的设施，先免费展开到与等级对应的形态。
    if(w.version===5&&d&&!p.stored&&formOf(p)<p.level){grow(w,p);message=`${d.name}展开了新形态`;break;}
    requireThat(d&&p.level<3&&!p.stored,'设施已满级或处于收纳中。');pay(w,Object.fromEntries(Object.entries(d!.cost).map(([k,v])=>[k,v*(p.level+1)])));p.level++;if(w.version===5)grow(w,p);message=d!.upgrades[p.level-2];break;}
-  case 'path':{requireThat((w.version===5?command.zone===0:w.unlocked.includes(command.zone))&&inside(w,command.x,command.y),'路径位置无效。');const key=String(command.zone),n=cell(w,command.x,command.y);w.paths[key]??=[];w.paths[key]=w.paths[key].includes(n)?w.paths[key].filter(v=>v!==n):[...w.paths[key],n];delete w.pathStyles?.[`${key}:${n}`];message='道路已更新';break;}
+  case 'path':{requireThat((w.version===5?command.zone===0:w.unlocked.includes(command.zone))&&inside(w,command.x,command.y),'路径位置无效。');requireThat(plotOpen(w,command.x,command.y),'这片林地还没有开垦。');const key=String(command.zone),n=cell(w,command.x,command.y);w.paths[key]??=[];w.paths[key]=w.paths[key].includes(n)?w.paths[key].filter(v=>v!==n):[...w.paths[key],n];delete w.pathStyles?.[`${key}:${n}`];message='道路已更新';break;}
   case 'paint':{const cells=[...new Set(Array.isArray(command.cells)?command.cells:[])];requireThat((w.version===5?command.zone===0:w.unlocked.includes(command.zone))&&cells.length>0&&cells.length<=mapWidth(w)*mapHeight(w)&&cells.every(n=>Number.isInteger(n)&&n>=0&&n<mapWidth(w)*mapHeight(w))&&Number.isInteger(command.style)&&command.style>=0&&command.style<PATH_STYLES.length,'路面位置或材质无效。');
    // 一次拖动只提交一条命令：路面集合供寻路使用，材质只影响外观；碎石（0 号）是默认材质，不写入存档。
+   requireThat(command.erase||cells.every(n=>plotOpen(w,n%mapWidth(w),Math.floor(n/mapWidth(w)))),'这片林地还没有开垦。');
    const key=String(command.zone),styles=w.pathStyles??={},road=new Set(w.paths[key]??[]);
    for(const n of cells){if(command.erase)road.delete(n);else road.add(n);if(command.erase||!command.style)delete styles[`${key}:${n}`];else styles[`${key}:${n}`]=command.style;}
    w.paths[key]=[...road];message=command.erase?`擦除了 ${cells.length} 格路面`:`铺好 ${cells.length} 格${PATH_STYLES[command.style]}`;break;}
@@ -207,9 +264,11 @@ export function execute(state:GameState,command:GameCommand,available:(id:number
   case 'babyChoice':{const b=baby(command.id);if(command.type==='babyContinue')requireThat(b.stage===command.stage&&b.choices.length===command.chapter,'这一段已经读过了');const choice=command.type==='babyContinue'?Math.floor(random(w)*2):command.choice;requireThat(b.active&&[0,1].includes(choice),'请安置幼体并选择回应。');const personal=`${b.stage}:personal`,element=`${b.stage}:element`;const key=b.choices.includes(element)?personal:element;requireThat(!b.choices.includes(key),'这个阶段的成长事件已经完成。');b.choices.push(key);const text=key===element?BABY_EVENTS.find(e=>e.element===b.element)!.choices[choice]:BABY_PERSONAL_EVENTS[b.id%24].choices[choice];b.traits.push(text);message=text;break;}
   case 'grow':{const b=baby(command.id);requireThat(b.active&&b.care.length>=(b.stage===0?3:5)&&w.clock-b.born>=(b.stage===0?900:3600)*(level(w,'resonance')===3?.8:1),'还需要成长时间与照料里程碑。');if(b.stage===0){b.stage=1;message='幼体进入幼年阶段';}else{events.push({type:'adopt',text:`${b.name}长大了`,juvenile:copy(b)});w.juveniles=w.juveniles.filter(j=>j.id!==b.id);message='已成年，童年与导师记录将随它保留';}break;}
   case 'adopt':{const b=baby(command.id);requireThat(!b.active&&w.juveniles.filter(j=>j.active).length<(level(w,'house')||1)*2,'小屋容量已满，请升级或陪伴在养幼体成年。');b.active=true;message='幼体已入住小屋';break;}
-  case 'assign':{free(command.slime);const p=placement(command.building);requireThat(!p.stored&&BUILDINGS.some(b=>b.id===p.def)&&(w.version!==5||!['expedition','resonance'].includes(p.def)),'设施不可用。');requireThat(w.workers.filter(j=>j.building===p.id).length<(p.level>=2?2:1),'这个设施的工作位已满。');w.workers.push({slimeId:command.slime,building:p.id});companion(w,slimes.find(s=>s.id===command.slime)!).role=(BUILDINGS.find(b=>b.id===p.def)?.name??'家园')+'帮手';message='工作已安排，可随时休息';break;}
+  case 'assign':{free(command.slime);const p=placement(command.building);requireThat(!p.stored&&BUILDINGS.some(b=>b.id===p.def)&&(w.version!==5||!['expedition','resonance'].includes(p.def)),'设施不可用。');requireThat(w.workers.filter(j=>j.building===p.id).length<(w.version===5?slots(w,p):p.level>=2?2:1),'这个设施的工作位已满。');requireThat(w.version!==5||w.workers.length<workerCap(w),`家园 ${homeLevel(w)} 级最多 ${workerCap(w)} 位伙伴同时驻场，提升家园等级可增加。`);w.workers.push({slimeId:command.slime,building:p.id});companion(w,slimes.find(s=>s.id===command.slime)!).role=(BUILDINGS.find(b=>b.id===p.def)?.name??'家园')+'帮手';message='工作已安排，可随时休息';break;}
   case 'unassign':w.workers=w.workers.filter(j=>j.slimeId!==command.slime);message='伙伴已休息';break;
-  case 'craft':{const r=RECIPES.find(r=>r.id===command.recipe),p=placement(command.building);requireThat(r&&r.building===p.def&&!p.stored&&p.level>=r.level,'设施或等级不符合配方要求。');requireThat(w.crafts.filter(t=>t.building===p.id).length<p.level+1,'制作队列已满。');pay(w,r!.cost);w.crafts.push({participants:actor(),id:next(w),recipe:r!.id,building:p.id,remaining:r!.seconds,ready:false});message='材料已预留，加入制作队列';break;}
+  case 'craft':{const r=RECIPES.find(r=>r.id===command.recipe),p=placement(command.building);requireThat(r&&r.building===p.def&&!p.stored&&p.level>=r.level,'设施或等级不符合配方要求。');requireThat(w.version!==5||recipeOpen(w,r!),`先研究「${TECHS.find(t=>t.id===r!.tech)?.name??'相关科技'}」`);requireThat(w.crafts.filter(t=>t.building===p.id).length<(w.version===5?craftQueue(w,p):p.level+1),'制作队列已满。');
+   if(w.version===5)for(const[k,v]of Object.entries(r!.output)){const e=estate(w),cap=bridgeCap(w,k);if(cap===Infinity)continue;requireThat((e.daily.made[k]??0)+v<=cap,`本轮已制作 ${e.daily.made[k]??0}/${cap}，约 ${Math.ceil((ROUND-w.clock%ROUND)/3600)} 小时后刷新。`);e.daily.made[k]=(e.daily.made[k]??0)+v;}
+   pay(w,r!.cost);w.crafts.push({participants:actor(),id:next(w),recipe:r!.id,building:p.id,remaining:r!.seconds,ready:false});message='材料已预留，加入制作队列';break;}
   case 'claimCraft':{const c=w.crafts.find(t=>t.id===command.id);requireThat(c?.ready,'制作尚未完成或已经领取。');craftParticipants=c!.participants??[];const output=RECIPES.find(r=>r.id===c!.recipe)!.output;craftItem=output.meal?'meal':'';reward(w,output);if(c!.recipe==='fertilizer'&&w.visitors['visitor-7'])reward(w,{fertilizer:1});w.crafts=w.crafts.filter(t=>t.id!==command.id);message='制作产物已领取';break;}
   case 'useSupply':{const s=free(command.slime);requireThat(['meal','soup','potion'].includes(command.item),'补给不存在。');pay(w,{[command.item]:1});s.stamina=Math.max(s.stamina,Math.min(staminaLimit(s),s.stamina+(command.item==='potion'?30:15)));s.mood=Math.min(100,s.mood+(command.item==='soup'?15:8));remember(w,s,`supply:${command.item}:${day(w)}`,'为旅程准备的一餐',`${s.name}使用了家园制作的补给，准备迎接新的旅程。`);message='伙伴补充了体力与心情';break;}
   case 'fertilize':{const c=crop(command.id);requireThat(command.item==='fertilizer'||command.item==='soil','请选择肥料或沃土。');requireThat(c.care<.2,'本次生长周期的照料加速已达 20%。');pay(w,{[command.item]:1});const n=Math.min(.2-c.care,command.item==='soil'?.15:.1);c.care+=n;c.progress=Math.min(1,c.progress+n);message='植物吸收了养分，生长进度已增加';break;}
@@ -235,7 +294,15 @@ export function execute(state:GameState,command:GameCommand,available:(id:number
    if(m.done){for(const id of m.participants??[])if(w.activities[id]?.ref==='mini')delete w.activities[id];record(w,slimes,'play',m.participants??[],m.kind);}
    message=m.done?'本局结束，可以领取结果':'已记录这一步';break;}
   case 'miniClaim':{const m=w.mini;requireThat(m?.done&&!m.claimed,'游戏尚未结束或已领取。');const key=`${day(w)}:${m!.kind}`,count=w.miniRewards[key]??0;if(count<3){reward(w,m!.kind==='match'?{wood:Math.min(20,m!.score),stone:Math.min(20,m!.score),dew:Math.min(10,m!.score)}:m!.kind==='pollination'?{petal:m!.score*2,dew:m!.score}:{notes:m!.score+(level(w,'observe')>=2?1:0),ingredient:m!.score});w.miniRewards[key]=count+1;message='小游戏奖励已领取';}else message='练习完成，本日奖励次数已用完';m!.claimed=true;break;}
-  case 'settings':if(command.reduced!==undefined)w.reducedMotion=command.reduced;if(command.replant!==undefined)w.autoReplant=command.replant;message='偏好已保存';break;
+  case 'settings':if(command.reduced!==undefined)w.reducedMotion=command.reduced;if(command.replant!==undefined){requireThat(!command.replant||w.version!==5||feature(w,'replant'),'先研究「轮作」');w.autoReplant=command.replant;}message='偏好已保存';break;
+  case 'research':{const t=TECHS.find(t=>t.id===command.id),e=estate(w);requireThat(t,'没有这项研究。');const problem=techProblem(w,t!);requireThat(!problem,problem);requireThat(e.research.length<researchQueue(w),researchQueue(w)>1?'研究队列已满。':'正在研究另一项，档案馆 2 级可同时研究两项。');pay(w,t!.cost);e.research.push({id:t!.id,remaining:t!.seconds});message=`开始研究「${t!.name}」`;break;}
+  case 'cancelResearch':{const e=estate(w),t=TECHS.find(t=>t.id===command.id);requireThat(t&&e.research.some(r=>r.id===t.id),'这项研究没有在进行。');e.research=e.research.filter(r=>r.id!==t!.id);reward(w,t!.cost);message='已取消研究，材料全部退回';break;}
+  case 'clear':{requireThat(w.version===5,'开垦只在家园地图使用。');const c=clearing(w,command.plot);requireThat(!c.problem,c.problem);pay(w,c.cost);estate(w).plots.push(command.plot);reward(w,c.refund);message=`开垦完成，砍下的树木返还木材 ${c.refund.wood}`;break;}
+  case 'collect':{const p=placement(command.id);requireThat(collect(w,p.id)>0,'这里还没有可以收取的产出。');message=`收好了${BUILDINGS.find(b=>b.id===p.def)?.name??''}的产出`;break;}
+  case 'collectAll':{const ids=Object.keys(estate(w).yields).map(Number),n=ids.reduce((sum,id)=>sum+collect(w,id),0);requireThat(n>0,'暂时没有可以收取的产出。');message=`收取了 ${ids.length} 座建筑的产出`;break;}
+  case 'sell':{requireThat(level(w,'market')>0,'先建好集市。');const price=VALUES[command.item],e=estate(w);requireThat(price!==undefined&&Number.isInteger(command.amount)&&command.amount>0,'这件物品不能出售。');const coins=price!*command.amount;requireThat(e.daily.sold+coins<=marketCap(w),`本轮还能换 ${marketCap(w)-e.daily.sold} 晶币，约 ${Math.ceil((ROUND-w.clock%ROUND)/3600)} 小时后刷新。`);pay(w,{[command.item]:command.amount});e.daily.sold+=coins;events.push({type:'income',text:'集市收购',amount:coins});message=`换得 ${coins} 晶币`;break;}
+  case 'order':{const e=estate(w),o=e.orders.find(o=>o.id===command.id);requireThat(o,'这份委托已经完成或撤下。');requireThat(ordersLeft(w)>0,`本轮委托已完成，约 ${Math.ceil((ROUND-w.clock%ROUND)/3600)} 小时后刷新。`);pay(w,o!.need);e.daily.orders++;e.orders=e.orders.filter(x=>x.id!==o!.id);e.nextOrder=Math.max(e.nextOrder,w.clock+600);reward(w,{notes:o!.notes});events.push({type:'income',text:'委托报酬',amount:o!.coins},{type:'points',text:'委托积分',amount:o!.points});const s=slimes.find(s=>s.id===o!.slime);if(s)remember(w,s,`order:${o!.id}`,'完成了委托','你帮它准备好了想要的东西。');message=`委托完成：晶币 ${o!.coins}、积分 ${o!.points}、研究笔记 ${o!.notes}`;break;}
+  case 'dismissOrder':{const e=estate(w);requireThat(e.orders.some(o=>o.id===command.id),'这份委托已经完成或撤下。');e.orders=e.orders.filter(o=>o.id!==command.id);e.nextOrder=Math.max(e.nextOrder,w.clock+1800);message='委托已撤下，30 分钟后会有新的委托';break;}
   case 'claimOverflow':{const pending=w.pending;w.pending={};reward(w,pending);message=Object.values(w.pending).some(v=>v>0)?'已领取能放下的部分，其余继续保留':'待领取物资已收好';break;}
  }
  if(['plant','sow','care','careAll','harvest','harvestAll','claimCraft'].includes(command.type)){

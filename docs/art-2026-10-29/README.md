@@ -15,6 +15,8 @@
 
 - 26 个设施：24 个经营设施及 2 个已有纪念设施。
 - 24 个经营设施各有 2 级「扩建」和 3 级「华丽」两种升级形态，占地逐级变大，共 48 张，已接入 [facilities-c.png](production/facilities-c.png)、[facilities-d.png](production/facilities-d.png)、[facilities-e.png](production/facilities-e.png)。每张按行排列 8 对建筑，左为 2 级，右为 3 级。收纳栏和升级面板显示对应形态；夜间窗灯随新图定位。
+- 6 座资源建筑（采石场、矿洞、蜂箱、元素泉、仓库、集市）的 1、2、3 级共 18 张，在 [facilities-f.png](production/facilities-f.png)、[facilities-g.png](production/facilities-g.png)，每行是同一建筑的三档，三档出自同一张图，主色和标志轮廓一致。
+- [items-a.png](production/items-a.png) 16 个图标：矿石、金属锭、蜂蜜、元素精华、星尘、捕捉网、经验药水、天材地宝、研究笔记、五条科技分支、家园等级旗和开垦路牌。画法与 decor-c 的木材、石材、露水图标一致。
 - 42 件装饰：围栏、灯具、休闲家具、花架、标识、生态摆件和纪念物。
 - 36 种基础植物与发光花拥有各自的成熟素材；18 种杂交植物采用亲本素材与品系颜色、体型变化。
 - 植物保留种子、幼苗、花苞和成熟阶段；植物颜色与体型仍由原有基因数据决定。
@@ -39,6 +41,8 @@
 只处理升级图集时运行 `node scripts/prepare-home-art.mjs "<包含 Sharp 的 node_modules 目录>" facilities-c facilities-d facilities-e`，该命令保留其他已生成素材。全部图集的裁切顺序和分隔坐标保存在 `production/layouts.json`。
 
 升级图集由内置 image_gen 生成，实际源图均为 1254×1254、透明 RGBA PNG，按原生像素裁切。已检查全部行列分隔没有建筑像素跨越，48 张裁切图均保留透明通道。基础设计提示词见 [building-forms-prompts.md](production/building-forms-prompts.md)，实际生成及排布调整提示词见 [building-forms-generation.json](production/building-forms-generation.json)。
+
+资源建筑与物品图标以 facilities-a、facilities-e、decor-c 为参考图生成，原始输出保存在 production/candidates/。生成图里相邻物件的草地互相接触，用 `scripts/repack-atlas.mjs` 按透明柔边拆开再重排到规整网格（蜂箱 3 级的蜜蜂风向标用一条人工提示矩形分界），缩放到 1254×1254 后接入。提示词、尺寸、重排命令见 [estate-art-generation.json](production/estate-art-generation.json)。`layouts.json` 的 `grid` 字段标明 3×3 图集。
 
 ## 验收
 

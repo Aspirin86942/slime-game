@@ -7,14 +7,16 @@ import {upgradeHome,prepareWorld} from '../src/world/migration.ts';
 import {validWorld} from '../src/world/storage.ts';
 import {activity,resident,route,blockedCells} from '../src/world/life.ts';
 import {mapWidth,mapHeight,cell,constrainCamera,screenToCell,MAP_MARGIN} from '../src/world/map.ts';
-import {BUILDINGS,PLANTS,RECIPES,VISITORS} from '../src/world/content.ts';
+import {BUILDINGS,PLANTS,RECIPES,VISITORS,TECHS} from '../src/world/content.ts';
 import {environment,refreshVisitors} from '../src/world/ecology.ts';
 const clone=x=>JSON.parse(JSON.stringify(x));
 const pet=(id)=>({id,name:'伙伴'+id,element:'水',personality:'温柔',size:1,level:3,mood:70,stamina:100,intimacy:20});
-const fresh=()=>({started:true,saveVersion:5,lastActive:0,slimes:[pet(1),pet(2)],world:createWorld(487)});
+// 几何与规则测试使用完全发展的家园：全部地块已开垦、全部科技已完成；开局进度另见 estate.test.mjs。
+const developed=w=>{w.estate.plots=Array.from({length:24},(_,i)=>i);w.estate.tech=TECHS.map(t=>t.id);return w;};
+const fresh=()=>({started:true,saveVersion:5,lastActive:0,slimes:[pet(1),pet(2)],world:developed(createWorld(487))});
 const run=(s,c)=>{const r=execute(s,c);assert.equal(r.ok,true,r.message);return r;};
 const stored=w=>clone(w);
-const fill=s=>{for(const k of ['wood','stone','dew','ingredient','petal','herb','fruit','mushroom','algae','plank','dye','stardust','notes','fertilizer','soil','meal','snack','potion','soup','relic'])s.world.stock[k]=1000;};
+const fill=s=>{for(const k of ['wood','stone','dew','ingredient','petal','herb','fruit','mushroom','algae','plank','dye','stardust','notes','fertilizer','soil','meal','snack','potion','soup','relic','ore','ingot','honey','essence','crystal'])s.world.stock[k]=1000;};
 test('new home serializes as one valid 36 by 24 map',()=>{
  const s=fresh(),w=s.world;assert.equal(w.version,5);assert.equal(mapWidth(w),36);assert.equal(mapHeight(w),24);assert.equal(w.map.terrain.length,864);assert.ok(validWorld(stored(w),[1,2]));assert.deepEqual(Object.keys(w.paths),['0']);
  assert.equal(w.trips.length+w.juveniles.length,0);assert.equal(w.mini,null);
@@ -96,6 +98,33 @@ test('V1 through V4 native saves migrate once, back up original bytes and retain
   const raw=JSON.stringify(d),loaded=boot({slimeSummonerSave:raw},{now});assert.equal(loaded.run('load()'),true,'V'+version);assert.equal(loaded.storage.get(`slimeSummonerSave_v${version}_backup`),raw);assert.equal(loaded.state().saveVersion,5);assert.equal(loaded.state().slimes[0].id,d.slimes[0].id);assert.equal(loaded.state().bag.food,7);
   const migrated=loaded.storage.get('slimeSummonerSave');assert.equal(loaded.run('load();save()'),true);assert.equal(loaded.storage.get('slimeSummonerSave'),migrated);assert.equal(loaded.storage.get(`slimeSummonerSave_v${version}_backup`),raw);
  }
+});
+test('an existing V5 save gains the estate once, after its original bytes are backed up, and keeps existing backups',()=>{
+ const h=native(),d=clone(h.state());d.lastActive=now;delete d.world.estate;
+ d.world.placements.push({id:d.world.seq++,def:'woodshop',zone:0,x:1,y:1,rotation:0,level:1,stored:false});
+ const raw=JSON.stringify(d),loaded=boot({slimeSummonerSave:raw,slimeSummonerSave_v5_backup:'older backup'},{now});
+ assert.equal(loaded.run('load()'),true);
+ // 已有的旧备份不被覆盖，原文写入带后缀的新键。
+ assert.equal(loaded.storage.get('slimeSummonerSave_v5_backup'),'older backup');
+ assert.ok([...loaded.storage.keys()].some(k=>k.startsWith('slimeSummonerSave_v5_backup_')&&loaded.storage.get(k)===raw));
+ const saved=JSON.parse(loaded.storage.get('slimeSummonerSave'));assert.equal(saved.saveVersion,5);assert.equal(saved.world.estate.plots.length,24);assert.ok(saved.world.estate.tech.includes('cra-wood'));
+ // 再次读入：不再备份、不再改写。
+ const keys=[...loaded.storage.keys()].length,migrated=loaded.storage.get('slimeSummonerSave');assert.equal(loaded.run('load()'),true);assert.equal([...loaded.storage.keys()].length,keys);assert.equal(loaded.storage.get('slimeSummonerSave'),migrated);
+});
+test('a V5 estate saved before the order cap is backed up and gains its counter without resetting quotas',()=>{
+ const h=native(),d=clone(h.state());d.lastActive=now;
+ d.world.estate.daily.made={net:2,expPotion:3,treasure:1};d.world.estate.daily.sold=120;
+ delete d.world.estate.daily.orders;
+ const raw=JSON.stringify(d),loaded=boot({slimeSummonerSave:raw,slimeSummonerSave_v5_backup:'older backup'},{now});
+ assert.equal(loaded.run('load()'),true);
+ assert.equal(loaded.storage.get('slimeSummonerSave_v5_backup'),'older backup');
+ assert.ok([...loaded.storage.entries()].some(([k,v])=>k.startsWith('slimeSummonerSave_v5_backup_')&&v===raw));
+ const migrated=loaded.storage.get('slimeSummonerSave'),saved=JSON.parse(migrated);
+ assert.deepEqual(saved.world.estate,{...d.world.estate,daily:{...d.world.estate.daily,orders:0}});
+ assert.deepEqual(saved.world.inventory,d.world.inventory);
+ assert.deepEqual(saved.slimes,d.slimes);
+ const keys=[...loaded.storage.keys()];assert.equal(loaded.run('load()'),true);
+ assert.deepEqual([...loaded.storage.keys()],keys);assert.equal(loaded.storage.get('slimeSummonerSave'),migrated);
 });
 test('native dispatch keeps reference pending rewards and home workers cannot be dispatched, merged or used in battle',()=>{
  const h=native();h.run('S.globalPlan="explore";S.slimes[0].stamina=100;S.slimes[0].luck=0;');const s=h.state().slimes[0],before=h.state().coins;h.run('runPlans(true)');assert.equal(h.state().coins,before);assert.equal(h.state().explorePending.coins,Math.round(Math.round(3*(1+s.agi/100))*(1+h.run('slimePower(S.slimes[0])')/600)));

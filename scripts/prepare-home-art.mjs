@@ -19,12 +19,13 @@ for (const [name, layout] of Object.entries(layouts)) {
   const {width, height} = info;
   const frames = [];
   for (let i = 0; i < (layout.items?.length ?? 0); i++) {
-    const col = i % 4, row = Math.floor(i / 4);
+    // grid 缺省为 4×4；新图集按 3×3 排列同一建筑的三个等级。
+    const n = layout.grid ?? 4, col = i % n, row = Math.floor(i / n);
     const custom = layout.cells?.[i];
-    const left = Math.round((custom?.[0] ?? layout.columns?.[col] ?? col/4) * width);
-    const right = Math.round((custom?.[2] ?? layout.columns?.[col+1] ?? (col+1)/4) * width);
-    const top = Math.round((custom?.[1] ?? layout.rows?.[row] ?? row/4) * height);
-    const bottom = Math.round((custom?.[3] ?? layout.rows?.[row+1] ?? (row+1)/4) * height);
+    const left = Math.round((custom?.[0] ?? layout.columns?.[col] ?? col/n) * width);
+    const right = Math.round((custom?.[2] ?? layout.columns?.[col+1] ?? (col+1)/n) * width);
+    const top = Math.round((custom?.[1] ?? layout.rows?.[row] ?? row/n) * height);
+    const bottom = Math.round((custom?.[3] ?? layout.rows?.[row+1] ?? (row+1)/n) * height);
     let x1 = right, y1 = bottom, x2 = left, y2 = top;
     for (let y = top; y < bottom; y++) for (let x = left; x < right; x++) {
       if (data[(y*width+x)*4+3] < 18) continue;

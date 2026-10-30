@@ -11,7 +11,10 @@ test('every facility, decoration and plant resolves to a real, bounded painted s
  for(const [sheet,index] of grown){const file=readFileSync(new URL(`../src/assets/storybook/${sheet}-${index}.webp`,import.meta.url));assert.equal(file.toString('ascii',0,4),'RIFF');assert.equal(file.toString('ascii',8,12),'WEBP');}
  const frames=[...BUILDINGS.map(d=>objectFrame(d.id)),...grown,...DECORATIONS.filter(d=>d.group>0).map(d=>objectFrame(d.id)),...PLANTS.map(plantFrame)];
  for(const ref of frames){assert.ok(ref);const [sheet,index]=ref,atlas=manifest[sheet],frame=atlas?.frames[index];assert.ok(frame,`${sheet}/${index}`);const [x,y,w,h]=frame;assert.ok(x>=0&&y>=0&&w>0&&h>0&&x+w<=atlas.width&&y+h<=atlas.height,`${sheet}/${index} outside sheet`);}
- assert.equal(new Set(BUILDINGS.map(d=>objectFrame(d.id).join('/'))).size,26);
+ assert.equal(new Set(BUILDINGS.map(d=>objectFrame(d.id).join('/'))).size,32);
+ // 6 座资源建筑的 1–3 级各自有独立素材，共 18 张。
+ const estate=['quarry','mine','apiary','spring','warehouse','market'].flatMap(id=>[1,2,3].map(form=>objectFrame(id,form).join('/')));
+ assert.equal(new Set(estate).size,18);for(const ref of estate)assert.ok(manifest[ref.split('/')[0]]?.frames[Number(ref.split('/')[1])],ref);
  assert.equal(new Set(DECORATIONS.filter(d=>d.group>0).map(d=>objectFrame(d.id).join('/'))).size,42);
  assert.equal(new Set(PLANTS.filter(d=>!d.parents).map(d=>plantFrame(d).join('/'))).size,37);
 });

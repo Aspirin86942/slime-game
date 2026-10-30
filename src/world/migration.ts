@@ -4,9 +4,10 @@ import {createMap,originalPoint,HOME_WIDTH} from './map.ts';
 import {BUILDINGS} from './content.ts';
 import {CHARACTERS} from './narratives.ts';
 import {blockedCells,entranceCells,resident} from './life.ts';
+import {estate} from './estate.ts';
 
 export function prepareWorld(w:World):World {
- w.residents??={};w.stories??={};w.activities??={};w.archives??={};w.familiar??=[];w.evidence??=[];w.payments??=[];w.memorials??=[];return bindInventory(w);
+ w.residents??={};w.stories??={};w.activities??={};w.archives??={};w.familiar??=[];w.evidence??=[];w.payments??=[];w.memorials??=[];bindInventory(w);if(w.version===5)estate(w);return w;
 }
 export function upgradeWorld(w:World,slimes:Slime[],from=3,at=0):World {
  prepareWorld(w);
@@ -49,5 +50,6 @@ export function upgradeHome(w:World,slimes:Slime[]):World {
  w.paths={'0':paths};w.pathStyles=styles;w.unlocked=[0,1,2,3,4,5];w.map=createMap();w.version=5;
  if(w.cultivars.some(c=>c.species==='glowflower')&&!w.flags.includes('home:glow-seed'))w.flags.push('home:glow-seed');
  for(const s of slimes)resident(w,s);
- return w;
+ // 迁移一次完成：家园扩展（科技、地块、委托）与 V5 布局同时建立，重复读入结果不变。
+ estate(w);return w;
 }

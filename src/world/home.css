@@ -246,3 +246,100 @@
  .home-orbit>[data-orbit=top]{top:0;right:0;left:auto}.home-orbit>[data-orbit=right]{top:auto;bottom:0;right:0}.home-orbit>[data-orbit=bottom]{bottom:0;left:0}.home-orbit>[data-orbit=left]{top:0;left:0}
 }
 @supports not (backdrop-filter:blur(1px)){.home-panel,.home-tool-hint,#app .home-world .home-orbit>.home-button{background:var(--surface-solid)!important}}
+
+/* 家园经营：等级徽章、产出气泡、开垦路牌、研究与委托面板。沿用奶油纸面板、细边与毛玻璃。 */
+.home-season:has(.home-button){padding:3px 10px 3px 3px}
+.home-season .home-button{min-height:32px;gap:4px;padding:1px 9px 1px 3px;border-radius:8px;background:var(--panel)!important;border:1px solid var(--border);color:var(--text)!important}
+.home-season .home-button .home-art-icon{width:26px;height:26px}.home-season .home-button b{font-size:13px;color:var(--accent2)}
+.home-season-orders{display:inline-flex;align-items:center;gap:2px;margin-left:4px;padding-left:6px;border-left:1px solid var(--border);font-size:12px;color:var(--text)}.home-season-orders .ui-icon{width:14px;height:14px}
+.home-world:has(.home-tech-panel) .home-season,.home-world:has(.home-tech-panel) .home-stock{visibility:hidden}
+.home-dot{position:absolute;top:6px;right:12px;width:8px;height:8px;border-radius:50%;background:var(--gold,#f2c35b);box-shadow:0 0 0 2px var(--surface-solid)}
+.home-tools>.home-button,.home-more>.home-button{position:relative}
+.home-collect{position:absolute;z-index:10;left:50%;transform:translateX(-50%);bottom:calc(var(--home-bottom) + 86px)}
+#app .home-world .home-collect .home-button{border-radius:999px;padding:6px 16px;gap:6px;font-size:13px;box-shadow:0 6px 18px #0003}
+.home-world:has(.home-panel) .home-collect,.home-selecting .home-collect{visibility:hidden}
+
+.home-bubble{cursor:pointer;outline:none}
+.home-bubble-float{animation:home-bob 2.6s ease-in-out infinite;filter:drop-shadow(0 3px 4px #2d3b2a40)}
+.home-bubble:hover .home-bubble-float,.home-bubble:focus-visible .home-bubble-float{scale:1.08}
+.home-bubble:focus-visible circle{stroke:#fff;stroke-width:3}
+.home-bubble-count{font:700 11px system-ui;fill:#fff;paint-order:stroke;stroke:#7d5d35;stroke-width:3px}
+@keyframes home-bob{0%,100%{translate:0 0}50%{translate:0 -4px}}
+.home-plot-sign{cursor:pointer;outline:none}
+.home-plot-halo{fill:#fff3c4;opacity:0;transition:opacity .18s}
+.home-plot-sign:hover .home-plot-halo,.home-plot-sign:focus-visible .home-plot-halo{opacity:.35}
+.home-plot-sign.waiting{opacity:.72}.home-plot-label{opacity:1!important}
+.home-plot-label{font-size:12px}.home-plot-sign:not(.waiting) .home-plot-label{font-size:14px;font-weight:700}
+
+.home-locked-note{display:inline-flex;align-items:center;gap:3px;color:var(--accent2)}.home-locked-note .ui-icon{width:13px;height:13px}
+.home-catalog>.home-button[data-locked]>svg{filter:saturate(.35) brightness(.92);opacity:.75}
+.home-item-word{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:7px;background:var(--panel);border:1px solid var(--border);font-size:11px;color:var(--accent2)}
+.home-locked-family{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;margin-bottom:10px;border:1px dashed var(--border);border-radius:14px}.home-locked-family p{margin:0;font-size:12px}
+.home-segments .ui-icon{width:13px;height:13px}
+
+.home-yield{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:8px;border-radius:14px;background:var(--panel);border:1px solid var(--border)}
+.home-yield>span{display:flex;align-items:center;gap:4px}.home-yield>span>small{display:none}.home-yield b{font-size:15px;font-variant-numeric:tabular-nums}
+.home-yield>.home-button{margin-left:auto;min-height:40px}.home-yield>small{flex:1}
+.home-notes{margin-top:6px}
+.home-market{margin-top:8px}.home-market-item{display:flex;align-items:center;gap:8px;min-width:0}.home-market-item b{font-size:13px}
+.home-market-actions{display:flex;gap:5px;flex-shrink:0}.home-market-actions .home-button{font-size:11px;padding:4px 8px;min-height:40px}
+.home-affinity{color:var(--gold,#e2b24f);font-size:13px;margin-left:2px}.home-people small{font-size:10px;line-height:1.2}
+.home-people>.home-button>span:nth-child(2){display:flex;flex-direction:column;align-items:flex-start;min-width:0}
+
+.home-tech-panel{left:50%;right:auto;transform:translateX(-50%);width:min(1040px,calc(100% - 32px));max-width:none}
+.home-research-queue{display:grid;gap:8px;padding:10px 12px;margin-bottom:10px;border-radius:16px;background:var(--panel);border:1px solid var(--border)}
+.home-research-queue>p{margin:0}.home-research-queue .ui-icon{width:15px;height:15px;vertical-align:-3px}
+.home-research{display:grid;grid-template-columns:34px minmax(0,1fr) auto;align-items:center;gap:10px}.home-research .home-art-icon{width:34px;height:34px}.home-research b{font-size:13px}
+.home-research progress{margin:3px 0 0}.home-research .home-button{min-height:40px;font-size:12px}
+.home-branches{display:flex;gap:6px;overflow:auto;padding-bottom:10px;scrollbar-width:thin}
+.home-branches>.home-button{flex:1;min-width:84px;gap:6px;padding:6px 8px;border-radius:14px}.home-branches .home-art-icon{width:28px;height:28px}
+.home-branches>.home-button>span{display:flex;flex-direction:column;align-items:flex-start;line-height:1.2;font-size:13px}.home-branches small{font-size:10px}
+.home-tiers{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;align-items:start}
+.home-tier>h3{display:flex;align-items:baseline;justify-content:space-between;gap:6px;margin:0 0 8px;font-size:13px;color:var(--accent2)}.home-tier>h3 small{font-weight:400}
+.home-tier.locked>h3{color:var(--muted)}
+.home-tech{position:relative;display:flex;flex-direction:column;gap:5px;padding:10px;margin-bottom:8px;border-radius:14px;background:color-mix(in srgb,var(--panel) 90%,transparent);border:1px solid var(--border);transition:border-color .2s,box-shadow .2s}
+.home-tech>header{display:flex;align-items:center;gap:7px}.home-tech>header .home-art-icon{width:30px;height:30px}.home-tech>header b{font-size:14px;flex:1;min-width:0}
+.home-tech>p{margin:0;font-size:12px;line-height:1.55;text-wrap:pretty}
+.home-tech-cost{display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:wrap}.home-tech-cost .home-material-cost{justify-content:flex-start}.home-tech-cost .home-art-icon{width:19px;height:19px}
+.home-tech .home-button{min-height:40px;font-size:12px}
+.home-tech.ready{border-color:color-mix(in srgb,var(--accent2) 55%,var(--border))}
+.home-tech.done{opacity:.72}.home-tech.done>p{font-size:11px}
+.home-tech.blocked{opacity:.86}.home-tier.locked .home-tech{opacity:.6}
+.home-tech.running{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.home-tech.focus{box-shadow:0 0 0 2px var(--gold,#e2b24f)}
+.home-tech-badge{display:inline-flex;align-items:center;gap:3px;font-size:10px;color:var(--accent2)}.home-tech-badge .ui-icon{width:12px;height:12px}
+.home-tech-running{color:var(--accent)!important}
+
+.home-orders{display:grid;gap:8px}
+.home-order{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px;padding:10px;border-radius:16px;background:var(--panel);border:1px solid var(--border)}
+.home-order .home-portrait{width:38px;height:42px}.home-order .home-portrait .slime{transform:translateX(-50%) scale(.19)}
+.home-order-home .home-art-icon{width:36px;height:36px}
+.home-order-copy{display:flex;flex-direction:column;gap:2px;min-width:0}.home-order-copy>b{font-size:12px;color:var(--muted);font-weight:500}
+.home-order-need{display:flex;align-items:center;gap:5px;font-size:14px;font-weight:600}.home-order-need small{font-weight:400;margin-left:4px}
+.home-order-reward{display:flex!important;align-items:center;gap:3px}.home-order-reward .ui-icon{width:13px;height:13px}
+.home-order-actions{display:flex;gap:5px}.home-order-actions .home-button{min-height:40px;font-size:12px}.home-order-actions .home-button:last-child{width:40px;padding:0}
+.home-level-card,.home-plot-card{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:16px;background:var(--panel);border:1px solid var(--border)}
+.home-level-card .home-art-icon,.home-plot-card .home-art-icon{width:52px;height:52px}.home-level-card>div,.home-plot-card>div{flex:1;min-width:0}.home-level-card b,.home-plot-card b{font-size:16px;color:var(--accent2)}
+.home-parts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:10px 0}
+.home-parts>span{padding:6px 8px;border-radius:12px;border:1px solid var(--border);text-align:center}.home-parts b{font-size:16px;font-variant-numeric:tabular-nums}
+.home-plot-card+p{margin-top:10px}
+
+@media(max-width:1100px){.home-tiers{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:760px){
+ .home-tech-panel{left:8px;right:8px;transform:none;width:auto;height:72dvh}
+ .home-tiers{grid-template-columns:1fr}.home-branches>.home-button{min-width:64px;flex-direction:column;gap:2px;padding:6px 4px}.home-branches>.home-button>span{align-items:center}
+ .home-collect{bottom:calc(var(--home-bottom) + 84px)}
+}
+@media(max-width:350px){
+ .home-tools>.home-button{min-width:52px;padding:4px 5px}
+ .home-parts{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .home-branches{gap:4px}.home-branches>.home-button{min-width:0;padding:5px 2px}.home-branches .home-art-icon{width:22px;height:22px}.home-branches>.home-button>span{font-size:12px}
+}
+@media(max-height:500px) and (orientation:landscape){
+ .home-tech-panel{left:auto;right:12px;transform:none;width:min(620px,60vw)}
+ /* 横屏高度很小：只留队列状态一行，分支改成单行图标按钮，让科技卡片露出来。 */
+ .home-research-queue{padding:6px 10px;margin-bottom:6px;gap:4px}.home-research-queue>p{display:none}
+ .home-branches{padding-bottom:6px}.home-branches>.home-button{min-height:36px;padding:3px 6px}.home-branches .home-art-icon{width:22px;height:22px}.home-branches small{display:none}
+ .home-tiers{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .home-collect{left:auto;right:76px;transform:none;bottom:calc(var(--home-bottom) + 10px)}
+}

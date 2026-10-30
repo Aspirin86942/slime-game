@@ -2,11 +2,13 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createWorld,execute,footprint,growth} from '../src/world/engine.ts';
 import {validWorld} from '../src/world/storage.ts';
-import {BUILDINGS} from '../src/world/content.ts';
+import {BUILDINGS,TECHS} from '../src/world/content.ts';
 import {bounds,formOf} from '../src/world/ecology.ts';
 import {GROWN_FACILITIES,grownFrame,objectFrame} from '../src/world/art/storybook.ts';
 const clone=x=>JSON.parse(JSON.stringify(x));
-const fresh=()=>({started:true,saveVersion:5,lastActive:0,slimes:[],world:createWorld(487)});
+// 几何测试使用完全发展的家园：全部地块已开垦、全部科技已完成；开局进度另见 estate.test.mjs。
+const developed=w=>{w.estate.plots=Array.from({length:24},(_,i)=>i);w.estate.tech=TECHS.map(t=>t.id);return w;};
+const fresh=()=>({started:true,saveVersion:5,lastActive:0,slimes:[],world:developed(createWorld(487))});
 const run=(s,c)=>{const r=execute(s,c);assert.equal(r.ok,true,r.message);return r;};
 const fill=s=>{for(const k of ['wood','stone'])s.world.stock[k]=1000;};
 const build=(s,def,x,y,rotation=0)=>{run(s,{type:'build',def,zone:0,x,y,rotation});return s.world.placements.at(-1);};

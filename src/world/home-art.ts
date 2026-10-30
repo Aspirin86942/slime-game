@@ -6,7 +6,9 @@ import {facilityArt} from './art/facilities.ts';
 import {decorArt} from './art/decor.ts';
 import {visitorArt} from './art/creatures.ts';
 import {mix} from './art/kit.ts';
-import {artURL,paintedObject,paintedPlant,natureArt,pathPatterns,objectPreview} from './art/storybook.ts';
+import {artURL,paintedObject,paintedPlant,natureArt,pathPatterns,objectPreview,artGlyph,artTop,sprite} from './art/storybook.ts';
+import {PLOT,PLOT_COUNT,plotAt,plotOrigin} from './map.ts';
+import {clearing} from './estate.ts';
 import {esc} from './art.ts';
 import {HOME_WIDTH,HOME_HEIGHT,TILE,type Camera} from './map.ts';
 
@@ -50,6 +52,16 @@ export function scene(w:World,host:Host,camera:Camera,selected:number,crop:numbe
   road+=`<rect data-home-road="${n}" x="${px}" y="${py}" width="${width}" height="${height}" rx="${left||right||top||bottom?0:6}" fill="url(#home-road-${w.pathStyles?.[`0:${n}`]??0})"/>`;
  }
  const objects:{depth:number;id:number;html:string}[]=[];
+ // 未开垦的地块：画成密林并轻轻压暗；与已开垦地相邻的地块中央立一块路牌，点它开垦。
+ const glade=new Set<number>(),opened=new Set(w.version===5&&w.estate?w.estate.plots:Array.from({length:PLOT_COUNT},(_,i)=>i)),locked=(x:number,y:number)=>!opened.has(plotAt(x,y));
+ for(let n=0;n<PLOT_COUNT;n++){
+  if(opened.has(n))continue;const [x,y]=plotOrigin(n);
+  ground+=`<rect class="home-locked-plot" x="${x*TILE}" y="${y*TILE}" width="${PLOT*TILE}" height="${PLOT*TILE}" fill="${dark?'#132a2c':'#2f4b2f'}" opacity="${edit?.34:dark?.2:.14}"/>`;
+  if(clearing(w,n).problem==='先开垦相邻的地块')continue;
+  const cx=(x+PLOT/2)*TILE,cy=(y+PLOT/2+.6)*TILE,need=clearing(w,n);
+  for(let yy=y+1;yy<y+PLOT-1;yy++)for(let xx=x+1;xx<x+PLOT-1;xx++)glade.add(yy*HOME_WIDTH+xx);
+  objects.push({depth:y+PLOT/2+.6,id:-100000-n,html:`<g class="home-plot-sign${need.problem?' waiting':''}" data-home-plot="${n}" data-depth="${y+PLOT/2+.6}" transform="translate(${cx} ${cy})" role="button" tabindex="0" aria-label="开垦这片林地${need.problem?'，'+esc(need.problem):''}"><ellipse rx="30" ry="9" fill="#243a26" opacity=".22"/><circle class="home-plot-halo" cy="-44" r="44"/><g transform="translate(-42 -90)" style="${dark?'filter:brightness(.7)':''}">${sprite('items-a',15,0,0,84,84)}</g><text class="home-label home-plot-label" y="16" text-anchor="middle">${need.problem?esc(need.problem):'开垦'}</text></g>`});
+ }
  // Background plants yield their space whenever the player builds or sows there.
  const occupiedTiles=[...occupied,...roads],treeClearance=new Set<number>(),lowClearance=new Set<number>();
  for(const n of occupiedTiles){const x=n%HOME_WIDTH,y=Math.floor(n/HOME_WIDTH);
@@ -59,18 +71,22 @@ export function scene(w:World,host:Host,camera:Camera,selected:number,crop:numbe
   }
  }
  for(let y=0;y<HOME_HEIGHT;y++)for(let x=0;x<HOME_WIDTH;x++){
-  const n=y*HOME_WIDTH+x,h=hash(n+351),edge=x<3||x>32||y<3||y>21;
+  const n=y*HOME_WIDTH+x,h=hash(n+351),wild=locked(x,y),edge=x<3||x>32||y<3||y>21||wild;
   const woodland=(x-17)**2/100+(y-4)**2/16<1||(x-6)**2/20+(y-14)**2/65<1||(x-28)**2/24+(y-13)**2/75<1||Math.sin(x*.55)+Math.cos(y*.71)+Math.sin((x+y)*.36)>1.4;
-  if(!visible(x,y)||occupied.has(n)||roads.has(n))continue;
+  // 可开垦地块中央留一片林间空地，路牌不会被树冠挡住。
+  if(!visible(x,y)||occupied.has(n)||roads.has(n)||glade.has(n))continue;
   const tree=(edge||woodland)&&x%2===0&&y%2===0&&!treeClearance.has(n);
-  if(!tree&&(lowClearance.has(n)||h>(edge||woodland?360:85)))continue;
+  if(!tree&&(lowClearance.has(n)||h>(wild?520:edge||woodland?360:85)))continue;
   const px=(x+.5)*TILE+(hash(n+15)%23-11),py=(y+1)*TILE+(hash(n+9)%35-17),size=tree ? .94+(h%100)/210 : .6+(h%100)/260;
-  const art=natureArt(tree?(h%4===0?'fruit':'tree'):h%7===0?'rock':h%3===0?'flowers':'bush',size,dark);
+  const art=natureArt(tree?(h%(wild?9:4)===0?'fruit':'tree'):h%7===0?'rock':h%3===0?'flowers':'bush',size,dark);
   const depth=py/TILE-.1;
   objects.push({depth,id:-n-1,html:`<g class="home-nature" data-depth="${depth}" transform="translate(${px} ${py})" pointer-events="none">${art}</g>`});
  }
  for(const p of w.placements.filter(p=>!p.stored&&visible(p.x,p.y))){const [a,b]=bounds(p),def=BUILDINGS.find(d=>d.id===p.def)??DECORATIONS.find(d=>d.id===p.def);
-  objects.push({depth:p.y+b,id:p.id,html:`<g class="home-object ${p.id===selected?'selected':''}" data-home-object="${p.id}" data-depth="${p.y+b}" transform="translate(${p.x*TILE} ${p.y*TILE+10})" tabindex="0" role="button" aria-label="${esc(def?.name??'物件')}${BUILDINGS.some(d=>d.id===p.def)?`，${p.level} 级`:''}"><rect class="home-footprint" y="-10" width="${a*TILE}" height="${b*TILE}" rx="6"/>${objectArt(p,dark)}<text class="home-label" x="${a*TILE/2}" y="${b*TILE+12}" text-anchor="middle">${esc(def?.name??'')}</text></g>`});
+  // 建筑暂存的产出：屋顶上方冒出气泡，显示数量最多的那种产物，点一下收进仓库。
+  const bag=w.estate?.yields[p.id],main=bag&&Object.entries(bag).sort((x,y)=>y[1]-x[1])[0],top=main?artTop(p.def,a,b,formOf(p)):0;
+  const bubble=main?`<g class="home-bubble" data-home-bubble="${p.id}" transform="translate(${a*TILE/2} ${Math.max(-150,top-6)})" role="button" tabindex="0" aria-label="收取${esc(def?.name??'')}的产出"><g class="home-bubble-float"><path d="M-6 -4 0 5 6 -4Z" fill="#fff6dc" stroke="#a9834e" stroke-width="1.5" stroke-linejoin="round"/><circle cy="-22" r="20" fill="#fff6dc" stroke="#a9834e" stroke-width="2"/><svg x="-15" y="-38" width="30" height="30" viewBox="0 0 32 32" overflow="visible">${artGlyph(main[0])}</svg><text class="home-bubble-count" x="15" y="-4" text-anchor="middle">${Math.floor(main[1])>99?'99+':Math.floor(main[1])}</text></g></g>`:'';
+  objects.push({depth:p.y+b,id:p.id,html:`<g class="home-object ${p.id===selected?'selected':''}" data-home-object="${p.id}" data-depth="${p.y+b}" transform="translate(${p.x*TILE} ${p.y*TILE+10})" tabindex="0" role="button" aria-label="${esc(def?.name??'物件')}${BUILDINGS.some(d=>d.id===p.def)?`，${p.level} 级`:''}"><rect class="home-footprint" y="-10" width="${a*TILE}" height="${b*TILE}" rx="6"/>${objectArt(p,dark)}<text class="home-label" x="${a*TILE/2}" y="${b*TILE+12}" text-anchor="middle">${esc(def?.name??'')}</text>${bubble}</g>`});
  }
  for(const c of w.crops.filter(c=>visible(c.x,c.y))){const cultivar=w.cultivars.find(v=>v.id===c.cultivar)!,def=PLANTS.find(p=>p.id===cultivar.species)!;
   objects.push({depth:c.y+1,id:c.id,html:`<g class="home-crop ${c.id===crop?'selected':''}" data-home-crop="${c.id}" data-depth="${c.y+1}" transform="translate(${(c.x+.5)*TILE} ${(c.y+1)*TILE-8})" role="button" tabindex="0" aria-label="${esc(cultivar.name)}，${Math.round(c.progress*100)}%"><rect class="home-footprint" x="-24" y="-40" width="48" height="48" rx="6"/>${paintedPlant(def,cultivar.genes.color,cultivar.genes.form,c.progress,dark)}${c.progress>=1?'<circle cy="-60" r="5" fill="#fff3b5" stroke="#ac8750"/>':c.water<=0?'<text class="home-label" y="-54" text-anchor="middle">缺水</text>':''}</g>`});

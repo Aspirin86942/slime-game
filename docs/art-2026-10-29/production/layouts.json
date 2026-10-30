@@ -400,5 +400,53 @@
       0.7368421052631579,
       1.0
     ]
+  },
+  "facilities-f": {
+    "grid": 3,
+    "items": [
+      "quarry level 1",
+      "quarry level 2",
+      "quarry level 3",
+      "mine level 1",
+      "mine level 2",
+      "mine level 3",
+      "apiary level 1",
+      "apiary level 2",
+      "apiary level 3"
+    ]
+  },
+  "facilities-g": {
+    "grid": 3,
+    "items": [
+      "spring level 1",
+      "spring level 2",
+      "spring level 3",
+      "warehouse level 1",
+      "warehouse level 2",
+      "warehouse level 3",
+      "market level 1",
+      "market level 2",
+      "market level 3"
+    ]
+  },
+  "items-a": {
+    "items": [
+      "ore",
+      "ingot",
+      "honey",
+      "essence",
+      "stardust",
+      "net",
+      "expPotion",
+      "treasure",
+      "notes",
+      "branch resources",
+      "branch craft",
+      "branch farming",
+      "branch ecology",
+      "branch companions",
+      "prosperity banner",
+      "clearing sign"
+    ]
   }
 }

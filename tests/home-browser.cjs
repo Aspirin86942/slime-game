@@ -23,11 +23,11 @@ const check=(name,ok,detail)=>{checks.push({name,ok,detail});assert.ok(ok,name+'
  try{
   await client.send('Page.navigate',{url:fileUrl('史莱姆.html','?battle=ui')});
   await waitFor(()=>ev(`typeof S!=='undefined'&&S.started`),10000);
-  await ev(`document.querySelector('#selftestOut')?.remove();S.name='小院主人';S.slimes=[createSlime(false),createSlime(false),createSlime(false)];S.slimes.forEach((s,i)=>{s.name=['露露','芽芽','桃桃'][i];s.size=.8;});S.started=true;for(const k of ['wood','stone','dew','petal','herb','algae','plank','dye','stardust','ingredient','fruit'])S.world.stock[k]=800;switchTab('home');`);
+  await ev(`document.querySelector('#selftestOut')?.remove();S.name='小院主人';S.slimes=[createSlime(false),createSlime(false),createSlime(false)];S.slimes.forEach((s,i)=>{s.name=['露露','芽芽','桃桃'][i];s.size=.8;});S.started=true;/* 交互回归使用完全发展的家园；开局进度见 estate-browser.cjs。 */S.world.estate.plots=Array.from({length:24},(_,i)=>i);S.world.estate.tech=LivingWorld.TECHS.map(t=>t.id);for(const k of ['wood','stone','dew','petal','herb','algae','plank','dye','stardust','ingredient','fruit'])S.world.stock[k]=800;switchTab('home');`);
   await sleep(250);check('single fullscreen map with shared navigation and all currencies',await ev(`document.querySelectorAll('.home-map').length===1&&document.querySelectorAll('.tabbar button').length===6&&getComputedStyle(document.querySelector('.topbar .cur.p')).display!=='none'&&document.querySelector('.home-map').getBoundingClientRect().width===innerWidth`));
   const loaded=await ev(`Promise.all([...new Set([...document.querySelectorAll('.home-map image')].map(i=>i.href.baseVal))].map(src=>new Promise(resolve=>{const image=new Image();image.onload=()=>resolve(image.naturalWidth>0);image.onerror=()=>resolve(false);image.src=src})))`);
   check('painted ground and object atlases decode locally',loaded.length>=3&&loaded.every(Boolean),loaded);
-  check('home uses shared line icons in navigation and four tools',await ev(`document.querySelectorAll('.tabbar .ui-icon').length===6&&document.querySelectorAll('.home-tools .ui-icon').length===4&&!document.querySelector('.tabbar .home-art-icon')`));
+  check('home uses shared line icons in navigation and five tools',await ev(`document.querySelectorAll('.tabbar .ui-icon').length===6&&document.querySelectorAll('.home-tools .ui-icon').length===5&&!document.querySelector('.tabbar .home-art-icon')`));
   await ev('S.world.stock.wood=0;renderTab()');
   await click('[data-lw="panel"][data-panel="build"]');await click('[data-lw="build"][data-def="woodshop"]');
   check('insufficient materials disable construction without spending stock',await ev(`document.querySelector('[data-def="woodshop"]').disabled&&S.world.stock.wood===0&&!S.world.placements.some(p=>p.def==='woodshop')`));

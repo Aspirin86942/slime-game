@@ -1,7 +1,7 @@
 const DIAGNOSTIC_MODE=/(?:^|[?&])(selftest|gallery|battle|fps)(?:=|&|$)/.test(location.search||'');
 const SAVE_KEY = 'slimeSummonerSave';
 const SAVE_BACKUP_KEY = 'slimeSummonerSave_v1_backup';
-const SAVE_V4_BACKUP_KEY='slimeSummonerSave_v4_backup';
+const SAVE_V4_BACKUP_KEY='slimeSummonerSave_v4_backup';const SAVE_V5_BACKUP_KEY='slimeSummonerSave_v5_backup';
 const SAVE_V3_BACKUP_KEY='slimeSummonerSave_v3_backup';
 let saveRetryNeeded=false;
 const SAVE_V2_BACKUP_KEY = 'slimeSummonerSave_v2_backup';
@@ -77,8 +77,10 @@ function load(){
     const d = JSON.parse(raw);
     if(!validSaveData(d)) throw new Error('存档结构无效');
     const fromVersion=Number(d.saveVersion)||1;
-    if(!DIAGNOSTIC_MODE&&fromVersion<5){
-      for(const base of [[SAVE_BACKUP_KEY,SAVE_V2_BACKUP_KEY,SAVE_V3_BACKUP_KEY,SAVE_V4_BACKUP_KEY][fromVersion-1]]){
+    // 旧 V5 存档补齐家园扩展或委托计数前，同样先保存原文备份。
+    const estateMigration=fromVersion===5&&(!d.world.estate||d.world.estate.daily.orders===undefined);
+    if(!DIAGNOSTIC_MODE&&(fromVersion<5||estateMigration)){
+      for(const base of [[SAVE_BACKUP_KEY,SAVE_V2_BACKUP_KEY,SAVE_V3_BACKUP_KEY,SAVE_V4_BACKUP_KEY,SAVE_V5_BACKUP_KEY][fromVersion-1]]){
         let key=base,index=0;while(localStorage.getItem(key)!==null&&localStorage.getItem(key)!==raw)key=base+'_'+Date.now()+'_'+(++index);
         if(localStorage.getItem(key)!==raw)localStorage.setItem(key,raw);
         if(localStorage.getItem(key)!==raw)throw new Error('原始存档备份未成功');
@@ -156,7 +158,7 @@ function load(){
       LivingWorld.flushPayments(S);S.lastActive=Date.now();S.planClock=Number(S.planClock)||0;
     }else{LivingWorld.ensure(S);S.world.activities={};}
     if(!LivingWorld.validWorld(S.world,S.slimes.map(s=>s.id)))throw new Error('迁移后的存档无效');
-    if(fromVersion<5&&!DIAGNOSTIC_MODE&&!save())throw new Error('迁移无法保存');
+    if((fromVersion<5||estateMigration)&&!DIAGNOSTIC_MODE&&!save())throw new Error('迁移无法保存');
     return true;
   }catch(e){
     const restored=JSON.parse(previous); delete S.bag;delete S.feedTrough;Object.keys(S).forEach(k=>delete S[k]); Object.assign(S,restored);LivingWorld.ensure(S);

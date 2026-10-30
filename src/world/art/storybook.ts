@@ -29,7 +29,14 @@ const facilityNames=['house','kitchen','table','spa','bed','greenhouse','pollen'
 // 可升级设施的 2、3 级形态：每张图集 8 座设施，每座的 2 级、3 级图并排，生成时同一建筑的外观更一致。
 export const GROWN_FACILITIES=facilityNames.filter(id=>id!=='expedition'&&id!=='resonance');
 export const GROWN_SHEETS=['facilities-c','facilities-d','facilities-e'];
+// 资源建筑：每张图集三行，每行是同一建筑的 1、2、3 级，三档出自同一张图，外观一致。
+const ESTATE_FACILITIES=['quarry','mine','apiary','spring','warehouse','market'];
+function estateFrame(def:string,form:number):[string,number]|null {
+ const k=ESTATE_FACILITIES.indexOf(def);if(k<0)return null;
+ return [k<3?'facilities-f':'facilities-g',(k%3)*3+Math.max(1,Math.min(3,form))-1];
+}
 function baseFrame(def:string):[string,number]|null {
+ const estate=estateFrame(def,1);if(estate)return estate;
  const index=facilityNames.indexOf(def);
  if(index>=0)return [index<16?'facilities-a':'facilities-b',index%16];
  const match=/^decor-([1-7])-([0-5])$/.exec(def);
@@ -38,6 +45,7 @@ function baseFrame(def:string):[string,number]|null {
  return [['decor-a','decor-b','decor-c'][Math.floor(i/16)],i%16];
 }
 export function grownFrame(def:string,form:number):[string,number]|null {
+ if(form>=2&&ESTATE_FACILITIES.includes(def))return estateFrame(def,form);
  const k=GROWN_FACILITIES.indexOf(def);if(k<0||form<2)return null;
  return [GROWN_SHEETS[Math.floor(k/8)],(k%8)*2+form-2];
 }
@@ -70,9 +78,13 @@ const LAMPS:Record<string,[number,number][]>={
  'archive:2':[[.18,.68],[.68,.70]],'archive:3':[[.30,.50],[.77,.51],[.3,.8],[.82,.81]],
  'stars:2':[[.21,.31],[.78,.61]],'stars:3':[[.13,.54],[.92,.53]],
  'memorial:2':[[.11,.53],[.87,.53],[.46,.63]],'memorial:3':[[.08,.56],[.93,.56],[.5,.67]],
- 'trough:3':[[.19,.54]]
+ 'trough:3':[[.19,.54]],
+ 'quarry:2':[[.14,.6]],'quarry:3':[[.47,.6]],'mine:1':[[.62,.48]],'mine:2':[[.12,.51],[.61,.49],[.39,.53]],'mine:3':[[.2,.66],[.71,.66],[.46,.65]],
+ 'apiary:2':[[.13,.33]],'apiary:3':[[.59,.54],[.86,.54],[.49,.23]],'spring:2':[[.31,.35]],'spring:3':[[.23,.44],[.77,.44],[.51,.44]],
+ 'warehouse:1':[[.82,.46]],'warehouse:2':[[.15,.58],[.6,.58],[.33,.25]],'warehouse:3':[[.61,.3],[.27,.72],[.61,.72],[.81,.77]],
+ 'market:2':[[.1,.37],[.86,.37]],'market:3':[[.05,.44],[.7,.44],[.55,.44]]
 };
-const lamps=(def:string,form:number,frame:[string,number])=>LAMPS[`${def}:${frame[0]===grownFrame(def,form)?.[0]?form:1}`]??[];
+const lamps=(def:string,form:number,frame:[string,number])=>LAMPS[`${def}:${ESTATE_FACILITIES.includes(def)?form:frame[0]===grownFrame(def,form)?.[0]?form:1}`]??[];
 export function paintedObject(def:string,a:number,b:number,dark:boolean,form=1):string {
  const frame=objectFrame(def,form);if(!frame)return '';
  const decor=def.startsWith('decor-'),fence=def.startsWith('decor-1-');
@@ -82,7 +94,7 @@ export function paintedObject(def:string,a:number,b:number,dark:boolean,form=1):
  else if(dark&&!decor){
   const f=atlases[frame[0]]?.frames[frame[1]];
   // 多窗建筑缩小每盏光晕，避免光点叠加盖住墙面和窗框细节。
-  if(f){const w=Math.min(width,maxHeight*f[2]/f[3]),h=w*f[3]/f[2],r=Math.min(1.5,w/106)*(frame[0]===grownFrame(def,form)?.[0] ? .6 : 1);
+  if(f){const w=Math.min(width,maxHeight*f[2]/f[3]),h=w*f[3]/f[2],r=Math.min(1.5,w/106)*(frame[0]===grownFrame(def,form)?.[0]||ESTATE_FACILITIES.includes(def) ? .6 : 1);
    art+=lamps(def,form,frame).map(([fx,fy])=>`<ellipse class="home-lamplight" cx="${(a*24-w/2+fx*w).toFixed(1)}" cy="${(base-h+fy*h).toFixed(1)}" rx="${(23*r).toFixed(1)}" ry="${(27*r).toFixed(1)}" fill="url(#lw-window)" opacity=".46" pointer-events="none"/>`).join('');}
  }
  return art;
@@ -115,10 +127,27 @@ export function natureArt(kind:'tree'|'fruit'|'bush'|'rock'|'flowers'|'reeds',si
  const i=['tree','fruit','bush','rock','flowers','reeds'].indexOf(kind),tree=i<2;
  return grounded('facilities-b',10+i,0,4,(tree?103:kind==='bush'?63:45)*size,(tree?116:58)*size,dark);
 }
+/** items-a 图集：新物料、桥接物品、科技分支、家园等级旗与开垦路牌。 */
+export const ITEM_ICONS:Record<string,number>={ore:0,ingot:1,honey:2,essence:3,stardust:4,net:5,expPotion:6,treasure:7,notes:8,'branch-0':9,'branch-1':10,'branch-2':11,'branch-3':12,'branch-4':13,prosperity:14,clearing:15};
+const MATERIAL_ICONS:Record<string,number>={wood:10,stone:11,dew:12,feed:13,build:14,gather:15};
+/** 有绘本图标的物品；其余物品在界面上用文字名。 */
+export const hasArtIcon=(kind:string)=>kind in ITEM_ICONS||kind in MATERIAL_ICONS;
+/** 地图上的产出气泡直接嵌入 32×32 的绘本图标。 */
+export function artGlyph(kind:string):string {
+ if(kind in ITEM_ICONS&&atlases['items-a'])return sprite('items-a',ITEM_ICONS[kind],0,0,32,32);
+ return kind in MATERIAL_ICONS?sprite('decor-c',MATERIAL_ICONS[kind],0,0,32,32):'';
+}
+/** 设施图在占地内的顶边（相对放置原点），用于把气泡放在屋顶上方。 */
+export function artTop(def:string,a:number,b:number,form=1):number {
+ const frame=objectFrame(def,form),f=frame&&atlases[frame[0]]?.frames[frame[1]];if(!f)return -40;
+ const base=b*48-10,width=a*48+10,maxHeight=b*48+76,w=Math.min(width,maxHeight*f[2]/f[3]);
+ return base-w*f[3]/f[2];
+}
 export function artIcon(kind:string):string {
- const material:Record<string,number>={wood:10,stone:11,dew:12,feed:13,build:14,gather:15};
+ const material=MATERIAL_ICONS;
  let art='';
- if(kind in material)art=sprite('decor-c',material[kind],0,0,32,32);
+ if(kind in ITEM_ICONS&&atlases['items-a'])art=sprite('items-a',ITEM_ICONS[kind],0,0,32,32);
+ else if(kind in material)art=sprite('decor-c',material[kind],0,0,32,32);
  else if(kind==='home')art=sprite('facilities-a',0,0,0,32,32);
  else if(kind==='plants'||kind==='status')art=sprite('plants-c',4,0,0,32,32);
  else if(kind==='craft')art=sprite('facilities-b',0,0,0,32,32);

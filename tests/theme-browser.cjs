@@ -23,7 +23,7 @@ const check=(name,ok,detail)=>{checks.push({name,ok,detail});assert.ok(ok,name+'
  const bars=()=>ev(`['.topbar','.tabbar'].map(s=>{const e=document.querySelector(s),r=e.getBoundingClientRect(),c=getComputedStyle(e);return {rect:[r.x,r.y,r.width,r.height].map(n=>Math.round(n*100)/100),background:c.backgroundColor,radius:c.borderRadius,font:c.font,icons:[...e.querySelectorAll('.ui-icon path')].map(p=>p.getAttribute('d'))};})`);
  try{
   await client.send('Page.navigate',{url:fileUrl('史莱姆.html','?battle=ui')});assert.ok(await waitFor(()=>ev("typeof S!=='undefined'&&S.started"),10000));
-  await ev(`__intervals.forEach(clearInterval);document.querySelector('#selftestOut')?.remove();S.slimes=[createSlime(false),createSlime(false),createSlime(false)];S.slimes.forEach((s,i)=>{s.name=['露露','芽芽','桃桃'][i];s.stamina=100;});for(const k of ['wood','stone','dew','petal','herb','ingredient','fruit'])S.world.stock[k]=800;
+  await ev(`__intervals.forEach(clearInterval);document.querySelector('#selftestOut')?.remove();S.slimes=[createSlime(false),createSlime(false),createSlime(false)];S.slimes.forEach((s,i)=>{s.name=['露露','芽芽','桃桃'][i];s.stamina=100;});S.world.estate.plots=Array.from({length:24},(_,i)=>i);S.world.estate.tech=LivingWorld.TECHS.map(t=>t.id);for(const k of ['wood','stone','dew','petal','herb','ingredient','fruit'])S.world.stock[k]=800;
    for(const [def,x,y]of [['kitchen',12,13],['pond',22,11],['woodshop',21,8],['decor-3-0',12,10],['decor-2-1',16,10],['decor-1-0',13,8]]){const r=LivingWorld.execute(S,{type:'build',def,zone:0,x,y});if(!r.ok)throw Error(r.message);}S.world.clock=1200;`);
   const themes=await ev('THEMES.map(t=>t.id)');
   for(const [width,height]of sizes){

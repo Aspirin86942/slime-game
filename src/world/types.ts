@@ -13,12 +13,17 @@ export interface ZoneDef {id:number; name:string; area:string; color:string; thr
 export interface Placement {id:number; def:string;zone:number;x:number;y:number;rotation:number;level:number;stored:boolean;form?:number;}
 export interface Genes {color:number;form:number;yield:number;speed:number;adapt:number;}
 export interface Cultivar {id:number;species:string;name:string;genes:Genes;parents:string[];protected:boolean;seeds:number;}
-export interface Crop {id:number;cultivar:number;zone:number;x:number;y:number;progress:number;water:number;care:number;harvests:number;lastSim:number;}
+export interface Crop {id:number;cultivar:number;zone:number;x:number;y:number;progress:number;water:number;care:number;harvests:number;lastSim:number;legacy?:boolean;}
 export interface Juvenile {id:number;name:string;element:Element;born:number;stage:number;care:string[];mentor:number|null;traits:string[];choices:string[];active:boolean;personality:string;}
 export interface Memory {id:string;title:string;text:string;at:number;}
 export interface Companion {slimeId:number;role:string;interest:string;memories:Memory[];friends:Record<string,number>;story:Record<string,number>;mentor:number|null;daily:number;day:number;facts?:Record<string,number>;lastPet?:number;}
 export interface Work {slimeId:number;building:number;}
-export interface Recipe {id:string;name:string;building:string;cost:Stock;output:Stock;seconds:number;level:number;}
+export interface Recipe {id:string;name:string;building:string;cost:Stock;output:Stock;seconds:number;level:number;tech?:string;}
+export interface TechEffect {kind:'building'|'recipe'|'family'|'feature'|'slots'|'buffer'|'affinity'|'cap'|'queue';id?:string;n?:number;}
+export interface TechDef {id:string;branch:number;tier:1|2|3|4;name:string;desc:string;requires:string[];cost:Stock;seconds:number;effects:TechEffect[];}
+export interface Order {id:number;slime:number;need:Stock;coins:number;points:number;notes:number;}
+/** 家园经营的扩展状态：科技、开垦、委托、建筑暂存产出和每轮（12 小时）上限计数。 */
+export interface Estate {rev:1;tech:string[];research:{id:string;remaining:number}[];plots:number[];orders:Order[];nextOrder:number;daily:{window:number;made:Stock;sold:number;orders:number};yields:Record<string,Stock>;}
 export interface Craft {participants?:number[];id:number;recipe:string;building:number;remaining:number;ready:boolean;}
 export interface Choice {text:string;result:string;reward:Stock;flag?:string; requires?:{element?:Element; personality?:string; companions?:number; cost?:Stock; building?:string};}
 export interface ExploreEvent {id:string;region:number;title:string;text:string;kind:string;choices:Choice[];}
@@ -29,7 +34,7 @@ export interface PairEvent {id:string;title:string;text:string;choices:[string,s
 export interface Trip {id:number;region:number;route:number;team:number[];mode:'active'|'offline';duration:number;nextAt:number;node:number;events:string[];pending:string|null;bag:Stock;log:string[];ready:boolean; repeat?:boolean; resting?:boolean; phase?:number; coins?:number; experience?:Record<string,number>; actions?:number; familiar?:boolean; legacy?:boolean;returned?:boolean;}
 export interface TravelLog {id:number;title:string;lines:string[];at:number;}
 export interface Mini {kind:'match'|'pollination'|'observation';board:number[];selected:number;steps:number;score:number;hp:number;matches:number[];done:boolean;claimed:boolean;round:number;participants?:number[];}
-export interface World {version:3|4|5;map?:{width:number;height:number;terrain:number[]};retired?:Record<string,unknown>;inventory:Inventory;residents:Record<string,SceneResident>;stories:Record<string,StoryInstance>;activities:Record<string,CompanionActivity>;archives:Record<string,{name:string;profile:Companion}>;familiar:string[];evidence:LifeEvent[];payments:GameEvent[];memorials:Memorial[];migration?:{from:number;at:number};clock:number;rng:number;seq:number;stock:Stock;unlocked:number[];placements:Placement[];paths:Record<string,number[]>;pathStyles?:Record<string,number>;cultivars:Cultivar[];crops:Crop[];juveniles:Juvenile[];companions:Record<string,Companion>;workers:Work[];crafts:Craft[];visitors:Record<string,boolean>;discoveries:string[];trips:Trip[];journals:TravelLog[];chapters:Record<string,number>;recruited:Record<string,number>;flags:string[];camps:number[];regionStory:Record<string,number>;mini:Mini|null;miniRewards:Record<string,number>;lastGather:number;lastResonance:number;weather:number;weatherAt:number;reducedMotion:boolean;autoReplant:boolean;notices:string[];pending:Stock;}
+export interface World {version:3|4|5;estate?:Estate;map?:{width:number;height:number;terrain:number[]};retired?:Record<string,unknown>;inventory:Inventory;residents:Record<string,SceneResident>;stories:Record<string,StoryInstance>;activities:Record<string,CompanionActivity>;archives:Record<string,{name:string;profile:Companion}>;familiar:string[];evidence:LifeEvent[];payments:GameEvent[];memorials:Memorial[];migration?:{from:number;at:number};clock:number;rng:number;seq:number;stock:Stock;unlocked:number[];placements:Placement[];paths:Record<string,number[]>;pathStyles?:Record<string,number>;cultivars:Cultivar[];crops:Crop[];juveniles:Juvenile[];companions:Record<string,Companion>;workers:Work[];crafts:Craft[];visitors:Record<string,boolean>;discoveries:string[];trips:Trip[];journals:TravelLog[];chapters:Record<string,number>;recruited:Record<string,number>;flags:string[];camps:number[];regionStory:Record<string,number>;mini:Mini|null;miniRewards:Record<string,number>;lastGather:number;lastResonance:number;weather:number;weatherAt:number;reducedMotion:boolean;autoReplant:boolean;notices:string[];pending:Stock;}
 export type GameCommandData =
  | {type:'interact';slime:number;action:'pet'|'chat'|'feed'|'snack'|'rest';item?:string}
  | {type:'refill';amount?:number} | {type:'relocate';slime:number;zone:number}
@@ -54,8 +59,10 @@ export type GameCommandData =
  | {type:'chapter';character:string;choice:number;participants?:number[]} | {type:'personal';slime:number;chain:string;choice:number}
  | {type:'pair';a:number;b:number;event:string;choice:number} | {type:'meal';ids:number[]}
  | {type:'miniStart';kind:Mini['kind']} | {type:'miniCell';index:number} | {type:'miniClaim'}
- | {type:'settings';reduced?:boolean;replant?:boolean} | {type:'claimOverflow'};
-export interface GameEvent {type:'notice'|'adopt'|'recruit'|'experience'|'feed'|'income'|'collection'|'pet';text:string;juvenile?:Juvenile;character?:StoryCharacter;participants?:number[];amount?:number;at?:number;object?:string;}
+ | {type:'settings';reduced?:boolean;replant?:boolean} | {type:'claimOverflow'}
+ | {type:'research'|'cancelResearch';id:string} | {type:'clear';plot:number} | {type:'collect';id:number} | {type:'collectAll'}
+ | {type:'sell';item:string;amount:number} | {type:'order'|'dismissOrder';id:number};
+export interface GameEvent {type:'notice'|'adopt'|'recruit'|'experience'|'feed'|'income'|'collection'|'pet'|'points';text:string;juvenile?:Juvenile;character?:StoryCharacter;participants?:number[];amount?:number;at?:number;object?:string;}
 export interface Result {ok:boolean;message:string;events:GameEvent[];}
 export interface Environment {light:number;moisture:number;fertility:number;quality:number;temperature:number;reasons:string[];}
 export interface Host {state:()=>GameState;save:()=>boolean;writable:()=>boolean;render:()=>void;toast:(s:string)=>void;available:(id:number)=>boolean;create:(element:Element,name:string,personality:string)=>Slime;slimeHTML:(s:Slime)=>string;diagnostic:boolean;open?:(page:string)=>void;play?:(kind:string,slime:number)=>void;progress?:(events:GameEvent[])=>void;}

@@ -1,0 +1,81 @@
+{
+  "tool": "codex/gpt-image-2（Magpie 生图）",
+  "requested_size": [
+    1024,
+    1024
+  ],
+  "actual_size": [
+    1254,
+    1254
+  ],
+  "transparent_background": true,
+  "quality": "high",
+  "style_baseline": "Match the attached reference sprites EXACTLY in rendering: painterly gouache storybook, warm cream plaster, terracotta roof tiles, honey-coloured timber, moss and fern green foliage with small white daisies at the base, muted teal water, amber lantern glow. Polished dimensional hand-painted sprites with fine visible brush texture, NO black outlines. Elevated front-facing orthographic view with screen-aligned horizontal bases, NOT diamond isometric. Light from upper left, gentle soft contact shadow.",
+  "sheets": {
+    "facilities-f": {
+      "grid": 3,
+      "reference_images": [
+        "facilities-a.png",
+        "facilities-e.png"
+      ],
+      "rows": [
+        "采石场 1–3 级",
+        "矿洞 1–3 级",
+        "蜂箱 1–3 级"
+      ],
+      "prompt_summary": "三行三列，每行同一建筑的 1 级简朴、2 级扩建（附屋、石基、雕檐、灯笼、花箱）、3 级华丽（高屋顶或塔楼、描金、旗帜、一颗柔光水晶），三档主色、材料和标志轮廓一致。"
+    },
+    "facilities-g": {
+      "grid": 3,
+      "reference_images": [
+        "facilities-a.png",
+        "facilities-e.png"
+      ],
+      "rows": [
+        "元素泉 1–3 级",
+        "仓库 1–3 级",
+        "集市 1–3 级"
+      ],
+      "prompt_summary": "同 facilities-f。"
+    },
+    "items-a": {
+      "grid": 4,
+      "reference_images": [
+        "decor-c.png"
+      ],
+      "items": [
+        "矿石",
+        "金属锭",
+        "蜂蜜",
+        "元素精华",
+        "星尘",
+        "捕捉网",
+        "经验药水",
+        "天材地宝",
+        "研究笔记",
+        "资源分支",
+        "工艺分支",
+        "农艺分支",
+        "生态分支",
+        "伙伴分支",
+        "家园等级旗",
+        "开垦路牌"
+      ],
+      "prompt_summary": "与 decor-c 的木材、石材、露水图标同一画法，纯物品，不带草地底座。"
+    }
+  },
+  "repack": {
+    "why": "生成图里相邻物件的草地基座互相接触，按格线或矩形裁切会切出硬边或混入邻居像素。",
+    "tool": "scripts/repack-atlas.mjs",
+    "method": "腐蚀透明通道找出每个物件的主体；以半透明边缘为高代价做多源加权扩散，分界线落在物件之间的柔边；与主体断开的小碎片改归接触最多的相邻物件；再按阅读顺序放进四周留白 12% 的规整网格，底边对齐。",
+    "commands": [
+      "node scripts/repack-atlas.mjs <sharp所在node_modules> production/candidates/facilities-f.png 9 3 production/candidates/facilities-f-packed.png '[[984,865,1060,934,1020,960]]'",
+      "node scripts/repack-atlas.mjs <sharp所在node_modules> production/candidates/facilities-g.png 9 3 production/candidates/facilities-g-packed.png",
+      "node scripts/repack-atlas.mjs <sharp所在node_modules> production/candidates/items-a.png 16 4 production/candidates/items-a-packed.png"
+    ],
+    "manual_hints": {
+      "facilities-f": "蜂箱 3 级屋顶的金色蜜蜂风向标在原图中直接贴着矿洞 3 级的路面，用提示矩形 [984,865,1060,934] 指定归蜂箱。已逐像素放大检查两侧边缘。"
+    },
+    "final": "三张重排图用 lanczos3 缩放到 1254×1254（与现有图集同尺寸）后存为 production/facilities-f.png、facilities-g.png、items-a.png，再运行 node scripts/prepare-home-art.mjs <sharp所在node_modules> facilities-f facilities-g items-a 生成 34 张独立 WebP。"
+  }
+}

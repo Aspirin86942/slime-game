@@ -22,7 +22,7 @@ const hash=file=>crypto.createHash('sha256').update(fs.readFileSync(file)).diges
   const defs=await ev(`LivingWorld.BUILDINGS.filter(d=>!['expedition','resonance'].includes(d.id)).map(d=>({id:d.id,name:d.name,forms:d.forms}))`);
   for(let i=0;i<defs.length;i++){
    const def=defs[i];
-   const id=await ev(`(()=>{switchTab('space');S.world=LivingWorld.createWorld(487);S.world.placements=[];S.world.crops=[];S.world.workers=[];LivingWorld.ensure(S);for(const k of ['wood','stone'])S.world.stock[k]=100000;const r=LivingWorld.execute(S,{type:'build',def:${JSON.stringify(def.id)},zone:0,x:6,y:6});if(!r.ok)throw Error(r.message);switchTab('home');return S.world.placements[0].id;})()`);
+   const id=await ev(`(()=>{switchTab('space');S.world=LivingWorld.createWorld(487);S.world.estate.plots=Array.from({length:24},(_,i)=>i);S.world.estate.tech=LivingWorld.TECHS.map(t=>t.id);S.world.placements=[];S.world.crops=[];S.world.workers=[];LivingWorld.ensure(S);for(const k of ['wood','stone'])S.world.stock[k]=100000;const r=LivingWorld.execute(S,{type:'build',def:${JSON.stringify(def.id)},zone:0,x:6,y:6});if(!r.ok)throw Error(r.message);switchTab('home');return S.world.placements[0].id;})()`);
    await click('[data-lw="center"]');
    const selector=`[data-home-object="${id}"]`;
    await click(selector);await click('[data-lw="upgrade-view"]');
@@ -33,7 +33,8 @@ const hash=file=>crypto.createHash('sha256').update(fs.readFileSync(file)).diges
      await click('[data-command*="upgrade"]');
      const state=await ev(`(()=>{const p=S.world.placements[0],e=document.querySelector(${JSON.stringify(selector)}+' .home-footprint');return {form:p.form,level:p.level,width:+e.getAttribute('width'),height:+e.getAttribute('height')};})()`);
      check(`${def.id}: upgrade ${form} changes form and footprint`,state.form===form&&state.level===form&&state.width===def.forms[form-1][0]*48&&state.height===def.forms[form-1][1]*48,state);
-     const sheet=['facilities-c','facilities-d','facilities-e'][Math.floor(i/8)],index=(i%8)*2+form-2;
+     // 前 24 座的 2、3 级在 c/d/e 图集里成对排列；6 座资源建筑的 1–3 级在 f/g 图集里按行排列。
+     const k=i-24,sheet=i<24?['facilities-c','facilities-d','facilities-e'][Math.floor(i/8)]:k<3?'facilities-f':'facilities-g',index=i<24?(i%8)*2+form-2:(k%3)*3+form-1;
      check(`${def.id}: form ${form} renders the packaged sprite`,await imageHash(selector+' image')===hash(`src/assets/storybook/${sheet}-${index}.webp`));
      if(def.id==='house'&&form===2)check('successful upgrade starts the growth animation',await ev(`getComputedStyle(document.querySelector(${JSON.stringify(selector)}+' > g')).animationName==='home-grow'`));
     }
@@ -52,7 +53,7 @@ const hash=file=>crypto.createHash('sha256').update(fs.readFileSync(file)).diges
   }
   await ev(`document.querySelector('#form-review').remove()`);await resize(1440,900);
   // Keep a small usable home for storage, rotation, night and phone checks.
-  await ev(`switchTab('space');S.world=LivingWorld.createWorld(487);S.world.placements=[];S.world.crops=[];LivingWorld.ensure(S);S.world.stock.wood=100000;S.world.stock.stone=100000;for(const [def,x,y] of [['house',6,6],['kitchen',10,6],['archive',14,6]]){let r=LivingWorld.execute(S,{type:'build',def,zone:0,x,y});if(!r.ok)throw Error(r.message);const id=S.world.placements.at(-1).id;for(let n=0;n<2;n++){r=LivingWorld.execute(S,{type:'upgrade',id});if(!r.ok)throw Error(r.message);}}switchTab('home');`);
+  await ev(`switchTab('space');S.world=LivingWorld.createWorld(487);S.world.estate.plots=Array.from({length:24},(_,i)=>i);S.world.estate.tech=LivingWorld.TECHS.map(t=>t.id);S.world.placements=[];S.world.crops=[];LivingWorld.ensure(S);S.world.stock.wood=100000;S.world.stock.stone=100000;for(const [def,x,y] of [['house',6,6],['kitchen',10,6],['archive',14,6]]){let r=LivingWorld.execute(S,{type:'build',def,zone:0,x,y});if(!r.ok)throw Error(r.message);const id=S.world.placements.at(-1).id;for(let n=0;n<2;n++){r=LivingWorld.execute(S,{type:'upgrade',id});if(!r.ok)throw Error(r.message);}}switchTab('home');`);
   await click('[data-lw="center"]');
   const house=await ev(`S.world.placements.find(p=>p.def==='house').id`),kitchen=await ev(`S.world.placements.find(p=>p.def==='kitchen').id`);
   const houseSelector=`[data-home-object="${house}"]`,houseHash=await imageHash(houseSelector+' image');
