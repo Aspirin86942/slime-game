@@ -16,8 +16,9 @@ const safeAreaCases=[['iphone-14',{top:47,bottom:34,left:0,right:0}],['land-844'
 (async()=>{
  const session=await start({profile:'desktop-s',url:'史莱姆.html?battle=ui',gpu:true,outDir:out});
  const {ev,client}=session,errors=session.consoleErrors;
- const tapPoint=session.tapPoint;
  const mouse=async(type,p,extra={})=>client.send('Input.dispatchMouseEvent',{type,...p,...extra});
+ // 地图点位点击在原脚本里走鼠标输入；底座 tapPoint 是触摸，这里恢复最小的本地鼠标点位助手。
+ const mouseTap=async p=>{await mouse('mousePressed',p,{button:'left',clickCount:1});await mouse('mouseReleased',p,{button:'left',clickCount:1});};
  const close=async()=>{if(await ev(`!!document.querySelector('.home-panel,.home-orbit')`))await session.tap('[data-lw="close"]');};
  const open=async(def,action='use')=>{await close();await session.tap('[data-panel="build"]');await session.tap('[data-category="facilities"]');if(await ev(`!!document.querySelector('[data-group="all"]')?.getClientRects().length`))await session.tap('[data-group="all"]');await session.tap(`[data-lw="inspect"][data-def="${def}"]`);if(action)await session.tap(`[data-lw="${action}"]`);};
  const point=async(x,y)=>ev(`(()=>{const p=new DOMPoint(${(x+.5)*48},${(y+.5)*48}).matrixTransform(document.querySelector('.home-map').getScreenCTM());return {x:p.x,y:p.y};})()`);
@@ -64,15 +65,15 @@ const safeAreaCases=[['iphone-14',{top:47,bottom:34,left:0,right:0}],['land-844'
   const cancelled=await snapshot();await session.tap('[data-lw="rotate"]');
   check('moving previews the actual upgraded sprite before committing',await snapshot()===cancelled&&await ev(`!!document.querySelector('.home-placement-ghost image')&&!document.querySelector('.home-panel')`));
   await key('Escape');check('Escape from a toolbar button cancels without changing the save',await snapshot()===cancelled&&await ev(`!document.querySelector('.home-tool-hint')`));
-  await session.tap('[data-panel="build"]');await session.tap(`[data-lw="move"][data-id="${kitchen}"]`);await tapPoint(await point(10,8));
+  await session.tap('[data-panel="build"]');await session.tap(`[data-lw="move"][data-id="${kitchen}"]`);await mouseTap(await point(10,8));
   check('restoring from storage opens the usable building card',await ev(`!S.world.placements.find(p=>p.id===${kitchen}).stored&&S.world.placements.find(p=>p.id===${kitchen}).form===3&&!!document.querySelector('.home-orbit')`));
   await open('house');await session.tap('[data-lw="move"]');const moveBefore=await snapshot();await key('ArrowRight');
   check('keyboard arrows adjust the image preview without moving the building',await snapshot()===moveBefore&&await ev(`document.querySelector('.home-placement-ghost').getAttribute('transform').includes('720')`));await key('Enter');
   check('Enter commits the preview through the normal movement rules',await ev(`S.world.placements.find(p=>p.def==='house').x===15&&!document.querySelector('.home-tool-hint')`));
   await close();await session.tap('[data-panel="build"]');await session.tap('[data-group="craft"]');check('purpose filters show only matching facilities',await ev(`[...document.querySelectorAll('.home-catalog [data-def]')].map(e=>e.dataset.def).sort().join()==='alchemy,archive,compost,woodshop'`));
   await session.tap('[data-category="decor"]');await session.tap('[data-def="decor-1-0"]');const beforeBuild=await snapshot();await mouse('mouseMoved',await point(15,8));
-  check('placement hover renders the sprite and explains an occupied tile',await snapshot()===beforeBuild&&await ev(`!!document.querySelector('.home-placement-ghost image')&&document.querySelector('.home-placement-status').textContent.includes('已有设施')`));await tapPoint(await point(15,8));check('invalid placement retains the tool and save',await snapshot()===beforeBuild&&await ev(`!!document.querySelector('.home-tool-hint')`));
-  await tapPoint(await point(18,7));check('one ground click places the decoration and opens its actions',await ev(`S.world.placements.some(p=>p.def==='decor-1-0'&&p.x===18&&p.y===7)&&!!document.querySelector('.home-orbit')`));
+  check('placement hover renders the sprite and explains an occupied tile',await snapshot()===beforeBuild&&await ev(`!!document.querySelector('.home-placement-ghost image')&&document.querySelector('.home-placement-status').textContent.includes('已有设施')`));await mouseTap(await point(15,8));check('invalid placement retains the tool and save',await snapshot()===beforeBuild&&await ev(`!!document.querySelector('.home-tool-hint')`));
+  await mouseTap(await point(18,7));check('one ground click places the decoration and opens its actions',await ev(`S.world.placements.some(p=>p.def==='decor-1-0'&&p.x===18&&p.y===7)&&!!document.querySelector('.home-orbit')`));
   await open('toys');check('toys start with an available partner selected',await ev(`document.querySelectorAll('[data-lw="play-person"][aria-pressed="true"]').length===1&&!document.querySelector('.home-panel select')`));
   await session.tap('[data-lw="play-person"]:last-child');const chosen=await ev(`+document.querySelector('[data-lw="play-person"][aria-pressed="true"]').dataset.person`);await session.tap('[data-lw="play"][data-kind="ball"]');
   assert.ok(await waitFor(()=>ev('ballGame?.running===true'),3000));check('play uses the partner selected on the visual chip',await ev(`S.world.activities[${chosen}]?.kind==='play'`));await session.tap('#gClose');
