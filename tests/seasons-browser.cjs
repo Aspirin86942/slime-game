@@ -1,17 +1,16 @@
+'use strict';
 const assert=require('node:assert/strict');
-const {launch,fileUrl,waitFor,report}=require('../tools/out/lib/cdp.js');
-const out='tools/out/magic-ui/seasonal',checks=[],errors=[];
+const {start}=require('./lib/browser/session.cjs');
+const profiles=require('./lib/browser/profiles.cjs');
+const {waitFor,report}=require('../tools/out/lib/cdp.js');
+const out='tools/out/magic-ui/seasonal',checks=[];
+// 87 项基线要求 PASS 行与 results.json 的 {name,ok,detail} 结构保持不变，底座没有等价 check。
 const check=(name,ok,detail)=>{checks.push({name,ok,detail});assert.ok(ok,name+': '+JSON.stringify(detail));console.log('PASS '+name);};
+// R6：起始 1440×900 dpr=1；随后 390×844 dpr=1、mobile=true；原脚本未动安全区，这里显式传零。
+const zeroSafeArea={top:0,right:0,bottom:0,left:0};
 (async()=>{
- const b=await launch({url:fileUrl('史莱姆.html','?battle=ui'),width:1440,height:900,dpr:1,gpu:true});
- const {ev,client}=b;
- client.on('Runtime.exceptionThrown',e=>errors.push(e.exceptionDetails.exception?.description??e.exceptionDetails.text));
- client.on('Runtime.consoleAPICalled',e=>{if(e.type==='error')errors.push(e.args.map(a=>a.value??a.description).join(' '));});
- const click=async selector=>{
-  const p=await ev(`(()=>{const el=document.querySelector(${JSON.stringify(selector)});if(!el)throw Error('missing control');const r=el.getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2};})()`);
-  await client.send('Input.dispatchMouseEvent',{type:'mousePressed',...p,button:'left',clickCount:1});
-  await client.send('Input.dispatchMouseEvent',{type:'mouseReleased',...p,button:'left',clickCount:1});
- };
+ const session=await start({profile:'desktop-s',url:'史莱姆.html?battle=ui',gpu:true,outDir:out});
+ const {ev,client}=session,errors=session.consoleErrors;
  const decoded=()=>ev(`Promise.all([...new Set([...document.querySelectorAll('.home-map image')].map(i=>i.href.baseVal))].map(src=>new Promise(resolve=>{const image=new Image();image.onload=()=>resolve(image.naturalWidth>0);image.onerror=()=>resolve(false);image.src=src})))`);
  const pixels=selector=>ev(`new Promise((resolve,reject)=>{const image=new Image();image.onerror=reject;image.onload=()=>{const canvas=document.createElement('canvas');canvas.width=canvas.height=32;const c=canvas.getContext('2d');c.drawImage(image,0,0,32,32);const a=c.getImageData(0,0,32,32).data,sum=[0,0,0];let minAlpha=255,snow=0;for(let i=0;i<a.length;i+=4){for(let k=0;k<3;k++)sum[k]+=a[i+k];minAlpha=Math.min(minAlpha,a[i+3]);if(Math.min(a[i],a[i+1],a[i+2])>180&&Math.max(a[i],a[i+1],a[i+2])-Math.min(a[i],a[i+1],a[i+2])<35)snow++;}resolve({rgb:sum.map(v=>v/1024),minAlpha,snow:snow/1024});};image.src=document.querySelector(${JSON.stringify(selector)}).getAttribute('href');})`);
  try{
@@ -25,7 +24,7 @@ const check=(name,ok,detail)=>{checks.push({name,ok,detail});assert.ok(ok,name+'
    check(`${s} ${phase}: evening lamps match daylight`,await ev(`!!document.querySelector('.home-lamplight')===${phase==='dusk'||phase==='night'}`));
    check(`${s} ${phase}: ground and road snow match the season`,await ev(`document.querySelector('.home-meadow').dataset.homeGround===${JSON.stringify(['spring','summer','autumn','winter'][s])}&&!!document.querySelector('.home-road-snow')===${s===3}`));
    if(s===3){const snow=await pixels('.home-meadow');check(`${phase}: winter ground is covered in white snow`,snow.snow>.9&&snow.rgb.every(v=>v>210),snow);}
-   await b.shot(`${out}/${['spring','summer','autumn','winter'][s]}-${phase}.png`);
+   await session.shot(`${['spring','summer','autumn','winter'][s]}-${phase}.png`);
   }
   await ev(`S.world.reducedMotion=false;renderTab();`);
   check('seasonal pictures finish rasterizing and share cached images',await waitFor(()=>ev(`Promise.all([...new Set([...document.querySelectorAll('[data-home-paint]')].map(i=>i.getAttribute('href')))].map(src=>fetch(src).then(r=>r.blob()).then(b=>b.type==='image/png'))).then(values=>values.length>0&&values.every(Boolean))`),5000));
@@ -38,16 +37,16 @@ const check=(name,ok,detail)=>{checks.push({name,ok,detail});assert.ok(ok,name+'
   check('day fog is opaque blue-white hand-painted clouds above the scenery',dayCloud.minAlpha===255&&dayCloud.rgb[2]>dayCloud.rgb[0]&&dayCloud.rgb[0]>150&&await ev(`document.querySelector('.home-cloud-texture').dataset.cloudPalette==='0-day'&&new Set([...document.querySelectorAll('[data-cloud-variant]')].map(n=>n.dataset.cloudVariant)).size===6&&[...document.querySelectorAll('.home-cloud-edge image')].every(n=>+n.getAttribute('width')<=96)&&!!(document.querySelector('.home-objects').compareDocumentPosition(document.querySelector('.home-fog'))&Node.DOCUMENT_POSITION_FOLLOWING)`),dayCloud);
   check('every unreclaimed tile is covered by the cloud shape',await ev(`Array.from({length:864},(_,n)=>{const x=n%36,y=Math.floor(n/36),plot=Math.floor(y/6)*6+Math.floor(x/6);return S.world.estate.plots.includes(plot)||document.querySelector('#home-fog-shape').isPointInFill(new DOMPoint((x+.5)*48,(y+.5)*48));}).every(Boolean)`));
   await ev(`S.world.reducedMotion=false;renderTab();`);
-  await click('[data-home-plot="7"] image');await click('.home-panel [data-command*="clear"]');
+  await session.tap('[data-home-plot="7"] image');await session.tap('.home-panel [data-command*="clear"]');
   check('successful clearing plays a bounded cloud reveal',await ev(`!!document.querySelector('.home-fog-reveal')&&document.querySelector('.home-fog-reveal').getAnimations().length===1`));
   check('clearing cloud effect removes itself',await waitFor(()=>ev(`!document.querySelector('.home-fog-reveal')`),2000));
   await ev(`S.world.reducedMotion=true;`);
   check('clearing a plot removes its fog and sign, while all other locked plots stay covered',await ev(`S.world.estate.plots.includes(7)&&Array.from({length:24},(_,n)=>n).filter(fogCovers).length===19&&!fogCovers(7)&&!document.querySelector('[data-home-plot="7"]')&&[8,9,14,15].every(n=>!fogCovers(n))`));
-  if(await ev(`!!document.querySelector('.home-panel [data-lw="close"]')`))await click('.home-panel [data-lw="close"]');await decoded();await b.shot(`${out}/cleared-day.png`);
+  if(await ev(`!!document.querySelector('.home-panel [data-lw="close"]')`))await session.tap('.home-panel [data-lw="close"]');await decoded();await session.shot('cleared-day.png');
   await ev(`S.world.clock=2800;LivingWorld.paintResidents();`);
   const nightCloud=await pixels('.home-cloud-texture');
   check('night fog changes to opaque blue-black clouds without revealing locked plots',nightCloud.minAlpha===255&&nightCloud.rgb[2]>nightCloud.rgb[0]+25&&nightCloud.rgb.every(v=>v<105)&&await ev(`document.querySelector('.home-cloud-texture').dataset.cloudPalette==='0-night'&&Array.from({length:24},(_,n)=>n).filter(fogCovers).length===19`),nightCloud);
-  await ev(`S.world.clock=2399;renderTab();`);await click('[data-home-object="1"]');await click('[data-lw="move"]');
+  await ev(`S.world.clock=2399;renderTab();`);await session.tap('[data-home-object="1"]');await session.tap('[data-lw="move"]');
   const p=await ev(`(()=>{const p=new DOMPoint(17*48,11*48).matrixTransform(document.querySelector('.home-map').getScreenCTM());return {x:p.x,y:p.y};})()`);
   await client.send('Input.dispatchMouseEvent',{type:'mouseMoved',...p});
   await ev(`window.seasonMap=document.querySelector('.home-map');window.seasonPreview=document.querySelector('.home-placement-ghost');window.seasonView=seasonMap.getAttribute('viewBox');S.world.clock=2400;LivingWorld.paintResidents();`);
@@ -56,9 +55,9 @@ const check=(name,ok,detail)=>{checks.push({name,ok,detail});assert.ok(ok,name+'
   check('winter becomes spring automatically at the year boundary',await ev(`seasonMap.dataset.season==='0'&&seasonMap.dataset.phase==='dawn'&&!seasonMap.classList.contains('night')&&document.querySelector('[data-home-calendar]').textContent.includes('春季')&&!!document.querySelector('.home-nature [data-home-paint="home-blossom"]')`));
   await ev(`S.world.clock=102600;LivingWorld.paintResidents();`);
   check('spring snow remnants melt with the game clock during placement',await ev(`document.querySelector('.home-thaw').getAttribute('opacity')==='0.5'&&seasonMap===document.querySelector('.home-map')&&seasonPreview===document.querySelector('.home-placement-ghost')`));
-  await click('[data-lw="cancel"]');
-  await client.send('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:1,mobile:true,screenWidth:390,screenHeight:844});
-  await ev(`S.world.clock=78400;renderTab();`);await click('[data-lw="center"]');await decoded();await b.shot(`${out}/winter-night-mobile.png`);
+  await session.tap('[data-lw="cancel"]');
+  await session.metrics('iphone-14',{dpr:1,mobile:true,safeArea:zeroSafeArea});
+  await ev(`S.world.clock=78400;renderTab();`);await session.tap('[data-lw="center"]');await decoded();await session.shot('winter-night-mobile.png');
   check('phone map fills the viewport without horizontal overflow',await ev(`document.querySelector('.home-map').getBoundingClientRect().width===390&&document.documentElement.scrollWidth===innerWidth&&document.querySelectorAll('.home-map').length===1`));
   await ev(`S.world.reducedMotion=false;S.world.clock=2800;renderTab();`);
   check('seasonal atmosphere animates with reduced motion disabled',await ev(`getComputedStyle(document.querySelector('.home-air i')).animationName==='home-air-fall'`));
@@ -68,11 +67,11 @@ const check=(name,ok,detail)=>{checks.push({name,ok,detail});assert.ok(ok,name+'
   check('a fully reclaimed estate has no remaining cloud cover',await ev(`!document.querySelector('.home-fog')&&!document.querySelector('[data-home-plot]')`));
   await client.send('Emulation.setEmulatedMedia',{features:[]});
   await client.send('Network.enable');await client.send('Network.emulateNetworkConditions',{offline:true,latency:0,downloadThroughput:0,uploadThroughput:0});
-  await client.send('Page.navigate',{url:fileUrl('史莱姆.html','?battle=ui')});assert.ok(await waitFor(()=>ev(`typeof S!=='undefined'&&S.started`),15000));
+  await session.visit('史莱姆.html?battle=ui');assert.ok(await waitFor(()=>ev(`typeof S!=='undefined'&&S.started`),15000));
   await ev(`document.querySelector('#selftestOut')?.remove();S.world.clock=76800;switchTab('home');`);
   const offline=await decoded();check('seasonal art and fog work fully offline',offline.length>3&&offline.every(Boolean));
   check('no browser errors',errors.length===0,errors);
   report(out,'results.json',{checks,errors});console.log(`RESULT ${checks.length}/${checks.length} seasonal browser checks`);
- }catch(e){await b.shot(`${out}/failure.png`).catch(()=>{});report(out,'results.json',{checks,errors,failure:String(e)});throw e;}
- finally{await b.close();}
+ }catch(e){await session.shot('failure.png').catch(()=>{});report(out,'results.json',{checks,errors,failure:String(e)});throw e;}
+ finally{await session.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});
