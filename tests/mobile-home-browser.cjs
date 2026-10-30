@@ -30,15 +30,27 @@ const page=process.argv[2]||'史莱姆.html';
   const p=S.world.placements.find(p=>p.def==='house'&&!p.stored),house=document.querySelector('[data-home-object="'+p.id+'"]'),map=document.querySelector('.home-map');
   return {house:house?rect(house):null,map:rect(map),controls:['.topbar','.home-season','.home-stock','.home-tools','.home-camera','.tabbar'].map(s=>({selector:s,...rect(document.querySelector(s))})),viewBox:map.getAttribute('viewBox'),size:{width:innerWidth,height:innerHeight},overflow:document.documentElement.scrollWidth>innerWidth};
  })()`);
- // 原 clearHouse 的三段判断（房在视口内、无横向溢出、不被 HUD 压盖）改由底座几何快照表达，名称与阈值不变。
+ // 原 clearHouse 的三段判断（房在视口内、无横向溢出、不被 HUD 压盖）仍用底座几何快照，名称与阈值不变。
  const clearHouse=async name=>{
   const selectors=['.topbar','.home-season','.home-stock','.home-tools','.home-camera','.tabbar'];
   const id=await ev(`S.world.placements.find(p=>p.def==='house'&&!p.stored)?.id`);
   const houseSelector=`[data-home-object="${id}"]`;
   const snapshot=await layout.measure(session,[houseSelector,...selectors]);
   const house=snapshot.elements.find(e=>e.selector===houseSelector);
-  const failures=[...layout.noOverflow({...snapshot,elements:house?[house]:[]}),...layout.noOverlap(snapshot,{ignore:selectors})];
-  check(name,!!house&&!failures.length,{house:house?house.rect:null,viewport:snapshot.viewport,failures});
+  const viewport=snapshot.viewport,failures=[];
+  if(house){
+   // 原脚本是严格 0px 包含判定；layout.noOverflow 带 1px 容差，这里按原口径单独判断四边与横向滚动。
+   const r=house.rect;
+   if(!(r.left>=0&&r.top>=0&&r.right<=viewport.width&&r.bottom<=viewport.height))failures.push({check:'overflow',selector:houseSelector,reason:`房子越出视口：left ${r.left}, top ${r.top}, right ${r.right}, bottom ${r.bottom}`});
+   if(viewport.scrollWidth>viewport.width)failures.push({check:'overflow',selector:'document',reason:`横向溢出：scrollWidth ${viewport.scrollWidth} > 视口宽度 ${viewport.width}`});
+   // 原判据是房子与 6 个 HUD 任一两轴相交都超过 1px 即失败。ignore 会跳过所有含 HUD 的配对（房子对 HUD 全被跳过），
+   // 改用 whitelist 只豁免 HUD 之间的历史布局，房子对每个 HUD 仍逐对比较，阈值保持 >1px。
+   const hudPairs=selectors.flatMap((a,i)=>selectors.slice(i+1).map(b=>[a,b]));
+   failures.push(...layout.noOverlap(snapshot,{whitelist:hudPairs,minOverlap:1}));
+   // 快照会跳过缺失的选择器；缺 HUD 时不能静默少比较一对，按失败处理。
+   for(const selector of selectors)if(!snapshot.elements.some(e=>e.selector===selector))failures.push({check:'overlap',selector,reason:'HUD 缺失，无法比较房子与它的压盖'});
+  }
+  check(name,!!house&&!failures.length,{house:house?house.rect:null,viewport,failures});
  };
  const point=(x,y)=>ev(`(()=>{const p=new DOMPoint(${x},${y}).matrixTransform(document.querySelector('.home-map').getScreenCTM());return {x:p.x,y:p.y};})()`);
  const metrics=async(profile,overrides={})=>session.metrics(profile,{dpr:2,mobile:(overrides.width||profiles.resolve(profile).width)<1000,safeArea:zeroSafeArea,...overrides});
