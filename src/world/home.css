@@ -29,6 +29,18 @@
 .home-map{display:block;width:100%;height:100%;touch-action:none;user-select:none;cursor:grab}
 .home-map:active{cursor:grabbing}
 .home-map.night{background:#68816b}
+.home-air{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+/* 产出气泡正在浮动时，把动画预算留给可收取的经营反馈。 */
+.home-world:has(.home-bubble) .home-air{display:none}
+/* 同时只绘制少量飘落点缀，完整家园也保留流畅的镜头和伙伴动画。 */
+.home-air i{position:absolute;left:var(--air-x);top:var(--air-y);width:var(--air-size);height:calc(var(--air-size)*1.5);border-radius:80% 0 80% 30%;background:#ffd1df;box-shadow:inset 1px 1px 0 #fff4;opacity:0;animation:home-air-fall var(--air-speed) linear var(--air-delay) infinite}
+.home-world[data-season="1"] .home-air i{border-radius:50%;height:var(--air-size);background:#eaff9a;box-shadow:0 0 8px 2px #c5f38a;animation-name:home-firefly}
+.home-world[data-season="1"]:not([data-phase="night"]) .home-air{display:none}
+.home-world[data-season="2"] .home-air i{width:calc(var(--air-size)*1.5);height:calc(var(--air-size)*2);background:#f0ad42;border-radius:80% 0 70% 0}
+.home-world[data-season="2"] .home-air i:nth-child(3n){background:#df7549}
+.home-world[data-season="3"] .home-air i{border-radius:50%;height:var(--air-size);background:#fff;box-shadow:0 0 3px #fff9}
+@keyframes home-air-fall{0%{transform:translate(-18px,-80px) rotate(-25deg);opacity:0}15%,75%{opacity:.72}100%{transform:translate(70px,160px) rotate(160deg);opacity:0}}
+@keyframes home-firefly{0%,100%{transform:translate(0,12px);opacity:0}35%{opacity:.8}65%{transform:translate(25px,-22px);opacity:.2}}
 .home-footprint{fill:transparent;stroke:transparent;stroke-width:2;transition:stroke .12s,fill .12s}
 .home-object:hover>.home-footprint{stroke:#fff1bc66}
 .selected>.home-footprint{fill:#f8e8a62e;stroke:#fff0ad}

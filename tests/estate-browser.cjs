@@ -26,8 +26,8 @@ const check=(name,ok,detail)=>{checks.push({name,ok,detail});assert.ok(ok,name+'
   await ev(`__intervals.forEach(clearInterval);document.querySelector('#selftestOut')?.remove();S.slimes=[createSlime(false),createSlime(false)];S.slimes[0].element='岩';S.slimes.forEach((s,i)=>{s.name=['石石','露露'][i];s.stamina=100;s.mood=80;});S.world=LivingWorld.createWorld(487);S.world.clock=1200;LivingWorld.ensure(S);switchTab('home');`);await frame();await sleep(300);
 
   // 1. 开局：四块地、20 块密林、等级与委托在季节栏、五个主工具。
-  const start=await ev(`({plots:S.world.estate.plots.length,locked:document.querySelectorAll('.home-locked-plot').length,signs:document.querySelectorAll('[data-home-plot]').length,level:document.querySelector('.home-season .home-button')?.textContent,tools:document.querySelectorAll('.home-tools>.home-button').length,overflow:document.documentElement.scrollWidth>innerWidth})`);
-  check('a new home opens four plots and shows the rest as forest with clearing signs',start.plots===4&&start.locked===20&&start.signs>=6&&!start.overflow,start);
+  const start=await ev(`({plots:S.world.estate.plots.length,locked:Array.from({length:24},(_,n)=>n).filter(n=>document.querySelector('#home-fog-shape').isPointInFill(new DOMPoint((n%6*6+3)*48,(Math.floor(n/6)*6+3)*48))).length,signs:document.querySelectorAll('[data-home-plot]').length,level:document.querySelector('.home-season .home-button')?.textContent,tools:document.querySelectorAll('.home-tools>.home-button').length,overflow:document.documentElement.scrollWidth>innerWidth})`);
+  check('a new home opens four plots and covers the rest in fog with clearing signs',start.plots===4&&start.locked===20&&start.signs>=6&&!start.overflow,start);
   check('home level and orders sit in the season bar beside five main tools',/1\s*级/.test(start.level)&&/3/.test(start.level)&&start.tools===5,start);
   await b.shot(`${out}/new-1440.png`);
   // 开局缩到最小：20 块密林全部在画面里，是树木最多的情形。

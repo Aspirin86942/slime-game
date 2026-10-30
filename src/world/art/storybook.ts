@@ -6,24 +6,67 @@ declare const __HOME_ART__:Record<string,Atlas>;
 const atlases = typeof __HOME_ART__ === 'undefined' ? {} : __HOME_ART__;
 const urls = new Map<string,string>();
 
+function rasterArt(key:string,svg:string,width:number,height:number):string {
+ if(urls.has(key))return urls.get(key)!;
+ if(typeof document==='undefined')return `data:image/svg+xml,${encodeURIComponent(svg)}`;
+ const url=URL.createObjectURL(new Blob([svg],{type:'image/svg+xml'}));urls.set(key,url);
+ const image=new Image();image.onload=()=>{
+  try{
+   const canvas=document.createElement('canvas');canvas.width=width;canvas.height=height;
+   const context=canvas.getContext('2d');if(!context)return;context.drawImage(image,0,0,width,height);
+   canvas.toBlob(blob=>{if(!blob)return;const ready=URL.createObjectURL(blob);urls.set(key,ready);for(const node of document.querySelectorAll<SVGImageElement>('image'))if(node.getAttribute('href')===url)node.setAttribute('href',ready);},'image/png');
+  }catch{/* 不支持导出时继续显示 SVG；缓存规模仅由有限的季节素材决定。 */}
+ };image.src=url;return url;
+}
+
 // Repeated objects share one decoded image and one short URL in the standalone build.
-export function artURL(name:string,index?:number):string {
- const key=index===undefined?name:`${name}/${index}`;
+export function artURL(name:string,index?:number,paint=''):string {
+ const key=(index===undefined?name:`${name}/${index}`)+(paint?`/${paint}`:'');
  if(urls.has(key))return urls.get(key)!;
  const atlas=atlases[name],source=(index===undefined?atlas?.image:atlas?.images?.[index]??atlas?.image)??'';
  if(!source||typeof document==='undefined')return source;
+ // 换季图片只处理一次；相同树木共用浏览器已解码的图片，拖动地图时不重复运行滤镜。
+ const frame=index===undefined?null:atlas?.frames[index];
+ if(paint&&frame){
+  const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${frame[2]}" height="${frame[3]}" viewBox="0 0 ${frame[2]} ${frame[3]}"><defs>${seasonFilters()}</defs><image width="100%" height="100%" href="${source}" filter="url(#${paint})"/></svg>`;
+  return rasterArt(key,svg,frame[2],frame[3]);
+ }
  const raw=atob(source.slice(source.indexOf(',')+1)),bytes=new Uint8Array(raw.length);
  for(let i=0;i<raw.length;i++)bytes[i]=raw.charCodeAt(i);
  const url=URL.createObjectURL(new Blob([bytes],{type:'image/webp'}));urls.set(key,url);return url;
 }
-export function sprite(sheet:string,index:number,x:number,y:number,width:number,height:number,dark=false,style=''):string {
+export function sprite(sheet:string,index:number,x:number,y:number,width:number,height:number,dark=false,style='',paint=''):string {
  const atlas=atlases[sheet],f=atlas?.frames[index];if(!f)return '';
- return `<image class="painted-sprite" x="${x}" y="${y}" width="${width}" height="${height}" href="${artURL(sheet,index)}" preserveAspectRatio="xMidYMax meet" style="${dark?'filter:brightness(.57) saturate(.78);':''}${style}" aria-hidden="true"/>`;
+ return `<image class="painted-sprite" x="${x}" y="${y}" width="${width}" height="${height}" href="${artURL(sheet,index,paint)}" ${paint?`data-home-paint="${paint}"`:''} preserveAspectRatio="xMidYMax meet" style="${dark?'filter:brightness(.57) saturate(.78);':''}${style}" aria-hidden="true"/>`;
 }
-function grounded(sheet:string,index:number,cx:number,baseline:number,width:number,maxHeight:number,dark=false,style=''):string {
+function grounded(sheet:string,index:number,cx:number,baseline:number,width:number,maxHeight:number,dark=false,style='',paint=''):string {
  const f=atlases[sheet]?.frames[index];if(!f)return '';
  const w=Math.min(width,maxHeight*f[2]/f[3]),h=w*f[3]/f[2];
- return sprite(sheet,index,cx-w/2,baseline-h,w,h,dark,style);
+ return sprite(sheet,index,cx-w/2,baseline-h,w,h,dark,style,paint);
+}
+export const cloudPalette=(season:number,dark:boolean)=>({
+ base:(dark?['#162b43','#142940','#1a2c43','#182d46']:['#a2bdd0','#9fbcd1','#a3b9cb','#9ebacf'])[season],
+ paint:`home-cloud-${season}-${dark?'night':'day'}`
+});
+function cloudFilter(season:number,dark:boolean):string {
+ const r=dark?.18:[.84,.86,.82,.80][season],g=dark?.26:[.92,.94,.90,.92][season],b=dark?.39:1;
+ return `<filter id="${cloudPalette(season,dark).paint}" color-interpolation-filters="sRGB"><feColorMatrix values="${r} 0 0 0 0 0 ${g} 0 0 ${dark?.005:0} 0 0 ${b} 0 ${dark?.015:0} 0 0 0 1 0"/></filter>`;
+}
+export function cloudArt(index:number,cx:number,cy:number,width:number,season:number,dark:boolean):string {
+ return sprite('clouds-handpainted',index%6,cx-width/2,cy-width/3,width,width*2/3,false,'',cloudPalette(season,dark).paint);
+}
+/** 六朵原画错位叠成无缝纹理；昼夜与四季各合成一次，地图拖动只绘制缓存图片。 */
+export function cloudTexture(season:number,dark:boolean):string {
+ const key=`cloud-texture/${season}/${dark}`,cached=urls.get(key);if(cached)return cached;
+ const {base,paint}=cloudPalette(season,dark),atlas=atlases['clouds-handpainted'];
+ const images=Array.from({length:6},(_,i)=>`<image id="cloud-${i}" href="${atlas?.images?.[i]??''}" width="96" height="64" preserveAspectRatio="xMidYMid meet"/>`).join('');
+ let clouds='';
+ for(let row=-1;row<=6;row++)for(let col=-1;col<=6;col++){
+  const r=(row+6)%6,c=(col+6)%6,n=r*6+c,variant=(r*7+c*11)%6;
+  const scale=[.9,1,.94,.98][(n+season)%4],x=col*64+r%2*32+(n*7%13)-6,y=row*36+(n*11%9)-4;
+  clouds+=`<use href="#cloud-${variant}" transform="translate(${x-48} ${y-32}) scale(${scale})"/>`;
+ }
+ return rasterArt(key,`<svg xmlns="http://www.w3.org/2000/svg" width="768" height="432" viewBox="0 0 384 216"><defs>${images}${cloudFilter(season,dark)}</defs><rect width="384" height="216" fill="${base}"/><g filter="url(#${paint})">${clouds}</g></svg>`,768,432);
 }
 const facilityNames=['house','kitchen','table','spa','bed','greenhouse','pollen','seedbank','grove','compost','insects','observe','channel','pond','filter','waterbed','woodshop','alchemy','expedition','training','archive','stars','resonance','memorial','trough','toys'];
 // 可升级设施的 2、3 级形态：每张图集 8 座设施，每座的 2 级、3 级图并排，生成时同一建筑的外观更一致。
@@ -85,13 +128,25 @@ const LAMPS:Record<string,[number,number][]>={
  'market:2':[[.1,.37],[.86,.37]],'market:3':[[.05,.44],[.7,.44],[.55,.44]]
 };
 const lamps=(def:string,form:number,frame:[string,number])=>LAMPS[`${def}:${ESTATE_FACILITIES.includes(def)?form:frame[0]===grownFrame(def,form)?.[0]?form:1}`]??[];
-export function paintedObject(def:string,a:number,b:number,dark:boolean,form=1):string {
+export function paintedObject(def:string,a:number,b:number,dark:boolean,form=1,season=-1,lit=dark):string {
  const frame=objectFrame(def,form);if(!frame)return '';
  const decor=def.startsWith('decor-'),fence=def.startsWith('decor-1-');
  const base=fence?25:b*48-10,width=fence?53:decor?57:a*48+10,maxHeight=fence?40:decor?76:b*48+76;
- let art=grounded(...frame,a*24,base,width,maxHeight,dark);
- if(dark&&def.startsWith('decor-2-'))art+=`<ellipse class="home-lamplight" cx="${a*24}" cy="${base-26}" rx="23" ry="27" fill="url(#lw-window)" opacity=".46" pointer-events="none"/>`;
- else if(dark&&!decor){
+ const f=atlases[frame[0]]?.frames[frame[1]];
+ const w=f?Math.min(width,maxHeight*f[2]/f[3]):width,h=f?w*f[3]/f[2]:maxHeight;
+ let art=grounded(...frame,a*24,base,width,maxHeight,false,'',season===3?'home-snowcap':'');
+ art=`<g class="home-building-art" ${dark?'style="filter:brightness(.57) saturate(.78)"':''}>${art}</g>`;
+ if(season>=0&&!decor){
+  const left=a*24-w*.36,right=a*24+w*.38;
+  let detail='';
+  if(season===0)detail=grounded('facilities-b',14,left,base+2,w*.28,h*.25,dark,'','home-blossom')+grounded('facilities-b',14,right,base+2,w*.24,h*.22,dark);
+  if(season===1)detail=grounded('facilities-b',12,left,base+2,w*.28,h*.22,dark)+grounded('facilities-b',14,right,base+2,w*.22,h*.2,dark);
+  if(season===2)detail=Array.from({length:7},(_,i)=>{const x=a*24-w*.45+((i*37)%97)/100*w,y=base-3+(i*7%13);return `<g transform="translate(${x} ${y}) rotate(${i*79%230})"><path d="M-4 1Q-5-5 3-7Q7 0-4 1Z" fill="${['#ed8738','#e7b44c','#d96142'][i%3]}"/><path d="m-4 1 6-6" stroke="#a86a36" stroke-width=".5"/></g>`;}).join('');
+  art+=`<g class="home-season-detail" data-season="${season}" pointer-events="none" ${dark?'style="filter:brightness(.76)"':''}>${detail}</g>`;
+ }
+ if(lit&&(def.startsWith('decor-2-')||lamps(def,form,frame).length))art=`<ellipse class="home-lamp-pool" cx="${a*24}" cy="${base+3}" rx="${Math.max(28,w*.55)}" ry="${Math.max(12,w*.19)}" fill="url(#lw-window)" opacity="${season===3?'.38':'.24'}" pointer-events="none"/>`+art;
+ if(lit&&def.startsWith('decor-2-'))art+=`<ellipse class="home-lamplight" cx="${a*24}" cy="${base-26}" rx="23" ry="27" fill="url(#lw-window)" opacity=".6" pointer-events="none"/>`;
+ else if(lit&&!decor){
   const f=atlases[frame[0]]?.frames[frame[1]];
   // 多窗建筑缩小每盏光晕，避免光点叠加盖住墙面和窗框细节。
   if(f){const w=Math.min(width,maxHeight*f[2]/f[3]),h=w*f[3]/f[2],r=Math.min(1.5,w/106)*(frame[0]===grownFrame(def,form)?.[0]||ESTATE_FACILITIES.includes(def) ? .6 : 1);
@@ -106,7 +161,7 @@ export function plantFrame(def:PlantDef):[string,number] {
  if(index===32)return ['plants-b',16];
  return index<16?['plants-a',index]:index<32?['plants-b',index-16]:['plants-c',index-33];
 }
-export function paintedPlant(def:PlantDef,hue:number,form:number,progress:number,dark:boolean):string {
+export function paintedPlant(def:PlantDef,hue:number,form:number,progress:number,dark:boolean,season=-1):string {
  const p=Math.max(0,Math.min(1,progress)),family=def.family;
  let frame=plantFrame(def),scale=.7+.3*p;
  if(p<.15){frame=['plants-c',9];scale=.55;}
@@ -116,16 +171,33 @@ export function paintedPlant(def:PlantDef,hue:number,form:number,progress:number
  const shift=((hue-def.color+540)%360)-180;
  const filters=[dark?'brightness(.57) saturate(.78)':'',p>=.7&&p<1?'saturate(.72)':'',shift?`hue-rotate(${shift}deg)`:''].filter(Boolean).join(' ');
  const filter=filters?`filter:${filters};`:'';
- let art=grounded(...frame,0,3,(tree?76:40)*size,(tree?90:49)*size,false,filter);
+ const paint=tree?['home-blossom','','home-autumn','home-frost'][season]??'':'';
+ let art=grounded(...frame,0,3,(tree?76:40)*size,(tree?90:49)*size,false,filter,paint);
  if(def.id==='glowflower'&&p>=.7&&dark)art+=`<ellipse cx="0" cy="-24" rx="23" ry="27" fill="url(#lw-window)" opacity=".36" pointer-events="none"/>`;
  return art;
 }
 export function plantPreview(def:PlantDef,hue=def.color,form=2):string {
  return `<svg viewBox="${def.family===3?'-45 -95 90 104':'-26 -54 52 62'}" aria-hidden="true">${paintedPlant(def,hue,form,1,false)}</svg>`;
 }
-export function natureArt(kind:'tree'|'fruit'|'bush'|'rock'|'flowers'|'reeds',size:number,dark:boolean):string {
+export function natureArt(kind:'tree'|'fruit'|'bush'|'rock'|'flowers'|'reeds',size:number,dark:boolean,season=1,variant=0):string {
  const i=['tree','fruit','bush','rock','flowers','reeds'].indexOf(kind),tree=i<2;
- return grounded('facilities-b',10+i,0,4,(tree?103:kind==='bush'?63:45)*size,(tree?116:58)*size,dark);
+ if(season===3&&i<=2&&atlases['nature-winter'])return grounded('nature-winter',i,0,4,(tree?103:63)*size,(tree?116:58)*size,dark);
+ // 春季果树开花，秋季果树结果；四季共用原画的树干与轮廓。
+ const index=kind==='fruit'&&season!==2?10:10+i;
+ const filter=season===0&&kind!=='rock'?(variant%3===0||kind==='fruit'?'home-blossom':'home-spring'):season===2&&kind!=='rock'?'home-autumn':season===3?(tree||kind==='bush'?'home-frost':'home-snowcap'):'';
+ return grounded('facilities-b',index,0,4,(tree?103:kind==='bush'?63:45)*size,(tree?116:58)*size,dark,'',filter);
+}
+/** 只给原画中偏绿的叶片换色，保留木头、石头和透明边缘。 */
+export function seasonFilters():string {
+ const palettes:Record<string,string>={
+  spring:'.85 .15 0 0 .015 0 1.14 0 0 .02 0 .1 .9 0 0',
+  blossom:'.25 .65 .1 0 .3 .12 .35 .08 0 .12 .2 .3 .25 0 .24',
+  autumn:'.35 .8 .05 0 .09 .08 .55 .04 0 .035 .06 .12 .14 0 .015',
+  frost:'.12 .25 .08 0 .32 .08 .3 .08 0 .38 .07 .26 .14 0 .44'
+ };
+ const foliage=Object.entries(palettes).map(([name,matrix])=>`<filter id="home-${name}" color-interpolation-filters="sRGB" x="-5%" y="-5%" width="110%" height="110%"><feColorMatrix in="SourceGraphic" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 -3 5 -1 0 -.5" result="green"/><feComposite in="green" in2="SourceAlpha" operator="in" result="foliage"/><feColorMatrix in="SourceGraphic" values="${matrix} 0 0 0 1 0" result="tint"/><feComposite in="tint" in2="foliage" operator="in" result="leaves"/><feComposite in="SourceGraphic" in2="foliage" operator="out" result="wood"/><feComposite in="wood" in2="leaves" operator="arithmetic" k2="1" k3="1" result="tree"/>${name==='frost'?'<feColorMatrix in="SourceGraphic" values="0 0 0 0 .92 0 0 0 0 .94 0 0 0 0 .95 2 3 1 0 -2.2"/><feComposite in2="foliage" operator="in" result="snow"/><feMerge><feMergeNode in="tree"/><feMergeNode in="snow"/></feMerge>':''}</filter>`).join('');
+ // 沿原画实际轮廓向下取一条边，积雪会贴着不同形态的屋顶、栏杆和树叶。
+ return foliage+Array.from({length:4},(_,s)=>cloudFilter(s,false)+cloudFilter(s,true)).join('')+`<filter id="home-snowcap" color-interpolation-filters="sRGB" primitiveUnits="objectBoundingBox" x="-5%" y="-10%" width="110%" height="120%"><feOffset in="SourceAlpha" dy=".035" result="lower"/><feComposite in="SourceAlpha" in2="lower" operator="out" result="edge"/><feColorMatrix in="SourceGraphic" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 3 -1.3 -1.1 0 -.6" result="warm"/><feFlood x="0" y="0" width="1" height=".55" flood-color="#fff" result="top"/><feGaussianBlur in="top" stdDeviation=".005 .035" result="softTop"/><feComposite in="warm" in2="softTop" operator="in" result="roof"/><feComposite in="roof" in2="SourceAlpha" operator="in" result="roofMask"/><feComposite in="edge" in2="roofMask" operator="arithmetic" k2="1" k3=".88" result="snowMask"/><feFlood flood-color="#a4b8cc"/><feComposite in2="snowMask" operator="in"/><feOffset dy=".009" result="snowShade"/><feFlood flood-color="#e8eeed"/><feComposite in2="snowMask" operator="in" result="snow"/><feMerge><feMergeNode in="SourceGraphic"/><feMergeNode in="snowShade"/><feMergeNode in="snow"/></feMerge></filter>`;
 }
 /** items-a 图集：新物料、桥接物品、科技分支、家园等级旗与开垦路牌。 */
 export const ITEM_ICONS:Record<string,number>={ore:0,ingot:1,honey:2,essence:3,stardust:4,net:5,expPotion:6,treasure:7,notes:8,'branch-0':9,'branch-1':10,'branch-2':11,'branch-3':12,'branch-4':13,prosperity:14,clearing:15};

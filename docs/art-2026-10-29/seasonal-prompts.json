@@ -1,0 +1,87 @@
+{
+  "tool": "image_gen.imagegen",
+  "assets": [
+    {
+      "key": "clouds-handpainted",
+      "prompt": "Create a production game sprite atlas: exactly SIX distinct SMALL hand-painted clouds, arranged in a clean 3-column by 2-row grid on a genuinely transparent background. The reference cottage is STYLE REFERENCE ONLY: match its charming detailed storybook gouache/watercolor brushwork, soft painted shading and delicate irregular edges. Do not draw a cottage. Each cloud is a separate complete low puffy cloud silhouette, wide oval proportions around 1.7:1, softly scalloped, with six DIFFERENT organic outlines and brush-painted internal lobes. Colors blue-white with subdued powder-blue shadows, ivory-blue highlights, no pure blown white, no black outlines. Clouds have fully opaque painted centers and transparent pixels only outside their organic silhouettes. Generous transparent gutters on all sides and between all six cells, no touching. Each cell contains one cloud centered, largest dimension about 75 percent of cell width. No landscape, sky background, cast shadow outside silhouette, text, frame, grid lines, symbols, stars, border or watermark. Avoid vector gradients, smooth plastic airbrush, icons, uniform repeated cloud silhouettes. Landscape atlas 3:2 aspect ratio.",
+      "transparent_background": true,
+      "reference_images": [
+        "src/assets/storybook/facilities-a-0.webp"
+      ],
+      "production_file": "docs/art-2026-10-29/production/clouds-handpainted.png",
+      "runtime_files": [
+        "src/assets/storybook/clouds-handpainted.webp",
+        "src/assets/storybook/clouds-handpainted-0.webp",
+        "src/assets/storybook/clouds-handpainted-1.webp",
+        "src/assets/storybook/clouds-handpainted-2.webp",
+        "src/assets/storybook/clouds-handpainted-3.webp",
+        "src/assets/storybook/clouds-handpainted-4.webp",
+        "src/assets/storybook/clouds-handpainted-5.webp"
+      ]
+    },
+    {
+      "key": "ground-winter",
+      "prompt": "Edit this top-down hand-painted game meadow into its WINTER version. Preserve the exact camera projection, full-frame ground-only composition, fine hand-painted watercolor/gouache texture scale, even illumination and gentle detail density. Cover virtually the entire ground with a continuous opaque blanket of soft off-white snow. Snow must LOOK WHITE, with delicate pale slate-blue shadows suggesting shallow uneven snow and small rounded drifts. Sparse tiny muted brown or desaturated sage grass tips poke through in less than 2 percent of the area. Snow fills all the way to all image edges. No big green patches. No flowers, trees, buildings, roads, sky, footprints, shadows of unseen objects, scene objects, text or border. No bright glow, no bloom. Quiet readable map ground texture with overall soft restrained exposure, not a high contrast illustration. Same 3:2 aspect ratio. Texture should meet smoothly across opposite edges without a visible border or vignette.",
+      "transparent_background": false,
+      "reference_images": [
+        "src/assets/storybook/ground.webp"
+      ],
+      "production_file": "docs/art-2026-10-29/production/ground-winter.png",
+      "runtime_files": [
+        "src/assets/storybook/ground-winter.webp"
+      ]
+    },
+    {
+      "key": "ground-spring",
+      "prompt": "Edit this top-down hand-painted game meadow into its SPRING version. Preserve the exact camera projection, full-frame ground-only composition, detailed storybook watercolor/gouache brush scale, and same subdued original brightness. Fresh soft sage-green new grass with a few tiny delicate pink and cream flowers among low grass tufts, soft small shadows; avoid yellow-gray soil color. Only a very few tiny last melting snow remnants on grass tuft edges, less than 1 percent of area. No trees, buildings, paths, horizon, objects, text, vignette or border. No brighter exposure, saturated neon green, glare or bloom. Ground remains a calm clear surface below game characters. Same 3:2 aspect ratio. Opposite edges should meet smoothly as a map texture.",
+      "transparent_background": false,
+      "reference_images": [
+        "src/assets/storybook/ground.webp"
+      ],
+      "production_file": "docs/art-2026-10-29/production/ground-spring.png",
+      "runtime_files": [
+        "src/assets/storybook/ground-spring.webp"
+      ]
+    },
+    {
+      "key": "ground-summer",
+      "prompt": "Edit this top-down hand-painted game meadow into its SUMMER version. Preserve the exact camera projection, full-frame ground-only composition, delicate detailed storybook watercolor/gouache brush scale and same original brightness. Lush soft medium moss-green meadow with rich green grass tufts, layered gentle green shadows, a few tiny clover and cream flowers, no large yellow/gray patches. Mature verdant grass, not neon, no exposure increase, no bloom or glare. No trees, buildings, paths, horizon, objects, text, vignette or border. Keep subtle details small and ground readable underneath game objects. Same 3:2 aspect ratio. Opposite edges should meet smoothly as a map texture.",
+      "transparent_background": false,
+      "reference_images": [
+        "src/assets/storybook/ground.webp"
+      ],
+      "production_file": "docs/art-2026-10-29/production/ground-summer.png",
+      "runtime_files": [
+        "src/assets/storybook/ground-summer.webp"
+      ]
+    },
+    {
+      "key": "ground-autumn",
+      "prompt": "Edit this top-down hand-painted game meadow into its AUTUMN version. Preserve the exact camera projection, full-frame ground-only composition, delicate detailed storybook watercolor/gouache brush scale and same restrained original brightness. Warm sage-green grass mixed with some muted straw-gold grass tips; scattered small hand-painted ochre, muted copper-orange and red fallen leaves with tiny soft shadows, naturally uneven placement. Grass remains alive and predominantly warm green, not a continuous yellow-gray dirt layer. No trees, buildings, roads, horizon, objects, text, vignette or border. No oversaturation, bloom, brightening or glare. Same 3:2 aspect ratio. Opposite edges should meet smoothly as a map texture.",
+      "transparent_background": false,
+      "reference_images": [
+        "src/assets/storybook/ground.webp"
+      ],
+      "production_file": "docs/art-2026-10-29/production/ground-autumn.png",
+      "runtime_files": [
+        "src/assets/storybook/ground-autumn.webp"
+      ]
+    }
+  ],
+  "winter_nature": {
+    "transparent_background": true,
+    "reference_images": [
+      "src/assets/storybook/facilities-b-10.webp",
+      "src/assets/storybook/facilities-b-11.webp",
+      "src/assets/storybook/facilities-b-12.webp"
+    ],
+    "production_file": "docs/art-2026-10-29/production/nature-winter.png",
+    "runtime_files": [
+      "src/assets/storybook/nature-winter.webp",
+      "src/assets/storybook/nature-winter-0.webp",
+      "src/assets/storybook/nature-winter-1.webp",
+      "src/assets/storybook/nature-winter-2.webp"
+    ]
+  },
+  "packaging": "Cloud and winter-nature atlases use scripts/repack-atlas.mjs to give every silhouette transparent gutters, then scripts/prepare-home-art.mjs crops and compresses them. Ground images use prepare-home-art.mjs directly."
+}

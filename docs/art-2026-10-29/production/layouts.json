@@ -448,5 +448,45 @@
       "prosperity banner",
       "clearing sign"
     ]
+  },
+  "clouds-handpainted": {
+    "items": [
+      "rounded cloud",
+      "tall soft cloud",
+      "leaning cloud",
+      "low cloud",
+      "wide cloud",
+      "layered cloud"
+    ],
+    "grid": 3,
+    "rows": [
+      0,
+      0.5,
+      1
+    ]
+  },
+  "ground-winter": {
+    "items": []
+  },
+  "ground-spring": {
+    "items": []
+  },
+  "ground-summer": {
+    "items": []
+  },
+  "ground-autumn": {
+    "items": []
+  },
+  "nature-winter": {
+    "items": [
+      "snowy broadleaf tree",
+      "snowy fruit tree",
+      "snowy bush"
+    ],
+    "grid": 3,
+    "rows": [
+      0,
+      1
+    ]
   }
 }

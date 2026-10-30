@@ -4,8 +4,8 @@ import {afford,placementError,growth,yieldOf} from './engine.ts';
 import {activity,resident,workerPresent} from './life.ts';
 import {ordersLeft} from './estate.ts';
 import {estate,homeLevel,prosperity,techProblem,researchQueue,researchSpeed,buildingOpen,familyOpen,recipeOpen,decorLevel,techFor,slots,workerCap,affine,biomeBonus,bufferHours,bridgeCap,marketCap,clearing,feature,craftQueue} from './estate.ts';
-import {PLOT_COUNT,plotOrigin,biomeAt} from './map.ts';
-import {bounds,formOf,environment,season,day,night,SEASONS,WEATHER} from './ecology.ts';
+import {PLOT,PLOT_COUNT,plotOrigin,biomeAt} from './map.ts';
+import {bounds,formOf,environment,season,day,night,dayPhase,springThaw,DAY_PHASES,SEASONS,WEATHER} from './ecology.ts';
 import {scene,preview,objectArt} from './home-art.ts';
 import {artIcon,pathPreview,plantPreview,hasArtIcon} from './art/storybook.ts';
 import {uiIcon} from './art/ui-icons.ts';
@@ -234,7 +234,7 @@ export function render(h:Host,dispatch:(c:GameCommand)=>boolean):string {
  const panels:Record<string,{title:string;body:()=>string}>={build:{title:'布置小家',body:()=>catalog(w)},plants:{title:'种子与育种',body:()=>plants(w)},craft:{title:'制作总览',body:()=>workshop(w)},object:{title:'建筑操作',body:()=>objectPanel(w)},upgrade:{title:'升级建筑',body:()=>upgradePanel(w)},crop:{title:'照料植物',body:()=>cropPanel(w)},slime:{title:'一起生活',body:()=>companionPanel(w)},storage:{title:'家园仓库',body:()=>storage(w)},ecology:{title:'土地与访客',body:()=>ecology(w)},tech:{title:'研究',body:()=>techPanel(w)},estate:{title:'家园',body:()=>estatePanel(w)},plot:{title:'开垦林地',body:()=>plotPanel(w)}};
  const objectPanelOpen=['object','upgrade'].includes(ui.panel),panel=panels[ui.panel],placing=ui.tool==='build'||ui.tool==='move',p=w.placements.find(p=>p.id===ui.selected),def=ui.tool==='move'?p?.def:ui.def;
  const toolName=ui.tool==='path'?(ui.pathStyle<0?'擦除路面':`铺设${PATH_STYLES[ui.pathStyle]}`):ui.tool==='plant'?'播种':(BUILDINGS.find(d=>d.id===def)??DECORATIONS.find(d=>d.id===def))?.name??'摆放';
- return `<section id="livingWorld" class="home-world ${w.reducedMotion?'reduced-motion':''} ${ui.tool?'home-editing':''} ${ui.panel==='actions'?'home-selecting':''}" aria-label="家园"><div class="home-scene">${scene(w,h,camera,ui.selected,ui.crop,ui.person,!!ui.tool,ui.overlay,growthPreview(w))}</div><div class="home-season">${btn(`${artIcon('prosperity')}<b>${homeLevel(w)} 级</b>${estate(w).orders.length?`<span class="home-season-orders">${uiIcon('order')}${estate(w).orders.length}</span>`:''}`,'panel',`data-panel="estate" data-tab="orders" aria-label="家园 ${homeLevel(w)} 级，委托 ${estate(w).orders.length} 份"`)}<span>${SEASONS[season(w)]}季 · 第 ${day(w)+1} 日</span><span>${WEATHER[w.weather]} · ${night(w)?'夜晚':'白天'}</span></div>${stockHTML(w)}<div class="home-camera">${btn(uiIcon('plus'),'zoom','data-factor="1.25" aria-label="放大地图"')}${btn(uiIcon('minus'),'zoom','data-factor="0.8" aria-label="缩小地图"')}${btn(uiIcon('home'),'center','aria-label="回到小屋"')}</div>${ui.tool?`<div class="home-tool-hint">${placing?`<div class="home-tool-preview">${preview(def??'',p&&ui.tool==='move'?formOf(p):1)}</div>`:''}<div class="home-tool-copy"><b>${esc(toolName)}</b><span class="home-placement-status" role="status">${ui.tool==='path'?'按住拖动，连续铺设':ui.tool==='plant'?'点空地播种，可连续种植':'点空地放下，也可以按住拖动'}</span></div>${placing?btn(uiIcon('rotate')+'<span>旋转</span>','rotate'):''}${btn(uiIcon('close')+`<span>${placing?'取消':'完成'}</span>`,'cancel')}</div>`:''}${panel?`<aside class="home-panel ${objectPanelOpen?'home-object-panel':''} ${ui.panel==='build'?'home-build-panel':''} ${ui.panel==='tech'?'home-tech-panel':''}" aria-label="${panel.title}" ${ui.panel==='build'?`data-catalog="${ui.category}:${ui.group}"`:''}><header>${objectPanelOpen?objectHeader(w):`<h2>${panel.title}</h2>`}${ui.panel==='build'?`<div class="home-shelf-nav">${btn(uiIcon('left'),'shelf-scroll','data-dir="-1" aria-label="向左浏览建筑"')}${btn(uiIcon('right'),'shelf-scroll','data-dir="1" aria-label="向右浏览建筑"')}</div>`:''}${btn(uiIcon('close'),'close','aria-label="关闭面板"')}</header><div class="home-panel-body">${panel.body()}</div>${objectPanelOpen?objectFooter(w):''}</aside>`:''}${ui.panel==='actions'?radialActions(w):''}${toolsHTML(w)}</section>`;
+ return `<section id="livingWorld" class="home-world ${w.reducedMotion?'reduced-motion':''} ${ui.tool?'home-editing':''} ${ui.panel==='actions'?'home-selecting':''}" data-season="${season(w)}" data-phase="${dayPhase(w)}" aria-label="家园"><div class="home-scene">${scene(w,h,camera,ui.selected,ui.crop,ui.person,!!ui.tool,ui.overlay,growthPreview(w))}<div class="home-air" aria-hidden="true">${Array.from({length:2},(_,i)=>`<i style="--air-x:${(i*47+13)%100}%;--air-y:${(i*31+7)%100}%;--air-delay:${-i*1.7}s;--air-speed:${12+i%5*3}s;--air-size:${3+i%3}px"></i>`).join('')}</div></div><div class="home-season">${btn(`${artIcon('prosperity')}<b>${homeLevel(w)} 级</b>${estate(w).orders.length?`<span class="home-season-orders">${uiIcon('order')}${estate(w).orders.length}</span>`:''}`,'panel',`data-panel="estate" data-tab="orders" aria-label="家园 ${homeLevel(w)} 级，委托 ${estate(w).orders.length} 份"`)}<span data-home-calendar>${SEASONS[season(w)]}季 · 第 ${day(w)+1} 日</span><span data-home-time>${WEATHER[w.weather]} · ${DAY_PHASES[dayPhase(w)]}</span></div>${stockHTML(w)}<div class="home-camera">${btn(uiIcon('plus'),'zoom','data-factor="1.25" aria-label="放大地图"')}${btn(uiIcon('minus'),'zoom','data-factor="0.8" aria-label="缩小地图"')}${btn(uiIcon('home'),'center','aria-label="回到小屋"')}</div>${ui.tool?`<div class="home-tool-hint">${placing?`<div class="home-tool-preview">${preview(def??'',p&&ui.tool==='move'?formOf(p):1)}</div>`:''}<div class="home-tool-copy"><b>${esc(toolName)}</b><span class="home-placement-status" role="status">${ui.tool==='path'?'按住拖动，连续铺设':ui.tool==='plant'?'点空地播种，可连续种植':'点空地放下，也可以按住拖动'}</span></div>${placing?btn(uiIcon('rotate')+'<span>旋转</span>','rotate'):''}${btn(uiIcon('close')+`<span>${placing?'取消':'完成'}</span>`,'cancel')}</div>`:''}${panel?`<aside class="home-panel ${objectPanelOpen?'home-object-panel':''} ${ui.panel==='build'?'home-build-panel':''} ${ui.panel==='tech'?'home-tech-panel':''}" aria-label="${panel.title}" ${ui.panel==='build'?`data-catalog="${ui.category}:${ui.group}"`:''}><header>${objectPanelOpen?objectHeader(w):`<h2>${panel.title}</h2>`}${ui.panel==='build'?`<div class="home-shelf-nav">${btn(uiIcon('left'),'shelf-scroll','data-dir="-1" aria-label="向左浏览建筑"')}${btn(uiIcon('right'),'shelf-scroll','data-dir="1" aria-label="向右浏览建筑"')}</div>`:''}${btn(uiIcon('close'),'close','aria-label="关闭面板"')}</header><div class="home-panel-body">${panel.body()}</div>${objectPanelOpen?objectFooter(w):''}</aside>`:''}${ui.panel==='actions'?radialActions(w):''}${toolsHTML(w)}</section>`;
 }
 const value=(id:string)=>(document.getElementById(id) as HTMLInputElement|HTMLSelectElement|null)?.value??'';
 function inspect(id:number):void {
@@ -251,7 +251,17 @@ export function handleClick(event:Event):boolean {
   // 形态真的变化了才播放一次长大动画；失败时存档不变，不播放。
   const after=before&&host.state().world!.placements.find(p=>p.id===before.id);if(after&&formOf(after)!==form)document.querySelector(`[data-home-object="${after.id}"]`)?.classList.add('grown');
   if(c.type==='store'){ui.panel='build';ui.category='stored';ui.selected=0;redraw();}
-  if(c.type==='clear'){ui.panel='';ui.plot=-1;redraw();}return true;}
+  if(c.type==='clear'){
+   ui.panel='';ui.plot=-1;redraw();
+   if(!w.reducedMotion&&!matchMedia('(prefers-reduced-motion:reduce)').matches){
+    const svg=document.querySelector('.home-map'),[x,y]=plotOrigin(c.plot),cloud=document.createElementNS('http://www.w3.org/2000/svg','g');
+    cloud.setAttribute('class','home-fog-reveal');cloud.setAttribute('pointer-events','none');cloud.setAttribute('aria-hidden','true');
+    cloud.innerHTML=`<rect x="${x*TILE}" y="${y*TILE}" width="${PLOT*TILE}" height="${PLOT*TILE}" fill="url(#home-cloud-fill)"/>`;
+    svg?.insertBefore(cloud,svg.querySelector('.home-plot-signs'));
+    const animation=cloud.animate([{opacity:1,transform:'translateY(0)'},{opacity:0,transform:'translateY(-12px)'}],{duration:650,easing:'ease-out'});
+    animation.finished.then(()=>cloud.remove(),()=>cloud.remove());
+   }
+  }return true;}
  case 'panel':ui.panel=ui.panel===ds.panel&&(!ds.tab||ui.estateTab===ds.tab)?'':ds.panel!;if(ds.tab)ui.estateTab=ds.tab;ui.tool='';ui.more=false;ui.focusTech='';break;
  case 'branch':ui.branch=Number(ds.branch);ui.focusTech='';break;
  case 'estate-tab':ui.estateTab=ds.tab!;break;
@@ -335,6 +345,19 @@ function updateObjects():void {
 }
 export function paintResidents():void {
  if(!host)return;const w=host.state().world!;
+ const svg=document.querySelector<SVGSVGElement>('.home-map'),phase=dayPhase(w),s=String(season(w));
+ if(svg&&(svg.dataset.season!==s||svg.dataset.phase!==phase)){
+  // 时段变化直接更新地图，建造中也会换季、亮灯，并保留镜头和放置预览。
+  const next=new DOMParser().parseFromString(scene(w,host,camera,ui.selected,ui.crop,ui.person,!!ui.tool,ui.overlay),'text/html').querySelector('.home-map');
+  if(next){for(const selector of [':scope>defs','.home-ground','.home-objects','.home-lighting','.home-fog','.home-plot-signs']){const old=svg.querySelector(selector),fresh=next.querySelector(selector);if(old&&fresh)old.replaceWith(fresh);}svg.dataset.season=s;svg.dataset.phase=phase;svg.classList.toggle('night',night(w));}
+  const world=svg.closest<HTMLElement>('.home-world');if(world){world.dataset.season=s;world.dataset.phase=phase;}
+  const calendar=world?.querySelector('[data-home-calendar]'),time=world?.querySelector('[data-home-time]');
+  if(calendar)calendar.textContent=`${SEASONS[season(w)]}季 · 第 ${day(w)+1} 日`;
+  if(time)time.textContent=`${WEATHER[w.weather]} · ${DAY_PHASES[phase]}`;
+  const ghost=svg.querySelector('.home-placement-ghost'),old=w.placements.find(p=>p.id===ui.selected);
+  if(ghost&&previewCell){const [x,y]=previewCell,p=ui.tool==='move'&&old?{...old,x,y,rotation:ui.rotation}:{id:0,def:ui.def,zone:0,x,y,rotation:ui.rotation,level:1,stored:false};ghost.innerHTML=objectArt(p,night(w),season(w),night(w)||phase==='dusk');}
+ }
+ svg?.querySelector('.home-thaw')?.setAttribute('opacity',String(springThaw(w)));
  for(const el of document.querySelectorAll<SVGElement>('[data-home-resident]')){const id=Number(el.dataset.homeResident),s=host.state().slimes.find(s=>s.id===id);if(!s)continue;const a=activity(w,id),r=resident(w,s);el.style.display=(a.kind==='home'&&host.available(id)||a.kind==='work')?'':'none';el.setAttribute('transform',`translate(${(r.x+.5)*TILE} ${(r.y+1)*TILE-5})`);el.dataset.depth=String(r.y+.85);}
  const group=document.querySelector('.home-objects');if(group){const children=[...group.children].sort((a,b)=>Number((a as SVGElement).dataset.depth??0)-Number((b as SVGElement).dataset.depth??0));for(const node of children)group.append(node);}
 }
@@ -359,11 +382,11 @@ export function mount():void {
  // Controls and the camera use the same measured, unobstructed screen area.
  const world=svg.closest<HTMLElement>('.home-world')!;
  const top=document.querySelector<HTMLElement>('.topbar')!,nav=document.querySelector<HTMLElement>('.tabbar')!;
- const season=world.querySelector<HTMLElement>('.home-season')!,stock=world.querySelector<HTMLElement>('.home-stock')!,tools=world.querySelector<HTMLElement>('.home-tools')!,controls=world.querySelector<HTMLElement>('.home-camera')!;
+ const seasonBar=world.querySelector<HTMLElement>('.home-season')!,stock=world.querySelector<HTMLElement>('.home-stock')!,tools=world.querySelector<HTMLElement>('.home-tools')!,controls=world.querySelector<HTMLElement>('.home-camera')!;
  const measureBars=()=>{
   const r=world.getBoundingClientRect(),t=top.getBoundingClientRect(),n=nav.getBoundingClientRect();
   world.style.setProperty('--home-top',`${t.bottom-r.top}px`);world.style.setProperty('--home-bottom',`${r.bottom-n.top}px`);
-  const s=season.getBoundingClientRect(),k=stock.getBoundingClientRect(),u=tools.getBoundingClientRect(),c=controls.getBoundingClientRect(),landscape=matchMedia('(max-height:500px) and (orientation:landscape)').matches;
+  const s=seasonBar.getBoundingClientRect(),k=stock.getBoundingClientRect(),u=tools.getBoundingClientRect(),c=controls.getBoundingClientRect(),landscape=matchMedia('(max-height:500px) and (orientation:landscape)').matches;
   const frame:CameraFrame={left:landscape?Math.max(s.right,k.right,u.right)-r.left+12:12,top:(landscape?t.bottom:Math.max(t.bottom,s.bottom,k.bottom))-r.top+12,right:c.left-r.left-12,bottom:(landscape?n.top:u.top)-r.top-12};
   const panel=world.querySelector('.home-object-panel')?.getBoundingClientRect();
   if(panel){if(panel.width>r.width*.6){frame.top=t.bottom-r.top+12;frame.bottom=panel.top-r.top-12;frame.right=r.width-12;}else{frame.left=12;frame.right=panel.left-r.left-12;frame.bottom=n.top-r.top-12;}}
@@ -378,7 +401,7 @@ export function mount():void {
   if(changed&&focus){constrainCamera(camera,r.width,r.height,frame);camera.x=focus.x-(frame.left+frame.right)/2/camera.zoom;camera.y=focus.y-(frame.top+frame.bottom)/2/camera.zoom;}
   applyCamera();if(changed)updateObjects();
  };
- const observer=new ResizeObserver(measureBars);for(const el of [top,nav,world,season,stock,tools,controls,world.querySelector('.home-object-panel')])if(el)observer.observe(el,{box:'border-box'});
+ const observer=new ResizeObserver(measureBars);for(const el of [top,nav,world,seasonBar,stock,tools,controls,world.querySelector('.home-object-panel')])if(el)observer.observe(el,{box:'border-box'});
  controller.signal.addEventListener('abort',()=>observer.disconnect(),{once:true});measureBars();
  const shelf=world.querySelector<HTMLElement>('.home-build-panel .home-catalog');
  if(shelf){
@@ -401,7 +424,7 @@ export function mount():void {
   if(!['build','move','plant'].includes(ui.tool))return;const w=host.state().world!,p=w.placements.find(p=>p.id===ui.selected);
   if(ui.tool==='plant'){svg.querySelector('.home-preview')!.innerHTML=drawCell(x,y);return;}
   previewCell=[x,y];const next:Placement=ui.tool==='move'&&p?{...p,x,y,rotation:ui.rotation,stored:false}:{id:-1,def:ui.def,zone:0,x,y,rotation:ui.rotation,level:1,stored:false},[a,b]=bounds(next),error=placementError(w,next);
-  svg.querySelector('.home-preview')!.innerHTML=Array.from({length:a*b},(_,n)=>drawCell(x+n%a,y+Math.floor(n/a),!error)).join('')+`<g class="home-placement-ghost" opacity=".78" transform="translate(${x*TILE} ${y*TILE+10})">${objectArt(next,night(w))}</g>`;
+  svg.querySelector('.home-preview')!.innerHTML=Array.from({length:a*b},(_,n)=>drawCell(x+n%a,y+Math.floor(n/a),!error)).join('')+`<g class="home-placement-ghost" opacity=".78" transform="translate(${x*TILE} ${y*TILE+10})">${objectArt(next,night(w),season(w),night(w)||dayPhase(w)==='dusk')}</g>`;
   const status=world.querySelector('.home-placement-status');if(status){status.textContent=error??`${a}×${b} 格 · 点空地放下，按住可拖动`;status.classList.toggle('invalid',!!error);}
  };
  if(['build','move'].includes(ui.tool)){const f=viewport!.frame;previewAt(...(previewCell??screenToCell(camera,(f.left+f.right)/2,(f.top+f.bottom)/2)));}
