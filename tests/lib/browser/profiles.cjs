@@ -15,7 +15,7 @@ const devices = {
   fold: { width: 1080, height: 2520, dpr: 2.5, ratio: '21:9', touch: true, safeArea: zero() },
   'land-568': { width: 568, height: 320, dpr: 2, ratio: '16:9', touch: true, safeArea: zero() },
   'land-844': { width: 844, height: 390, dpr: 3, ratio: '19.5:9', touch: true, safeArea: { top: 0, right: 47, bottom: 21, left: 47 } },
-  'land-932': { width: 932, height: 430, dpr: 3, ratio: '19.5:9', touch: true, safeArea: { top: 0, right: 47, bottom: 21, left: 47 } },
+  'land-932': { width: 932, height: 430, dpr: 3, ratio: '19.5:9', touch: true, safeArea: zero() },
   tablet: { width: 768, height: 1024, dpr: 2, ratio: '4:3', touch: true, safeArea: zero() },
   'desktop-s': { width: 1440, height: 900, dpr: 1, ratio: '16:10', touch: false, safeArea: zero() },
   'desktop-m': { width: 1920, height: 1080, dpr: 1, ratio: '16:9', touch: false, safeArea: zero() },

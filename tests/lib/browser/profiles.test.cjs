@@ -17,6 +17,10 @@ test('关键档案尺寸、DPR 与安全区逐字段固定', () => {
   assert.deepEqual([P.devices.fold.width, P.devices.fold.height, P.devices.fold.ratio], [1080, 2520, '21:9']);
 });
 
+test('land-932 安全区按规格表固定为四边 0', () => {
+  assert.deepEqual(P.devices['land-932'].safeArea, zero);
+});
+
 test('手机子组顺序稳定、无重复，全量为 13 档', () => {
   assert.deepEqual(P.matrix({ group: 'phones' }), ['se', 'android-s', 'iphone-se', 'iphone-14', 'pixel', 'iphone-max', 'fold']);
   assert.deepEqual(P.matrix({ group: 'landscape' }), ['land-568', 'land-844', 'land-932']);
