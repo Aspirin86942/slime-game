@@ -3,6 +3,7 @@
 // measure 会静默跳过缺失选择器，所以这里再用页面侧计数核对，缺一个就判红，并核对活动页标记。
 // 页面内容分两层：固定 HUD 参与四类断言；滚动内容只查横向溢出与兄弟压盖（纵向滚动是正常行为）。
 // 旧玩法页没有 <img>，aspect 的输入取自内联 SVG 的 viewBox 与 home 的 <svg><image> 固有尺寸。
+// 任务 7 追加：9 档家园四个弹层态（遮挡/安全区/容器视口）与每档一次旧玩法五交互（无 console 增量）。
 // 结果、截图与失败几何快照全部落在被忽略的 tools/out 下。
 'use strict';
 
@@ -31,8 +32,10 @@ let aborted = false;
 
 // R3：陪伴页的 tab id 是 space，不是 companion。
 const PAGES = ['space', 'home', 'summon', 'travel', 'bag', 'status'];
-// 截图抽样：每档两屏（家园 + 一张旧玩法页），旧玩法页按档案轮换，六页都有出镜。
-const LEGACY_PAGES = ['space', 'summon', 'travel', 'bag', 'status'];
+// 截图抽样：R18 降到每 4 档一张家园截图；失败截图不受影响。
+const SAMPLE_SHOT_EVERY = 4;
+// R18：弹层态只在七个手机竖屏档 + land-844 + desktop-m 上跑。
+const OVERLAY_PROFILES = new Set([...profiles.matrix({ group: 'phones' }), 'land-844', 'desktop-m']);
 // 每页的固定 HUD、滚动内容与 required selectors（数字是 querySelectorAll 的元素数下限）。
 // 固定 HUD 参与溢出/压盖/比例/命中/安全区；滚动内容只做横向溢出与兄弟压盖，
 // 因为 .content 纵向滚动时子元素本来就允许越过视口底部。
@@ -124,11 +127,14 @@ const EXPECTED_TOTAL_REQUIRED = PAGES.reduce((total, page) => total + Object.key
 function check(name, ok, detail) {
   checks.push({ name, status: ok ? 'PASS' : 'FAIL', detail });
   if (!ok) {
+    // R20：page coverage 与弹层/旧玩法失败都写 detail.problems，错误摘要能读到具体问题。
     const message = detail && detail.mismatches
       ? detail.mismatches.join('；')
-      : detail && detail.failures
-        ? detail.failures.map(item => item.reason).join('；')
-        : detail && detail.error;
+      : detail && detail.problems
+        ? detail.problems.join('；')
+        : detail && detail.failures
+          ? detail.failures.map(item => item.reason).join('；')
+          : detail && detail.error;
     errors.push({ check: name, message });
   }
   return ok;
@@ -311,7 +317,6 @@ async function checkSafeAreaProbe(session, name, failures) {
 async function checkPages(session, name, index, failures) {
   const phone = PHONE_PROFILES.has(name);
   const minHit = DESKTOP_PROFILES.has(name) ? MIN_HIT_DESKTOP : MIN_HIT_PHONE;
-  const shotPage = LEGACY_PAGES[index % LEGACY_PAGES.length];
   const coverage = {
     profile: name,
     pages: [],
@@ -328,7 +333,6 @@ async function checkPages(session, name, index, failures) {
     const selectors = measuredSelectorsFor(page);
     const consoleStart = session.consoleErrors.length;
     await session.ev(`switchTab(${JSON.stringify(page)})`);
-    await session.frame();
     await session.frame();
     // 页面侧最低证据：活动页真的切过去了、required selector 真的有元素。
     const state = await session.ev(pageStateExpression(required));
@@ -405,7 +409,8 @@ async function checkPages(session, name, index, failures) {
     coverage.pageChecks += 1;
     coverage.totalMeasured += snapshot.elements.length;
     coverage.totalRequired += Object.keys(required).length;
-    if (page === 'home' || page === shotPage) {
+    // R18：抽样截图从每档两屏降到每 4 档一张家园截图；失败截图照旧逐场景保留。
+    if (page === 'home' && index % SAMPLE_SHOT_EVERY === 0) {
       await session.shot(path.join(name, `${page}.png`)).catch(error => {
         console.log(`  (截图跳过 ${name}/${page}: ${error.message})`);
       });
@@ -438,6 +443,640 @@ function checkCoverage(name, coverage) {
   );
   if (!ok) for (const line of problems) console.log('  ' + line);
   return ok;
+}
+
+// ---------------------------------------------------------------------------
+// 任务 7：家园四个弹层态 + 旧玩法五交互。
+// 选择器全部来自 2026-10-31 的真实 DOM 探针（记录见 task-7-report.md）：
+//   建造栏   .home-tools [data-lw="panel"][data-panel="build"] → .home-panel.home-build-panel
+//   设施环形 [data-home-object]（可点中自身的已放置设施）      → .home-orbit
+//   植物面板 .home-tools [data-lw="panel"][data-panel="plants"] → .home-panel[aria-label="种子与育种"]
+//   研究面板 .home-tools [data-lw="panel"][data-panel="tech"]  → .home-panel.home-tech-panel
+// 滚动面板只把「容器 / header / 滚动容器 / 关闭按钮」纳入安全区与视口断言：
+// 货架和长列表本来就会在滚动容器内延伸，不能把正常滚动当成越界。
+// ---------------------------------------------------------------------------
+
+function overlaySelectors(spec) {
+  return [...new Set([spec.container, ...(spec.safe || []), ...(spec.controls || []), ...(spec.scroll || [])])];
+}
+
+const BUILD_OVERLAY = {
+  key: 'build',
+  open: '.home-tools [data-lw="panel"][data-panel="build"]',
+  container: '.home-panel.home-build-panel',
+  close: '.home-panel.home-build-panel [data-lw="close"]',
+  controls: [
+    '.home-panel.home-build-panel [data-lw="close"]',
+    '.home-panel.home-build-panel [data-lw="category"]',
+  ],
+  scroll: ['.home-panel.home-build-panel .home-panel-body'],
+};
+BUILD_OVERLAY.safe = [
+  BUILD_OVERLAY.container,
+  `${BUILD_OVERLAY.container} header`,
+  `${BUILD_OVERLAY.container} .home-panel-body`,
+  BUILD_OVERLAY.close,
+];
+
+const PLANTS_OVERLAY = {
+  key: 'plants',
+  open: '.home-tools [data-lw="panel"][data-panel="plants"]',
+  container: '.home-panel[aria-label="种子与育种"]',
+  close: '.home-panel[aria-label="种子与育种"] [data-lw="close"]',
+  controls: [
+    '.home-panel[aria-label="种子与育种"] [data-lw="close"]',
+    '.home-panel[aria-label="种子与育种"] [data-lw="family"]',
+  ],
+  scroll: ['.home-panel[aria-label="种子与育种"] .home-panel-body'],
+};
+PLANTS_OVERLAY.safe = [
+  PLANTS_OVERLAY.container,
+  `${PLANTS_OVERLAY.container} header`,
+  `${PLANTS_OVERLAY.container} .home-panel-body`,
+  PLANTS_OVERLAY.close,
+];
+
+const TECH_OVERLAY = {
+  key: 'research',
+  open: '.home-tools [data-lw="panel"][data-panel="tech"]',
+  container: '.home-panel.home-tech-panel',
+  close: '.home-panel.home-tech-panel [data-lw="close"]',
+  controls: [
+    '.home-panel.home-tech-panel [data-lw="close"]',
+    '.home-panel.home-tech-panel [data-lw="branch"]',
+  ],
+  scroll: ['.home-panel.home-tech-panel .home-panel-body'],
+};
+TECH_OVERLAY.safe = [
+  TECH_OVERLAY.container,
+  `${TECH_OVERLAY.container} header`,
+  `${TECH_OVERLAY.container} .home-panel-body`,
+  TECH_OVERLAY.close,
+];
+
+const ORBIT_OVERLAY = {
+  key: 'facility',
+  pickFacility: true,
+  container: '.home-orbit',
+  close: '.home-selection-close [data-lw="close"]',
+  controls: [
+    '.home-orbit [data-lw="use"]',
+    '.home-orbit [data-lw="upgrade-view"]',
+    '.home-orbit [data-lw="move"]',
+    '.home-orbit [data-lw="manage-open"]',
+    '.home-selection-close [data-lw="close"]',
+  ],
+  scroll: [],
+};
+ORBIT_OVERLAY.safe = [
+  ORBIT_OVERLAY.container,
+  '.home-orbit .home-selection-label',
+  ...ORBIT_OVERLAY.controls,
+];
+
+function formatRect(rect) {
+  return `${Math.round(rect.left)},${Math.round(rect.top)} ${Math.round(rect.width)}×${Math.round(rect.height)}`;
+}
+
+function outsideViewport(rect, viewport) {
+  return rect.left < -0.5 || rect.top < -0.5
+    || rect.right > viewport.width + 0.5 || rect.bottom > viewport.height + 0.5;
+}
+
+// 已放置设施：中心点确实命中它自己（不选被顶栏、底栏或另一个 SVG 物件盖住的目标）。
+async function pickFacility(session) {
+  return session.ev(`(() => {
+    for (const el of document.querySelectorAll('[data-home-object]')) {
+      const r = el.getBoundingClientRect();
+      if (!(r.width > 40 && r.height > 40)) continue;
+      if (r.left < 8 || r.top < 8 || r.right > innerWidth - 8 || r.bottom > innerHeight - 8) continue;
+      const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+      if (!hit || !el.contains(hit)) continue;
+      return { id: el.dataset.homeObject, name: el.getAttribute('aria-label') || '', rect: { left: r.left, top: r.top, width: r.width, height: r.height } };
+    }
+    return null;
+  })()`);
+}
+
+// 单个弹层态：打开 → 遮挡 / 安全区 / 容器视口 / 滚动容器 → 关闭 → console 增量。
+async function checkHomeOverlay(session, name, spec, target, failures) {
+  const label = `overlay ${name}/${spec.key}`;
+  const startErrors = session.consoleErrors.length;
+  const problems = [];
+  let snapshot = null;
+  let containerRect = null;
+  try {
+    if (spec.pickFacility) {
+      if (!target) problems.push('没有可点击的已放置设施');
+      else await session.tap(`[data-home-object="${target.id}"]`);
+    } else {
+      await session.tap(spec.open);
+    }
+    if (!spec.pickFacility || target) {
+      snapshot = await measure(session, overlaySelectors(spec));
+      const bySelector = new Map(snapshot.elements.map(element => [element.selector, element]));
+      const container = bySelector.get(spec.container);
+      if (!container) {
+        problems.push(`缺少弹层容器 ${spec.container}`);
+      } else {
+        containerRect = container.rect;
+        if (!(containerRect.width > 0 && containerRect.height > 0)) {
+          problems.push(`弹层尺寸无效 ${containerRect.width}×${containerRect.height}`);
+        }
+        if (outsideViewport(containerRect, snapshot.viewport)) {
+          problems.push(`弹层越出视口 ${formatRect(containerRect)} / ${snapshot.viewport.width}×${snapshot.viewport.height}`);
+        }
+      }
+      for (const selector of spec.scroll) {
+        const element = bySelector.get(selector);
+        if (!element) {
+          problems.push(`缺少滚动容器 ${selector}`);
+          continue;
+        }
+        if (outsideViewport(element.rect, snapshot.viewport)) {
+          problems.push(`滚动容器越界 ${formatRect(element.rect)}`);
+        }
+        if (!(element.clientHeight > 0)) problems.push('滚动容器高度为 0');
+      }
+      for (const failure of safeAreaFailures(pick(snapshot, spec.safe))) problems.push(`安全区：${failure.reason}`);
+      const controls = pick(snapshot, spec.controls);
+      for (const failure of occlusionFailures(controls)) problems.push(`遮挡：${failure.reason}`);
+      const measured = new Set(snapshot.elements.map(element => element.selector));
+      const missing = spec.controls.filter(selector => !measured.has(selector));
+      if (missing.length) problems.push(`缺少可点控件：${missing.join(', ')}`);
+      const zero = controls.elements.filter(element => !(element.rect.width > 0 && element.rect.height > 0));
+      if (zero.length) problems.push(`可点控件尺寸为 0：${zero.map(element => element.selector).join(', ')}`);
+    }
+  } catch (error) {
+    problems.push(`打开或测量失败：${(error && error.message) || String(error)}`);
+  }
+  const wasOpen = !!snapshot && snapshot.elements.some(element => element.selector === spec.container);
+  if (wasOpen) {
+    try {
+      await session.tap(spec.close);
+    } catch (error) {
+      problems.push(`关闭失败：${(error && error.message) || String(error)}`);
+    }
+    let after = null;
+    try {
+      after = await session.ev(`(() => ({
+        container: !!document.querySelector(${JSON.stringify(spec.container)}),
+        panels: document.querySelectorAll('.home-panel').length,
+        orbits: document.querySelectorAll('.home-orbit').length,
+        world: !!document.querySelector('.home-world'),
+      }))()`);
+    } catch (error) {
+      problems.push(`关闭后读取失败：${(error && error.message) || String(error)}`);
+    }
+    if (!after) {
+      problems.push('关闭后无法读取家园状态');
+    } else {
+      if (after.container || after.panels || after.orbits) {
+        problems.push(`关闭后弹层仍然存在：panel=${after.panels} orbit=${after.orbits}`);
+      }
+      if (!after.world) problems.push('关闭后家园界面消失');
+    }
+    if (!after || after.container) {
+      await session.ev(`(() => { const el = document.querySelector(${JSON.stringify(spec.close)}); if (el) el.click(); return true; })()`).catch(() => {});
+    }
+  }
+  const newErrors = session.consoleErrors.slice(startErrors);
+  for (const message of newErrors) problems.push(`console：${message}`);
+  const ok = problems.length === 0;
+  const detail = {
+    profile: name,
+    overlay: spec.key,
+    target: target ? { id: target.id, name: target.name } : null,
+    container: spec.container,
+    containerRect,
+    controls: spec.controls,
+    safe: spec.safe,
+    measured: snapshot ? snapshot.elements.map(element => element.selector) : [],
+    snapshot,
+    problems,
+    consoleErrors: newErrors,
+  };
+  check(label, ok, detail);
+  console.log(
+    (ok ? 'PASS ' : 'FAIL ') + label +
+    `  container=${containerRect ? formatRect(containerRect) : 'none'}` +
+    ` controls=${spec.controls.length}` +
+    ` safe=${spec.safe.length}` +
+    ` errors=${newErrors.length}` +
+    (ok ? '' : `  problems=${problems.length}`)
+  );
+  if (!ok) {
+    for (const line of problems) console.log('  ' + line);
+    failures.push({ kind: 'overlay', profile: name, ...detail });
+    writeFailure(`${name}-overlay-${spec.key}`, detail);
+    await session.shot(`failure-${name}-overlay-${spec.key}.png`).catch(() => {});
+  }
+  return ok;
+}
+
+async function checkHomeOverlays(session, name, failures) {
+  await session.ev(`switchTab('home')`);
+  await session.frame();
+  const target = await pickFacility(session);
+  await checkHomeOverlay(session, name, BUILD_OVERLAY, null, failures);
+  await checkHomeOverlay(session, name, ORBIT_OVERLAY, target, failures);
+  await checkHomeOverlay(session, name, PLANTS_OVERLAY, null, failures);
+  await checkHomeOverlay(session, name, TECH_OVERLAY, null, failures);
+}
+
+// 旧玩法：在真实点击坐标上发鼠标事件，绕开 SVG/战斗单位被容器裁剪后「几何中心不可点」的情况。
+async function tapClientPoint(session, point) {
+  await session.client.send('Input.dispatchMouseEvent', { type: 'mousePressed', x: point.x, y: point.y, button: 'left', clickCount: 1 });
+  await session.client.send('Input.dispatchMouseEvent', { type: 'mouseReleased', x: point.x, y: point.y, button: 'left', clickCount: 1 });
+  await session.frame();
+}
+
+// 空间里的真实史莱姆：先滚入视口，再在元素矩形内找一个真正命中它的点。
+// 系统史莱姆会盖在真实史莱姆上方，按中心点点击会错误地落到系统史莱姆（无法开局）。
+async function pickPlaygroundSlime(session) {
+  return session.ev(`(() => {
+    const candidates = [...document.querySelectorAll('.pl-slime')].filter(el => el.dataset.id && el.dataset.id !== '__sys__');
+    for (const el of candidates) {
+      el.scrollIntoView({ block: 'center', inline: 'nearest' });
+      const r = el.getBoundingClientRect();
+      for (let fy = 0.85; fy >= 0.15; fy -= 0.1) {
+        for (let fx = 0.85; fx >= 0.15; fx -= 0.1) {
+          const x = r.left + r.width * fx;
+          const y = r.top + r.height * fy;
+          if (x < 1 || y < 1 || x > innerWidth - 1 || y > innerHeight - 1) continue;
+          const hit = document.elementFromPoint(x, y);
+          if (hit && (hit === el || el.contains(hit))) return { id: el.dataset.id, x, y };
+        }
+      }
+    }
+    return null;
+  })()`);
+}
+
+// 战斗敌方单位：横屏时战斗行较短，单位上半部被 .battle-field 裁剪，中心点命中不到。
+async function pickBattleEnemyPoint(session) {
+  return session.ev(`(() => {
+    const unit = document.querySelector('.battle-row.enemy .battle-unit');
+    if (!unit) return null;
+    const r = unit.getBoundingClientRect();
+    for (let fy = 0.9; fy >= 0.15; fy -= 0.05) {
+      const x = r.left + r.width / 2;
+      const y = r.top + r.height * fy;
+      if (x < 1 || y < 1 || x > innerWidth - 1 || y > innerHeight - 1) continue;
+      const hit = document.elementFromPoint(x, y);
+      if (hit && (hit === unit || unit.contains(hit))) return { x, y };
+    }
+    return null;
+  })()`);
+}
+
+async function forceCloseGameOverlay(session) {
+  await session.ev(`(() => { const button = document.getElementById('gClose') || document.getElementById('bClose'); if (button) button.click(); return !document.getElementById('gameOverlay'); })()`).catch(() => {});
+}
+
+function pushConsoleProblems(problems, session, startErrors) {
+  const list = session.consoleErrors.slice(startErrors);
+  for (const message of list) problems.push(`console：${message}`);
+  return list;
+}
+
+async function checkBallInteraction(session, name, setup, failures) {
+  const label = `legacy ${name}/ball click`;
+  const startErrors = session.consoleErrors.length;
+  const problems = [];
+  const detail = { profile: name, setup };
+  try {
+    if (!(setup.slimes > 0)) problems.push('空间中没有可用史莱姆');
+    await session.tap('.toy-btn[data-toy="ball"]');
+    detail.selected = await session.ev(`(() => {
+      const button = document.querySelector('.toy-btn[data-toy="ball"]');
+      return { on: !!button && button.classList.contains('on'), hint: (document.querySelector('.toy-hint') || {}).textContent || '' };
+    })()`);
+    if (!detail.selected.on) problems.push('选择扔皮球后按钮没有进入选中态');
+    if (!problems.length) {
+      detail.target = await pickPlaygroundSlime(session);
+      if (!detail.target) {
+        problems.push('空间里没有可点击的真实史莱姆');
+      } else {
+        await tapClientPoint(session, detail.target);
+        detail.opened = await session.ev(`(() => {
+          const overlay = document.getElementById('gameOverlay');
+          const ball = document.getElementById('gameBall');
+          return {
+            overlay: !!overlay,
+            field: !!(overlay && overlay.querySelector('.game-field')),
+            ball: ball ? { left: ball.style.left, top: ball.style.top } : null,
+            close: !!document.getElementById('gClose'),
+          };
+        })()`);
+        if (!detail.opened.overlay || !detail.opened.field || !detail.opened.ball || !detail.opened.close) {
+          problems.push('点击史莱姆后接球浮层不完整');
+        } else {
+          await session.tap('#gameBall');
+          detail.thrown = await session.ev(`(() => {
+            const ball = document.getElementById('gameBall');
+            return ball ? { left: ball.style.left, top: ball.style.top } : null;
+          })()`);
+          const moved = !!detail.thrown
+            && (detail.thrown.left !== detail.opened.ball.left || detail.thrown.top !== detail.opened.ball.top);
+          if (!moved) problems.push('点击皮球后位置没有变化');
+          await session.tap('#gClose');
+          detail.closed = await session.ev(`!document.getElementById('gameOverlay')`);
+          if (!detail.closed) problems.push('退出后接球浮层仍然存在');
+        }
+      }
+    }
+  } catch (error) {
+    problems.push(`接球交互失败：${(error && error.message) || String(error)}`);
+  }
+  if (await session.ev(`!!document.getElementById('gameOverlay')`).catch(() => false)) await forceCloseGameOverlay(session);
+  detail.consoleErrors = pushConsoleProblems(problems, session, startErrors);
+  const ok = problems.length === 0;
+  detail.problems = problems;
+  check(label, ok, detail);
+  console.log(
+    (ok ? 'PASS ' : 'FAIL ') + label +
+    `  target=${detail.target ? detail.target.id : 'none'}` +
+    ` moved=${detail.thrown ? `${detail.thrown.left}/${detail.thrown.top}` : 'none'}` +
+    ` closed=${detail.closed === true}` +
+    ` errors=${detail.consoleErrors.length}` +
+    (ok ? '' : `  problems=${problems.length}`)
+  );
+  if (!ok) {
+    for (const line of problems) console.log('  ' + line);
+    failures.push({ kind: 'legacy-ball', profile: name, ...detail });
+    writeFailure(`${name}-legacy-ball`, detail);
+    await session.shot(`failure-${name}-legacy-ball.png`).catch(() => {});
+  }
+}
+
+async function checkStackInteraction(session, name, failures) {
+  const label = `legacy ${name}/stack switch`;
+  const startErrors = session.consoleErrors.length;
+  const problems = [];
+  const detail = { profile: name };
+  try {
+    await session.tap('.toy-btn[data-toy="stack"]');
+    detail.opened = await session.ev(`(() => {
+      const overlay = document.getElementById('gameOverlay');
+      const field = document.getElementById('gameField');
+      return {
+        overlay: !!overlay,
+        field: !!field,
+        close: !!document.getElementById('gClose'),
+        count: (document.getElementById('gCount') || {}).textContent,
+      };
+    })()`);
+    if (!detail.opened.overlay || !detail.opened.field || !detail.opened.close) {
+      problems.push('点击叠叠乐后没有打开堆叠玩法');
+    } else {
+      detail.spawn = await session.ev(`new Promise(resolve => {
+        const start = performance.now();
+        const read = () => {
+          const field = document.getElementById('gameField');
+          if (!field) return resolve({ count: 0, tops: [] });
+          const list = [...field.querySelectorAll(':scope > div')].filter(el => el.style && /px$/.test(el.style.top || ''));
+          if (list.length) return resolve({ count: list.length, tops: list.map(el => el.style.top) });
+          if (performance.now() - start > 1500) return resolve({ count: 0, tops: [] });
+          setTimeout(read, 40);
+        };
+        read();
+      })`);
+      if (!detail.spawn.count) {
+        problems.push('叠叠乐没有生成下落块');
+      } else {
+        await session.tap('#gameField');
+        detail.after = await session.ev(`(() => {
+          const field = document.getElementById('gameField');
+          return [...field.querySelectorAll(':scope > div')]
+            .filter(el => el.style && /px$/.test(el.style.top || ''))
+            .map(el => el.style.top);
+        })()`);
+        const before = detail.spawn.tops.map(parseFloat);
+        const after = detail.after.map(parseFloat);
+        const dropped = before.some((value, index) => Number.isFinite(value) && Number.isFinite(after[index]) && after[index] > value + 0.5);
+        if (!dropped) problems.push('点击游戏区域后叠叠乐没有下落');
+        await session.tap('#gClose');
+        detail.closed = await session.ev(`!document.getElementById('gameOverlay')`);
+        if (!detail.closed) problems.push('退出后堆叠浮层仍然存在');
+      }
+    }
+  } catch (error) {
+    problems.push(`叠叠乐交互失败：${(error && error.message) || String(error)}`);
+  }
+  if (await session.ev(`!!document.getElementById('gameOverlay')`).catch(() => false)) await forceCloseGameOverlay(session);
+  detail.consoleErrors = pushConsoleProblems(problems, session, startErrors);
+  const ok = problems.length === 0;
+  detail.problems = problems;
+  check(label, ok, detail);
+  console.log(
+    (ok ? 'PASS ' : 'FAIL ') + label +
+    `  blocks=${detail.spawn ? detail.spawn.count : 0}` +
+    ` dropped=${(detail.spawn && detail.after) ? detail.after.join('→') : 'none'}` +
+    ` closed=${detail.closed === true}` +
+    ` errors=${detail.consoleErrors.length}` +
+    (ok ? '' : `  problems=${problems.length}`)
+  );
+  if (!ok) {
+    for (const line of problems) console.log('  ' + line);
+    failures.push({ kind: 'legacy-stack', profile: name, ...detail });
+    writeFailure(`${name}-legacy-stack`, detail);
+    await session.shot(`failure-${name}-legacy-stack.png`).catch(() => {});
+  }
+}
+
+// 战斗：手动一次普攻 → 切换自动 → 撤退（结束态）→ 关闭浮层。
+// 三个交互分别计 console 增量；打开失败时三条都判红，避免只有入口失败却伪装通过。
+async function checkBattleInteractions(session, name, failures) {
+  const manualLabel = `legacy ${name}/battle manual`;
+  const manualErrors = session.consoleErrors.length;
+  const manualProblems = [];
+  const manualDetail = { profile: name };
+  let opened = null;
+  try {
+    await session.ev(`switchTab('status')`);
+    await session.frame();
+    const collapsed = await session.ev(`(() => { const body = document.getElementById('challengeBody'); return !!body && body.classList.contains('hidden'); })()`);
+    if (collapsed) await session.tap('[data-act="toggleCollapse"][data-target="challengeBody"]');
+    await session.tap('[data-act="challengeStart"][data-id="shield"]');
+    opened = await session.ev(`(() => {
+      const overlay = document.getElementById('gameOverlay');
+      return {
+        overlay: !!overlay,
+        field: !!(overlay && overlay.querySelector('.battle-field')),
+        mode: (overlay && overlay.querySelector('.sk-mode')) ? overlay.querySelector('.sk-mode').textContent : null,
+        close: !!document.getElementById('bClose'),
+        enemies: overlay ? overlay.querySelectorAll('.battle-row.enemy .battle-unit').length : 0,
+        allies: overlay ? overlay.querySelectorAll('.battle-row.ally .battle-unit').length : 0,
+      };
+    })()`);
+    manualDetail.opened = opened;
+    if (!opened.overlay) manualProblems.push('点击战斗课堂练习后没有打开战斗浮层');
+    else if (!opened.field || opened.enemies < 1 || opened.allies < 1) manualProblems.push('战斗浮层缺少战斗区或单位');
+    else if (opened.mode !== '手动') manualProblems.push(`战斗初始模式是 ${opened.mode}，应为手动`);
+    if (!manualProblems.length) {
+      manualDetail.ready = await session.ev(`new Promise(resolve => {
+        const start = performance.now();
+        const read = () => {
+          const bar = document.getElementById('skillBar');
+          if (bar && bar.querySelector('.sk-act')) {
+            return resolve({ ok: true, log: (document.getElementById('battleLog') || {}).textContent });
+          }
+          if (performance.now() - start > 6000) {
+            return resolve({ ok: false, log: (document.getElementById('battleLog') || {}).textContent });
+          }
+          setTimeout(read, 50);
+        };
+        read();
+      })`);
+      if (!manualDetail.ready.ok) {
+        manualProblems.push('6 秒内没有进入手动操作回合');
+      } else {
+        manualDetail.point = await pickBattleEnemyPoint(session);
+        if (!manualDetail.point) {
+          manualProblems.push('敌方单位没有可点击的可见区域');
+        } else {
+          await tapClientPoint(session, manualDetail.point);
+          manualDetail.result = await session.ev(`new Promise(resolve => {
+            const start = performance.now();
+            const read = () => {
+              const log = (document.getElementById('battleLog') || {}).textContent || '';
+              if (/伤害|护盾|闪避/.test(log) && !/轮到/.test(log)) return resolve({ ok: true, log });
+              if (performance.now() - start > 3000) return resolve({ ok: false, log });
+              setTimeout(read, 50);
+            };
+            read();
+          })`);
+          if (!manualDetail.result.ok) manualProblems.push(`手动普攻没有产生战斗日志：${manualDetail.result.log}`);
+        }
+      }
+    }
+  } catch (error) {
+    manualProblems.push(`手动战斗交互失败：${(error && error.message) || String(error)}`);
+  }
+  manualDetail.consoleErrors = pushConsoleProblems(manualProblems, session, manualErrors);
+  const manualOk = manualProblems.length === 0;
+  manualDetail.problems = manualProblems;
+  check(manualLabel, manualOk, manualDetail);
+  console.log(
+    (manualOk ? 'PASS ' : 'FAIL ') + manualLabel +
+    `  mode=${opened ? opened.mode : 'none'}` +
+    ` ready=${manualDetail.ready ? manualDetail.ready.ok : false}` +
+    ` log=${manualDetail.result ? manualDetail.result.log : 'none'}` +
+    ` errors=${manualDetail.consoleErrors.length}` +
+    (manualOk ? '' : `  problems=${manualProblems.length}`)
+  );
+  if (!manualOk) {
+    for (const line of manualProblems) console.log('  ' + line);
+    failures.push({ kind: 'legacy-battle-manual', profile: name, ...manualDetail });
+    writeFailure(`${name}-legacy-battle-manual`, manualDetail);
+    await session.shot(`failure-${name}-legacy-battle-manual.png`).catch(() => {});
+  }
+
+  // 自动
+  const autoLabel = `legacy ${name}/battle auto`;
+  const autoErrors = session.consoleErrors.length;
+  const autoProblems = [];
+  const autoDetail = { profile: name };
+  try {
+    if (!opened || !opened.overlay) {
+      autoProblems.push('战斗没有打开，无法切换自动');
+    } else {
+      await session.tap('.sk-mode');
+      autoDetail.state = await session.ev(`({
+        mode: (document.querySelector('.sk-mode') || {}).textContent,
+        log: (document.getElementById('battleLog') || {}).textContent,
+      })`);
+      if (autoDetail.state.mode !== '自动') autoProblems.push(`切换后模式是 ${autoDetail.state.mode}，应为自动`);
+      if (manualOk && !/切换为「自动」/.test(autoDetail.state.log || '')) autoProblems.push('切换自动后没有战斗日志');
+    }
+  } catch (error) {
+    autoProblems.push(`自动战斗交互失败：${(error && error.message) || String(error)}`);
+  }
+  autoDetail.consoleErrors = pushConsoleProblems(autoProblems, session, autoErrors);
+  const autoOk = autoProblems.length === 0;
+  autoDetail.problems = autoProblems;
+  check(autoLabel, autoOk, autoDetail);
+  console.log(
+    (autoOk ? 'PASS ' : 'FAIL ') + autoLabel +
+    `  mode=${autoDetail.state ? autoDetail.state.mode : 'none'}` +
+    ` errors=${autoDetail.consoleErrors.length}` +
+    (autoOk ? '' : `  problems=${autoProblems.length}`)
+  );
+  if (!autoOk) {
+    for (const line of autoProblems) console.log('  ' + line);
+    failures.push({ kind: 'legacy-battle-auto', profile: name, ...autoDetail });
+    writeFailure(`${name}-legacy-battle-auto`, autoDetail);
+    await session.shot(`failure-${name}-legacy-battle-auto.png`).catch(() => {});
+  }
+
+  // 撤退
+  const retreatLabel = `legacy ${name}/battle retreat`;
+  const retreatErrors = session.consoleErrors.length;
+  const retreatProblems = [];
+  const retreatDetail = { profile: name };
+  try {
+    if (!opened || !opened.overlay) {
+      retreatProblems.push('战斗没有打开，无法撤退');
+    } else {
+      await session.tap('#bClose');
+      retreatDetail.ended = await session.ev(`(() => {
+        const overlay = document.getElementById('gameOverlay');
+        const button = document.getElementById('bClose');
+        return {
+          overlay: !!overlay,
+          closeText: button ? button.textContent : null,
+          log: (document.getElementById('battleLog') || {}).textContent,
+        };
+      })()`);
+      if (!retreatDetail.ended.overlay) {
+        retreatProblems.push('撤退后战斗浮层立即消失，未经过结束态');
+      } else {
+        if (retreatDetail.ended.closeText !== '关 闭') {
+          retreatProblems.push(`撤退后按钮文本是 ${retreatDetail.ended.closeText}，应为关闭`);
+        }
+        if (!/战斗结束/.test(retreatDetail.ended.log || '')) retreatProblems.push('撤退后没有战斗结束日志');
+        await session.tap('#bClose');
+        retreatDetail.closed = await session.ev(`!document.getElementById('gameOverlay')`);
+        if (!retreatDetail.closed) retreatProblems.push('点击关闭后战斗浮层仍然存在');
+      }
+    }
+  } catch (error) {
+    retreatProblems.push(`撤退交互失败：${(error && error.message) || String(error)}`);
+  }
+  if (await session.ev(`!!document.getElementById('gameOverlay')`).catch(() => false)) await forceCloseGameOverlay(session);
+  retreatDetail.consoleErrors = pushConsoleProblems(retreatProblems, session, retreatErrors);
+  const retreatOk = retreatProblems.length === 0;
+  retreatDetail.problems = retreatProblems;
+  check(retreatLabel, retreatOk, retreatDetail);
+  console.log(
+    (retreatOk ? 'PASS ' : 'FAIL ') + retreatLabel +
+    `  ended=${retreatDetail.ended ? retreatDetail.ended.closeText : 'none'}` +
+    ` closed=${retreatDetail.closed === true}` +
+    ` errors=${retreatDetail.consoleErrors.length}` +
+    (retreatOk ? '' : `  problems=${retreatProblems.length}`)
+  );
+  if (!retreatOk) {
+    for (const line of retreatProblems) console.log('  ' + line);
+    failures.push({ kind: 'legacy-battle-retreat', profile: name, ...retreatDetail });
+    writeFailure(`${name}-legacy-battle-retreat`, retreatDetail);
+    await session.shot(`failure-${name}-legacy-battle-retreat.png`).catch(() => {});
+  }
+}
+
+async function checkLegacyInteractions(session, name, failures) {
+  const setup = await session.ev(`(() => {
+    if (S.slimes.length === 0 && typeof createSlime === 'function') {
+      S.slimes.push(createSlime(false));
+      save();
+    }
+    switchTab('space');
+    return { slimes: S.slimes.length, tab: typeof activeTab === 'string' ? activeTab : '' };
+  })()`).catch(error => ({ slimes: 0, tab: '', error: (error && error.message) || String(error) }));
+  await session.frame();
+  await checkBallInteraction(session, name, setup, failures);
+  await checkStackInteraction(session, name, failures);
+  await checkBattleInteractions(session, name, failures);
 }
 
 // 单个档案：一次真实会话里完成启动自检、安全区探针、六页断言与抽样截图。
@@ -480,6 +1119,8 @@ async function runProfile(name, index) {
     await checkSafeAreaProbe(session, name, failures);
     const coverage = await checkPages(session, name, index, failures);
     if (!checkCoverage(name, coverage)) failures.push({ kind: 'coverage', profile: name, ...coverage });
+    if (OVERLAY_PROFILES.has(name)) await checkHomeOverlays(session, name, failures);
+    await checkLegacyInteractions(session, name, failures);
   } catch (error) {
     const message = (error && (error.stack || error.message)) || String(error);
     check('profile ' + name, false, { profile: name, error: message, consoleErrors: session ? session.consoleErrors.slice() : [] });
