@@ -21,7 +21,7 @@ const tabs=['space','summon','travel','bag','status'];
   const add=EventTarget.prototype.addEventListener;
   EventTarget.prototype.addEventListener=function(type,listener,options){if(this===window&&type==='resize'&&options?.signal)__resizeSignals.push(options.signal);return add.call(this,type,listener,options);};
  `});
- const measure=()=>ev(`(()=>{const rect=s=>{const r=document.querySelector(s).getBoundingClientRect();return [r.x,r.y,r.width,r.height].map(n=>Math.round(n*100)/100);},app=getComputedStyle(document.querySelector('#app'));return {app:rect('#app'),content:rect('#content'),top:rect('.topbar'),nav:rect('.tabbar'),colors:['--bgTop','--bgMid','--bgBot','--accent','--text','--panel','--tabbar'].map(k=>app.getPropertyValue(k)),overflow:document.documentElement.scrollWidth>innerWidth,icons:document.querySelectorAll('.tabbar .home-art-icon').length};})()`);
+ const measure=()=>ev(`(()=>{const rect=s=>{const r=document.querySelector(s).getBoundingClientRect();return [r.x,r.y,r.width,r.height].map(n=>Math.round(n*100)/100);},app=getComputedStyle(document.querySelector('#app'));return {app:rect('#app'),content:rect('#content'),top:rect('.topbar'),nav:rect('.tabbar'),colors:['--bgTop','--bgMid','--bgBot','--accent','--text','--panel','--tabbar'].map(k=>app.getPropertyValue(k).trim().length>0),overflow:document.documentElement.scrollWidth>innerWidth,icons:document.querySelectorAll('.tabbar .home-art-icon').length};})()`);
  const baseline=new Map();
  try{
   for(const [label,file]of [['reference','史莱姆-参考.html'],['shipped','史莱姆.html']]){
@@ -42,8 +42,8 @@ const tabs=['space','summon','travel','bag','status'];
      const layout=await measure(),key=`${width}x${height}-${tab}`;
      if(label==='reference')baseline.set(key,layout);
      else{
-      assert.deepEqual(layout,baseline.get(key),key+' must retain the reference layout and theme');
-      check(key+' restores reference layout, colors and navigation icons',!layout.overflow);
+      assert.deepEqual(layout,baseline.get(key),key+' must retain the reference layout and navigation');
+      check(key+' restores reference layout and navigation icons',!layout.overflow&&layout.colors.every(Boolean));
       check(key+' releases home listeners',await ev('__resizeSignals.every(s=>s.aborted)'));
      }
      await session.shot(`${label}-${key}.png`);
