@@ -120,15 +120,16 @@ resolve(nameOrObject)
 
 | 函数 | 判定口径 |
 | --- | --- |
-| `snapshot(s, selectors)` | 返回 `{ viewport, dpr, safeArea, overflowX, elements: [{ selector, rect, tag }] }` |
+| `measure(s, selectors)` | 返回 `{ viewport, dpr, safeArea, elements: [{ selector, rect, tag, hitSelector }] }` |
+| `measureArt(s, selectors)` | 采集比例输入 `{ viewport, elements: [{ selector, tag, kind, rect, naturalWidth, naturalHeight }] }`；`kind` 为 `img` / `svg-image` / `svg-viewbox` |
 | `noOverflow(snap)` | `documentElement.scrollWidth ≤ innerWidth + 1`，且目标元素不越界，宽高不为 0 / NaN |
 | `noOverlap(snap, { ignore })` | 「必须可见」元素两两相交超过 1px 即失败；忽略父子/祖孙关系与显式白名单 |
-| `aspectPreserved(snap, imgSelectors, tolerance = 0.02)` | 图片 `naturalWidth/naturalHeight` 与渲染矩形比例误差 ≤ 2%；SVG 需 `preserveAspectRatio !== 'none'` 且 viewBox 比例误差 ≤ 2% |
-| `occluders(snap)` | 对每个「必须可点」元素，`elementFromPoint`（矩形中心）必须命中自身或其子代；被遮罩、云霭或其它浮层挡住即失败 |
-| `hitTargets(snap, { min })` | 触摸目标 ≥ 40×40 CSS px（手机档）、≥ 32（桌面档） |
-| `withinSafeArea(snap)` | 控件矩形不进入档案安全区 |
+| `artAspectFailures(elements, { tolerance })` | 固有比例与渲染矩形比例误差 ≤ 2%；覆盖 `<img>`、`<svg><image>` 与内联 `<svg viewBox>` |
+| `occlusionFailures(snap)` | 对每个「必须可点」元素，`elementFromPoint`（矩形中心）必须命中自身或其子代；被遮罩、云霭或其它浮层挡住即失败 |
+| `hitTargets(snap, { min })` | 触摸目标 ≥ 40×40 CSS px（手机档）、≥ 32（桌面档）；零面积也失败 |
+| `safeAreaFailures(snap)` | 控件矩形不进入档案安全区 |
 
-白名单（允许重叠的浮层对、允许被遮挡的装饰层）集中声明在 `layout.cjs` 顶部常量，禁止各脚本内散写。
+白名单（允许重叠的浮层对、允许被遮挡的装饰层）集中声明在 `layout.cjs` 顶部常量，禁止各脚本内散写；白名单只处理压盖，不处理命中区。
 
 ### 4.5 `fixtures.cjs` 与夹具
 
@@ -162,15 +163,15 @@ await s.visit(fileUrl('史莱姆.html', '?battle=ui'), { seed: 'mobile-developed
 
 `tests/smoke-browser.cjs`：
 
-- 单浏览器实例，按档案 `metrics()` 切换，不重启；顺序为手机竖屏组 → 横屏组 → 平板/桌面组。
+- 每个档案启动一个独立会话（`session.start`），档间重启而不是复用同一浏览器；顺序为手机竖屏组 → 横屏组 → 平板/桌面组。这样夹具注入、页面侧探针和失败现场按档案隔离，互不污染。单浏览器实例 + `metrics()` 切换列为延后优化项（与 `start({ preload })` 一起评估），不在当前实现内。
 - 每个档案覆盖：
   - 六个导航页：陪伴、家园、召唤、探索、背包、成长；
   - 家园四个弹层态：建造栏、设施环形按钮、植物面板、研究面板；
   - 旧玩法最小交互：接球点击、堆叠切换、战斗手动、战斗自动、战斗撤退。
-- 每屏四类断言：溢出、比例变形、遮挡、命中区；家园密集态额外跑安全区断言。
-- 输出：`tools/out/magic-ui/smoke/<档案>/` 下截图与 `results.json`；失败时附几何快照；截图按档案抽样（每档案一屏）以控制时长。
+- 每屏断言：溢出、比例变形、两两压盖、中心点可点性、真实交互控件命中区；家园密集态额外跑安全区断言。
+- 输出：`tools/out/magic-ui/smoke/<档案>/` 下截图与 `results.json`；失败时附几何快照；截图按档案抽样（家园 + 一张轮换旧玩法页）以控制时长。
 
-规模预估：13 档案 × 约 10 屏 ≈ 130 屏 × 4 类断言，目标 ≤ 90 秒，实测后校准并在 `TEST-HARNESS.md` 记录实际数值。
+规模：13 档案 × 10 项 + 9 × 4 个弹层态 + 13 × 5 个旧玩法交互 + 4 项收尾 = 235 项；目标 ≤ 90 秒，实测后校准并在 `TEST-HARNESS.md` 记录实际数值。
 
 ## 6. 迁移策略与等价验收
 
@@ -195,7 +196,7 @@ await s.visit(fileUrl('史莱姆.html', '?battle=ui'), { seed: 'mobile-developed
 | --- | --- | --- | --- |
 | 快速 smoke | `npm run smoke` | 13 档案 × 6 导航页 + 家园弹层 + 旧玩法最小交互 | ≤ 90 秒 |
 | 全量浏览器 | `npm run test:browser` | 8 个迁移后套件 + smoke 串联 | 约 4 分半（2:46 + smoke 实测） |
-| 无头单测 | `npm test` | 不变：类型检查 + 构建 + 104 + 48 + 10 | 约 1 分钟 |
+| 无头单测 | `npm test` | 类型检查 + 构建 + 104 + 48 + 10 + `test:harness` | 约 1 分钟 |
 
 - 新增 `docs/living-world/TEST-HARNESS.md`：底座接口、如何新增机型、夹具生成与更新、失败定位步骤。
 - 更新 `CLAUDE.md`「验证入口」段：记录 smoke 入口、底座与夹具位置、当前检查条数。

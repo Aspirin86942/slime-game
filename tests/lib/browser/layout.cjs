@@ -1,4 +1,4 @@
-// 布局几何断言：纯函数只吃快照，measure/assertAll 是唯一的浏览器入口。
+// 布局几何断言：纯函数只吃快照，measure / measureArt 是仅有的两个浏览器入口。
 // 这里不做像素基线，只判断溢出、压盖、比例、命中区、安全区与中心点可点性。
 'use strict';
 
@@ -127,13 +127,14 @@ function noOverlap(snapshot, { whitelist, ignore, minOverlap = 1 } = {}) {
   return failures;
 }
 
-function aspectPreserved(snapshot, { tolerance = 0.02 } = {}) {
+// 比例判定的唯一实现：吃 measureArt 的 elements，同时覆盖 <img>、<svg><image> 与内联 <svg viewBox>。
+function artAspectFailures(elements, { tolerance = 0.02 } = {}) {
   const failures = [];
-  for (const element of snapshot.elements || []) {
-    const { naturalWidth, naturalHeight, rect } = element;
+  for (const element of elements || []) {
+    const { naturalWidth, naturalHeight, rect, kind } = element;
     if (!naturalWidth || !naturalHeight) continue;
     if (!hasArea(rect)) {
-      failures.push({ selector: element.selector, reason: '图片渲染矩形无效' });
+      failures.push({ selector: element.selector, kind, reason: '比例输入渲染矩形无效' });
       continue;
     }
     const expected = naturalWidth / naturalHeight;
@@ -142,20 +143,36 @@ function aspectPreserved(snapshot, { tolerance = 0.02 } = {}) {
     if (deviation > tolerance) {
       failures.push({
         selector: element.selector,
-        reason: `图片比例变形：渲染 ${actual.toFixed(3)}，原图 ${expected.toFixed(3)}，偏差 ${(deviation * 100).toFixed(1)}%`,
+        kind,
+        reason: `比例变形（${kind || 'img'}）：渲染 ${actual.toFixed(3)}，原始 ${expected.toFixed(3)}，偏差 ${(deviation * 100).toFixed(1)}%`,
         expected,
         actual,
+        deviation,
       });
     }
   }
   return failures;
 }
 
+// 兼容快照粒度的旧入口：只做取 elements 的转发，判定逻辑仍只有 artAspectFailures 一份。
+function aspectPreserved(snapshot, options) {
+  return artAspectFailures((snapshot && snapshot.elements) || [], options);
+}
+
 function hitTargets(snapshot, { min = 40 } = {}) {
   const failures = [];
   for (const element of snapshot.elements || []) {
     const rect = element.rect;
-    if (!hasArea(rect)) continue;
+    if (!isFiniteRect(rect) || rect.width <= 0 || rect.height <= 0) {
+      failures.push({
+        selector: element.selector,
+        width: rect && rect.width,
+        height: rect && rect.height,
+        min,
+        reason: `触摸目标矩形无效或尺寸为 0：${rect && rect.width}×${rect && rect.height}`,
+      });
+      continue;
+    }
     if (rect.width < min || rect.height < min) {
       failures.push({
         selector: element.selector,
@@ -268,41 +285,61 @@ async function measure(session, selectors = []) {
   return snapshot;
 }
 
-// 浏览器侧入口 2：组合所有断言，失败时带快照抛错。
-async function assertAll(session, spec = {}) {
-  const {
-    selectors = [],
-    whitelist,
-    ignore,
-    min = 40,
-    tolerance = 0.02,
-  } = spec;
-  const snapshot = await measure(session, selectors);
-  const failures = [
-    ...noOverflow(snapshot).map(f => ({ check: 'overflow', ...f })),
-    ...(spec.overlap === false ? [] : noOverlap(snapshot, { whitelist, ignore }).map(f => ({ check: 'overlap', ...f }))),
-    ...(spec.aspect === false ? [] : aspectPreserved(snapshot, { tolerance }).map(f => ({ check: 'aspect', ...f }))),
-    ...(spec.hit === false ? [] : hitTargets(snapshot, { min }).map(f => ({ check: 'hit', ...f }))),
-    ...(spec.occlusion === false ? [] : occlusionFailures(snapshot).map(f => ({ check: 'occlusion', ...f }))),
-    ...(spec.safeArea === false ? [] : safeAreaFailures(snapshot).map(f => ({ check: 'safeArea', ...f }))),
-  ];
-  if (failures.length) {
-    const error = new Error('布局断言失败: ' + JSON.stringify(failures, null, 2));
-    error.failures = failures;
-    error.snapshot = snapshot;
-    throw error;
-  }
-  return snapshot;
+// 浏览器侧入口 2：比例输入的真实来源。旧玩法页没有 <img>，内联 SVG 的 viewBox 与
+// 家园 <svg><image> 的 width/height.baseVal 才是可比的固有尺寸，所以三类输入统一带回 kind。
+async function measureArt(session, selectors = []) {
+  const expression = `(() => {
+    const selectors = ${JSON.stringify(selectors)};
+    const elements = [];
+    for (const selector of selectors) {
+      [...document.querySelectorAll(selector)].forEach((el, index) => {
+        const rect = el.getBoundingClientRect();
+        if (!(rect.width > 0 && rect.height > 0)) return;
+        const tag = el.tagName.toLowerCase();
+        let naturalWidth = 0;
+        let naturalHeight = 0;
+        let kind = '';
+        if (tag === 'img') {
+          naturalWidth = el.naturalWidth;
+          naturalHeight = el.naturalHeight;
+          kind = 'img';
+        } else if (tag === 'image') {
+          naturalWidth = el.width && el.width.baseVal ? el.width.baseVal.value : 0;
+          naturalHeight = el.height && el.height.baseVal ? el.height.baseVal.value : 0;
+          kind = 'svg-image';
+        } else if (tag === 'svg') {
+          const box = el.viewBox && el.viewBox.baseVal;
+          if (box && box.width > 0 && box.height > 0) {
+            naturalWidth = box.width;
+            naturalHeight = box.height;
+            kind = 'svg-viewbox';
+          }
+        }
+        if (!naturalWidth || !naturalHeight) return;
+        elements.push({
+          selector: selector + '[' + index + ']',
+          tag,
+          kind,
+          rect: { left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom, width: rect.width, height: rect.height },
+          naturalWidth,
+          naturalHeight,
+        });
+      });
+    }
+    return { viewport: { width: innerWidth, height: innerHeight }, elements };
+  })()`;
+  return session.ev(expression);
 }
 
 module.exports = {
   WHITELIST,
   noOverflow,
   noOverlap,
+  artAspectFailures,
   aspectPreserved,
   hitTargets,
   safeAreaFailures,
   occlusionFailures,
   measure,
-  assertAll,
+  measureArt,
 };

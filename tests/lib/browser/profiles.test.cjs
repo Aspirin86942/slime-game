@@ -35,6 +35,13 @@ test('resolve 接受档案名或现成对象，未知档案报中文错误', () 
   assert.equal(P.resolve('se').width, 320);
   assert.equal(P.resolve({ width: 400, height: 800, dpr: 2 }).height, 800);
   assert.throws(() => P.resolve('nope'), /未知设备档案/);
+  assert.throws(() => P.resolve('toString'), /未知设备档案/);
+  assert.throws(() => P.resolve('constructor'), /未知设备档案/);
+});
+
+test('matrix 拒绝原型链分组名', () => {
+  assert.throws(() => P.matrix({ group: 'toString' }), /未知设备分组/);
+  assert.throws(() => P.matrix({ group: 'constructor' }), /未知设备分组/);
 });
 
 test('mobile 标记沿用现有口径（宽度 < 1000）', () => {

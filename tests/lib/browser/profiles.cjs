@@ -42,7 +42,8 @@ function normalizeSafeArea(safeArea) {
 function matrix({ group = 'all' } = {}) {
   const names = Object.keys(devices);
   if (group === 'all') return names;
-  if (!groups[group]) throw new Error('未知设备分组: ' + group);
+  // 原型链名字（toString / constructor）不能绕过「未知设备分组」。
+  if (!Object.hasOwn(groups, group)) throw new Error('未知设备分组: ' + group);
   return names.filter(name => groups[group].includes(name));
 }
 
@@ -52,8 +53,9 @@ function resolve(nameOrObject) {
   let device;
   if (typeof nameOrObject === 'string') {
     name = nameOrObject;
+    // 原型链名字（toString / constructor）不能绕过「未知设备档案」。
+    if (!Object.hasOwn(devices, name)) throw new Error('未知设备档案: ' + name);
     device = devices[name];
-    if (!device) throw new Error('未知设备档案: ' + name);
   } else if (nameOrObject && typeof nameOrObject === 'object') {
     device = nameOrObject;
     name = nameOrObject.name;

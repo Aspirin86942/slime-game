@@ -36,8 +36,8 @@ advanceWorld在线按秒交织参考版恢复、12秒派遣与家园规则，正
 ## 验证入口
 
 - npm test：类型检查、构建、104项世界/迁移/素材/建筑形态/家园经营规则、48项原玩法回归、合体成长专项和10项参考版对照。家园经营专项在tests/estate.test.mjs；几何与旧规则测试用「完全发展的家园」夹具（全部地块与科技），开局进度单独测。tests/home.test.mjs覆盖委托上限引入前的V5存档迁移、原文备份及已有额度保留。
-- npm run test:browser：真实Chromium输入、多档设备、六种主题、三种安全区、原版逐页对照、昼夜、旧小游戏、离线重载、冲突保护和帧率，末尾串联smoke。八个套件合计841项，smoke 222项；输出在忽略目录tools/out/magic-ui/；原接入验收保留在tools/out/reference-home/。
-- npm run smoke：13档设备×六页几何断言（显示/比例/覆盖/命中区）、9档家园弹层态、旧玩法五交互、安全区页面探针、夹具读档与断言活力，共222项，约84秒。结构与排错见docs/living-world/TEST-HARNESS.md。
+- npm run test:browser：真实Chromium输入、多档设备、六种主题、三种安全区、原版逐页对照、昼夜、旧小游戏、离线重载、冲突保护和帧率，末尾串联smoke。八个套件合计841项，smoke 235项；输出在忽略目录tools/out/magic-ui/；原接入验收保留在tools/out/reference-home/。
+- npm run smoke：13档设备×六页几何断言（显示/比例/覆盖/命中区）、9档家园弹层态、旧玩法五交互、安全区页面探针、夹具读档与断言活力，共235项，约88秒。结构与排错见docs/living-world/TEST-HARNESS.md。
 - 浏览器断言底座在tests/lib/browser/：session（唯一CDP会话）、profiles（13档设备档案）、layout（几何断言）、fixtures（夹具读取与注入），单测为npm run test:harness。tools/out/lib/cdp.js仍只负责启动/求值/截图/触摸。
 - 存档夹具在tests/fixtures/saves/（mobile-baseline/mobile-developed/mobile-orders/mobile-offline/legacy-v5），由tests/fixtures/build.cjs在真实浏览器中生成并反向校验；更新用node tests/fixtures/build.cjs。
 - npm run docs:content：生成当前家园内容目录。
@@ -45,7 +45,7 @@ advanceWorld在线按秒交织参考版恢复、12秒派遣与家园规则，正
 - tests/home-actions-browser.cjs覆盖家园直接操作、环形按钮、横滑建造栏、透明面板及键盘；工具只保存界面状态，不改变V5存档结构。
 - 浏览器脚本统一复用tools/out/lib/cdp.js。它自动寻找Chrome，使用独立临时配置。不得用用户真实存档做测试。
 - 资源建筑三档素材在facilities-f/g（3×3，layouts.json标grid:3），新物品与科技图标在items-a；生成后用scripts/repack-atlas.mjs拆开粘连物件再接入，记录在docs/art-2026-10-29/production/estate-art-generation.json。tests/estate-browser.cjs覆盖开垦、研究、气泡收取、委托、集市、桥接物品、五视口和帧率。
-- 建筑形态素材已接入facilities-c/d/e，共48张独立WebP。tests/building-forms-browser.cjs覆盖222项形态验收，八个浏览器套件合计841项，连同smoke 222项共1063项浏览器检查。生成记录与实际裁切坐标在docs/art-2026-10-29/production/。
+- 建筑形态素材已接入facilities-c/d/e，共48张独立WebP。tests/building-forms-browser.cjs覆盖222项形态验收，八个浏览器套件合计841项，连同smoke 235项共1076项浏览器检查。生成记录与实际裁切坐标在docs/art-2026-10-29/production/。
 - ?battle=ui仅开放诊断钩子；?selftest=1 / ?gallery=1 / ?fps=1也属于诊断模式。诊断模式不会自动写玩家存档。
 - 战斗局部函数通过window.__TEST__._battle暴露。merge-growth.cjs使用同一套虚拟运行环境执行真实游戏代码，验证合体与成长行为。
 

@@ -69,20 +69,21 @@
 
 ### layout.cjs
 
-`measure(session, selectors)` 把 DOM 量成纯数据快照；`assertAll(session, spec)` 组合全部断言并在失败时抛出带快照的错误。纯函数可单独测试，也方便套件按“固定 HUD / 滚动内容”拆开喂。
+`measure(session, selectors)` 把 DOM 量成布局快照；`measureArt(session, selectors)` 采集比例输入，返回 `{ viewport, elements[] }`，每个元素带 `kind`（`img` / `svg-image` / `svg-viewbox`）。纯函数可单独测试，也方便套件按“固定 HUD / 滚动内容”拆开喂。
 
-| 纯函数 | 判据 | 参数 |
+| 函数 | 判据 | 参数 |
 | --- | --- | --- |
 | `noOverflow(snapshot)` | 文档 `scrollWidth > 视口宽 + 1`；元素矩形非有限值、零面积或超出视口 1px 以上 | — |
 | `noOverlap(snapshot, opts)` | 任意两元素矩形相交且两轴都大于 `minOverlap`；跳过同一路径父子关系和白名单 | `whitelist`、`ignore`、`minOverlap=1` |
-| `aspectPreserved(snapshot, opts)` | 用元素 `naturalWidth/naturalHeight` 比渲染矩形宽高比，偏差超过容差即失败；缺失固有尺寸的元素跳过 | `tolerance=0.02` |
-| `hitTargets(snapshot, opts)` | 渲染矩形的宽或高小于阈值即失败；零面积元素跳过 | `min=40` |
+| `artAspectFailures(elements, opts)` | 用 `measureArt` 的输入比对固有比例与渲染盒比例，偏差超过容差即失败；无固有尺寸的输入跳过 | `tolerance=0.02` |
+| `aspectPreserved(snapshot, opts)` | 快照级兼容入口，直接转发 `artAspectFailures(snapshot.elements)` | `tolerance=0.02` |
+| `hitTargets(snapshot, opts)` | 渲染矩形的宽或高小于阈值即失败；非有限矩形或零面积也报失败 | `min=40` |
 | `safeAreaFailures(snapshot)` | 元素矩形越过 `safeArea` 内缩边界即失败；使用 `measure` 写入快照的档案安全区 | — |
 | `occlusionFailures(snapshot)` | 元素中心 `elementFromPoint` 命中的不是自身或后代即失败；`hitSelector` 为空时跳过 | — |
 
 `measure` 快照字段：`viewport`（`width/height/scrollWidth/scrollHeight`）、`dpr`、`safeArea`、`elements[]`（`selector/tag/path/rect/naturalWidth/naturalHeight/scrollHeight/clientHeight/hitSelector/hitTag/hitPath`）。缺失的选择器会被**静默跳过**，所以 smoke 额外用页面侧计数核对 required selector。
 
-`assertAll` 的 `spec` 支持 `selectors`、`whitelist`、`ignore`、`min`、`tolerance`，以及 `overlap/aspect/hit/occlusion/safeArea` 的开关（传 `false` 关闭）。失败错误带 `error.failures` 与 `error.snapshot`。
+`measureArt` 的元素字段：`selector/tag/kind/rect/naturalWidth/naturalHeight`。它用 `querySelectorAll` 采集同一选择器的全部元素，用 `selector[index]` 区分；`<img>` 取 `naturalWidth/naturalHeight`，`<svg><image>` 取 `width/height.baseVal`，内联 `<svg>` 取 `viewBox`。比例判定统一走 `artAspectFailures`，不在套件里重复实现。
 
 ### fixtures.cjs
 
@@ -139,14 +140,16 @@ node tests/fixtures/build.cjs mobile-orders   # 只重生成一份
 
 ## smoke 结构与断言口径
 
-`npm run smoke` 跑 `tests/smoke-browser.cjs`。当前共 **222 项**：
+`npm run smoke` 跑 `tests/smoke-browser.cjs`。当前共 **235 项**：
 
-- 13 档设备各 9 项：启动自检（视口/DPR/页内错误）、安全区页面探针、六页（陪伴 `space`、家园、召唤、探索、背包、成长）各一项、页面覆盖汇总一项，合计 117。
+- 13 档设备各 10 项：启动自检（视口/DPR/页内错误）、安全区页面探针、全局控件命中区（顶栏设置 + 底栏六个导航按钮）、六页（陪伴 `space`、家园、召唤、探索、背包、成长）各一项、页面覆盖汇总一项，合计 130。
 - 9 档（七个手机竖屏 + `land-844` + `desktop-m`）各 4 个家园弹层态：建造栏、设施环形、植物面板、研究面板，合计 36。每个弹层检查容器存在与视口内、滚动容器、安全区元素、可点控件、遮挡、关闭后无残留、console 无增量。
 - 13 档各 5 个旧玩法交互：接球、叠叠乐切换、战斗手动普攻、切换自动、撤退结算，合计 65；每个交互都核对 console 无增量。
 - 另 4 项：`mobile-developed` 夹具读档、`legacy-v5` 迁移备份、`tap` 展开/滚动辅助、断言活力。
 
-每页比较两层元素：固定 HUD（`.topbar`、`.tabbar`、家园工具栏等）参与全部断言；滚动内容只查横向溢出和兄弟压盖，因为 `.content` 纵向滚动时子元素越过视口底部是正常行为。`page coverage` 再核对六页都执行到、required selector 数量、测量元素总数（100）与 required 总数（98）。
+当前已知真实产品问题：`.topbar .settings-trigger` 在 13 档实测均为 32×32 CSS px（含 320/360 宽档），手机/横屏/平板档低于 40×40。控制者只批准一条**按选择器精确匹配**的触摸目标豁免（`smoke-browser.cjs` 顶部 `HIT_TARGET_EXEMPT`）：它只免尺寸检查，不按档案豁免、不改 40/32 阈值、不豁免 `.tabbar button[data-tab]` 或 `.home-tools` 按钮，中心点遮挡检查仍然生效。PASS 行会显示 `exempt=1`，产品把按钮做到 ≥40 后必须删除该豁免。这是产品缺口，不是断言口径问题。
+
+每页比较三层元素：固定 HUD（`.topbar`、`.tabbar`、家园工具栏等）参与溢出、压盖、比例、命中区与安全区，并额外用 `occlusionFailures` 对 HUD 中心点做 `elementFromPoint` 可点性；滚动内容只查横向溢出和兄弟压盖，因为 `.content` 纵向滚动时子元素越过视口底部是正常行为；命中区只喂真实交互控件——家园工具条五个按钮随页面检查，顶栏设置与底栏导航属于全局控件，每档单独检查一次（`hit controls tabbar/settings <档案>`），避免同一失败被六页重复放大。缺控件、零面积控件或被遮挡的控件都直接失败，不静默跳过。`page coverage` 再核对六页都执行到、required selector 数量、测量元素总数（105）与 required 总数（103）。
 
 每项检查在控制台输出 `PASS`/`FAIL` 行；结束时输出 `TIME <毫秒> ms` 和 `RESULT <通过>/<总数> smoke checks`。有失败时退出码为 1。
 
@@ -155,9 +158,9 @@ node tests/fixtures/build.cjs mobile-orders   # 只重生成一份
 | 类别 | 口径 |
 | --- | --- |
 | 显示（溢出） | 文档无横向滚动；元素矩形有限、非零面积、完整在视口内。滚动内容只判横向越界，允许纵向滚动。 |
-| 比例 | 产品没有 `<img>`。`#content img` 实际为空，比例输入来自内联 `<svg>` 的 `viewBox` 和家园 `<svg><image>` 的 `width/height.baseVal`（用户单位）与渲染盒的宽高比，容差 2%。旧玩法页因此用 UI 图标的 viewBox 作为图片式输入。每页还有 `artMin` 下限，防止比例断言因没有输入而空转。 |
-| 覆盖 | 测量元素两两求交，跳过父子关系与背景层白名单；再用中心点 `elementFromPoint` 判断可点性，命中自身或后代才算通过。滚动内容只做兄弟压盖，不做中心点可点性。 |
-| 命中区 | 手机与横屏 40×40，桌面 32×32，平板按手机口径。`.home-stock` 是只读库存条，内部没有可点按钮，明确排除；其余不放宽。 |
+| 比例 | 产品没有 `<img>`。`layout.measureArt` 采集三类输入：`<img>` 的 `naturalWidth/naturalHeight`、家园 `<svg><image>` 的 `width/height.baseVal`、内联 `<svg>` 的 `viewBox`；`artAspectFailures` 用它们与渲染盒宽高比比较，容差 2%。旧玩法页因此用 UI 图标的 `viewBox` 作为图片式输入。每页还有 `artMin` 下限，防止比例断言因没有输入而空转。 |
+| 覆盖 | 测量元素两两求交，跳过父子关系与背景层白名单；再用中心点 `elementFromPoint` 对 HUD 与命中区控件判断可点性，命中自身或后代才算通过。滚动内容只做兄弟压盖，不做中心点可点性。 |
+| 命中区 | 手机与横屏 40×40，桌面 32×32，平板按手机口径。只测真实交互控件：顶栏设置按钮、底栏六个导航按钮、家园工具条五个按钮；`.topbar .cur` / `#lvCur` 是纯文本，不参与命中区。`.home-stock` 是只读库存条，内部没有可点按钮，明确排除；其余不放宽。唯一豁免是 `.topbar .settings-trigger` 的尺寸检查（产品现状 32×32，见下）。缺失、零面积或被遮挡的控件即失败。 |
 
 ### 安全区页面探针
 
@@ -198,15 +201,16 @@ const WHITELIST = [
 
 - 只在白名单里声明，禁止在套件脚本里散写 `a === ...` 特判或内联忽略列表。
 - 每条必须带一行理由，说明为什么这个压盖是设计允许的；`['*', x]` 只用于背景层，HUD 之间的压盖仍要报出来。
-- 套件如需临时追加，用 `assertAll({ whitelist })` 或 `noOverlap(snapshot, { whitelist })` 传入，并在同一处写理由；不要修改全局表来迁就单个页面。
+- 套件如需临时追加，用 `noOverlap(snapshot, { whitelist })` 传入，并在同一处写理由；不要修改全局表来迁就单个页面。
 - 布局调整后重新确认每条是否仍必要；能删就删。遮罩造成的不可点由 `occlusionFailures` 判定，不能用白名单掩盖。
+- 白名单只处理压盖，不处理命中区。命中区只有一条显式豁免：`.topbar .settings-trigger`——产品当前在 13 档实测均为 32×32，低于手机档 40 承诺；豁免按选择器精确登记在 `smoke-browser.cjs` 的 `HIT_TARGET_EXEMPT`，不按档案、不改阈值，产品修到 ≥40 后必须删除。
 
 ## 实测时长
 
 以下为本机（Windows，headless Chrome，GPU 合成）当前实测：
 
-- `npm run smoke`：84.4 秒（`TIME 84399 ms`）。
-- `npm run test:browser`（八个套件 + smoke）：247.6 秒，约 4 分 8 秒。
-- 八个套件依次为 54、62、283、43、222、60、30、87 项，合计 841 项；加 smoke 222 项，共 1063 项浏览器检查。
+- `npm run smoke`：88.2 秒（`TIME 88159 ms`，独占运行）；在 `test:browser` 串联中为 87.0 秒。90 秒预算余量约 2 秒，机器较慢时可能超出：超出时优先减少重复测量与截图抽样，不得删页面或删检查。
+- `npm run test:browser`（八个套件 + smoke）：258.2 秒，约 4 分 18 秒。
+- 八个套件依次为 54、62、283、43、222、60、30、87 项，合计 841 项；加 smoke 235 项，共 1076 项浏览器检查。
 
 时长随机器与加载情况波动，判断回归时以 `RESULT` 全通过和退出码 0 为准，不以固定秒数为门槛。

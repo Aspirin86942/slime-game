@@ -15,11 +15,12 @@ const profiles = require('./lib/browser/profiles.cjs');
 const {
   noOverflow,
   noOverlap,
-  aspectPreserved,
+  artAspectFailures,
   hitTargets,
   safeAreaFailures,
   occlusionFailures,
   measure,
+  measureArt,
 } = require('./lib/browser/layout.cjs');
 
 const outDir = path.join(__dirname, '..', 'tools/out/magic-ui/smoke');
@@ -105,19 +106,56 @@ const PHONE_PROFILES = new Set([
 const DESKTOP_PROFILES = new Set(profiles.matrix({ group: 'desktop' }));
 const MIN_HIT_PHONE = 40;
 const MIN_HIT_DESKTOP = 32;
-// home-stock 是只读库存条（内部没有可点按钮），不参与触摸目标断言；其余阈值不放宽。
-const HIT_CHECK_EXCLUDED = new Set(['.home-stock']);
+// 触摸目标豁免（控制者批准的唯一一条）：只按选择器精确匹配，不按档案、不改阈值、不豁免其它控件。
+// 产品把按钮做到 ≥40 后必须删除本条；它只免尺寸检查，中心点遮挡仍然如实报红。
+const HIT_TARGET_EXEMPT = {
+  '.topbar .settings-trigger': '产品当前 13 档实测均 32×32，低于手机档 40 承诺；产品把按钮做到 ≥40 后必须删除本条豁免',
+};
+// 命中区只喂真实交互控件：顶栏设置按钮、底栏六个导航按钮、家园工具条五个按钮。
+// .topbar .cur / #lvCur 是纯文本计数，只参与安全区断言，不冒充触摸目标。
+const HIT_CONTROL_SELECTORS = [
+  '.topbar .settings-trigger',
+  ...PAGES.map(page => `.tabbar button[data-tab="${page}"]`),
+];
+const HOME_TOOL_HIT_SELECTORS = [
+  '.home-tools button[data-lw="panel"][data-panel="build"]',
+  '.home-tools button[data-lw="panel"][data-panel="plants"]',
+  '.home-tools button[data-lw="cmd"]',
+  '.home-tools button[data-lw="panel"][data-panel="tech"]',
+  '.home-tools button[data-lw="more"]',
+];
+// 页面检查只测页面内控件；顶栏/底栏这类全局控件每档测一次，避免同一失败被六页重复放大。
+const PAGE_HIT_SELECTORS = Object.fromEntries(PAGES.map(page => [
+  page,
+  page === 'home' ? HOME_TOOL_HIT_SELECTORS : [],
+]));
+
+function hitSelectorsFor(page) {
+  return PAGE_HIT_SELECTORS[page] || [];
+}
+
+// 命中区断言的唯一入口：按选择器精确摘掉 HIT_TARGET_EXEMPT 登记项，再交给 hitTargets。
+// exempt 会写进 detail 并出现在 PASS 行，避免豁免被静默扩大。
+function hitFailures(snapshot, { min }) {
+  const elements = snapshot.elements || [];
+  const exempt = elements
+    .filter(element => Object.hasOwn(HIT_TARGET_EXEMPT, element.selector))
+    .map(element => ({ selector: element.selector, reason: HIT_TARGET_EXEMPT[element.selector] }));
+  const checked = elements.filter(element => !Object.hasOwn(HIT_TARGET_EXEMPT, element.selector));
+  return { failures: hitTargets({ ...snapshot, elements: checked }, { min }), exempt };
+}
 
 function requiredFor(page) {
   return {
     ...PAGE_SPEC[page].required,
     ...Object.fromEntries(SAFE_AREA_CHILD_SELECTORS.map(selector => [selector, 1])),
+    ...Object.fromEntries(hitSelectorsFor(page).map(selector => [selector, 1])),
   };
 }
 
 function measuredSelectorsFor(page) {
   const spec = PAGE_SPEC[page];
-  return [...spec.hud, ...SAFE_AREA_CHILD_SELECTORS, ...spec.content];
+  return [...new Set([...spec.hud, ...SAFE_AREA_CHILD_SELECTORS, ...hitSelectorsFor(page), ...spec.content])];
 }
 
 const EXPECTED_TOTAL_ELEMENTS = PAGES.reduce((total, page) => total + measuredSelectorsFor(page).length, 0);
@@ -177,16 +215,20 @@ function noHorizontalOverflow(snapshot) {
   return failures;
 }
 
-// 四类基础断言 + 手机档案追加安全区；HUD 与滚动内容分开喂，避免把正常纵向滚动误判成溢出。
-function evaluate(snapshot, artSnapshot, spec, { safeArea = false, minHit = MIN_HIT_PHONE } = {}) {
+// 基础断言 + 手机档案追加安全区；HUD 与滚动内容分开喂，避免把正常纵向滚动误判成溢出。
+// 命中区与可点性改用真实交互控件：尺寸不足或 elementFromPoint 命中不到都会报红。
+function evaluate(snapshot, artSnapshot, spec, { safeArea = false, minHit = MIN_HIT_PHONE, hitSelectors = [] } = {}) {
   const hud = pick(snapshot, spec.hud);
   const content = pick(snapshot, spec.content);
+  const controls = pick(snapshot, hitSelectors);
   const safe = withoutSelectors(pick(snapshot, [...spec.hud, ...SAFE_AREA_CHILD_SELECTORS]), SAFE_AREA_CONTAINERS);
+  const hit = hitFailures(controls, { min: minHit });
   const results = {
     overflow: [...noOverflow(hud), ...noHorizontalOverflow(content)],
     overlap: [...noOverlap(hud), ...noOverlap(content)],
-    aspect: aspectPreserved(artSnapshot),
-    hit: hitTargets(withoutSelectors(hud, HIT_CHECK_EXCLUDED), { min: minHit }),
+    aspect: artAspectFailures(artSnapshot.elements),
+    hit: hit.failures,
+    occlusion: [...occlusionFailures(hud), ...occlusionFailures(controls)],
   };
   if (safeArea) results.safeArea = safeAreaFailures(safe);
   return results;
@@ -211,52 +253,8 @@ function pageStateExpression(required) {
   })()`;
 }
 
-// aspect 的真实输入：<img> 用 naturalWidth；<svg image> 用 width/height 固有尺寸；
+// aspect 的真实输入（由 layout.measureArt 采集）：<img> 用 naturalWidth；<svg image> 用固有尺寸；
 // 内联 <svg> 用 viewBox。旧玩法页没有 <img>，图标 viewBox 是它们唯一的图片式输入。
-async function measureArt(session, selectors) {
-  const expression = `(() => {
-    const selectors = ${JSON.stringify(selectors)};
-    const elements = [];
-    for (const selector of selectors) {
-      [...document.querySelectorAll(selector)].forEach((el, index) => {
-        const rect = el.getBoundingClientRect();
-        if (!(rect.width > 0 && rect.height > 0)) return;
-        const tag = el.tagName.toLowerCase();
-        let naturalWidth = 0;
-        let naturalHeight = 0;
-        let kind = '';
-        if (tag === 'img') {
-          naturalWidth = el.naturalWidth;
-          naturalHeight = el.naturalHeight;
-          kind = 'img';
-        } else if (tag === 'image') {
-          naturalWidth = el.width && el.width.baseVal ? el.width.baseVal.value : 0;
-          naturalHeight = el.height && el.height.baseVal ? el.height.baseVal.value : 0;
-          kind = 'svg-image';
-        } else if (tag === 'svg') {
-          const box = el.viewBox && el.viewBox.baseVal;
-          if (box && box.width > 0 && box.height > 0) {
-            naturalWidth = box.width;
-            naturalHeight = box.height;
-            kind = 'svg-viewbox';
-          }
-        }
-        if (!naturalWidth || !naturalHeight) return;
-        elements.push({
-          selector: selector + '[' + index + ']',
-          tag,
-          kind,
-          rect: { left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom, width: rect.width, height: rect.height },
-          naturalWidth,
-          naturalHeight,
-        });
-      });
-    }
-    return { viewport: { width: innerWidth, height: innerHeight }, elements };
-  })()`;
-  return session.ev(expression);
-}
-
 function summarizeKinds(elements) {
   const counts = {};
   for (const element of elements) counts[element.kind] = (counts[element.kind] || 0) + 1;
@@ -314,6 +312,61 @@ async function checkSafeAreaProbe(session, name, failures) {
   return ok;
 }
 
+// 全局控件命中区：顶栏设置按钮 + 底栏六个导航按钮。它们不随页面切换变化，
+// 每档只测一次；缺失、尺寸不足或被中心点遮挡都显式报红，不静默跳过。
+async function checkHitControls(session, name, minHit, failures) {
+  const label = `hit controls tabbar/settings ${name}`;
+  const startErrors = session.consoleErrors.length;
+  const problems = [];
+  let snapshot = null;
+  let present = 0;
+  let exempt = [];
+  try {
+    snapshot = await measure(session, HIT_CONTROL_SELECTORS);
+    const measured = new Set(snapshot.elements.map(element => element.selector));
+    const missing = HIT_CONTROL_SELECTORS.filter(selector => !measured.has(selector));
+    if (missing.length) problems.push(`缺少交互控件：${missing.join(', ')}`);
+    const controls = pick(snapshot, HIT_CONTROL_SELECTORS);
+    present = controls.elements.length;
+    const hit = hitFailures(controls, { min: minHit });
+    exempt = hit.exempt;
+    for (const failure of hit.failures) problems.push(failure.reason);
+    for (const failure of occlusionFailures(controls)) problems.push(`遮挡：${failure.reason}`);
+  } catch (error) {
+    problems.push(`测量失败：${(error && error.message) || String(error)}`);
+  }
+  const newErrors = session.consoleErrors.slice(startErrors);
+  for (const message of newErrors) problems.push(`console：${message}`);
+  const ok = problems.length === 0;
+  const detail = {
+    profile: name,
+    min: minHit,
+    selectors: HIT_CONTROL_SELECTORS,
+    present,
+    expected: HIT_CONTROL_SELECTORS.length,
+    exempt,
+    snapshot,
+    problems,
+    consoleErrors: newErrors,
+  };
+  check(label, ok, detail);
+  console.log(
+    (ok ? 'PASS ' : 'FAIL ') + label +
+    `  controls=${present}/${HIT_CONTROL_SELECTORS.length}` +
+    ` min=${minHit}` +
+    ` exempt=${exempt.length}` +
+    ` errors=${newErrors.length}` +
+    (ok ? '' : `  problems=${problems.length}`)
+  );
+  if (!ok) {
+    for (const line of problems) console.log('  ' + line);
+    failures.push({ kind: 'hit-controls', profile: name, ...detail });
+    writeFailure(`${name}-hit-controls`, detail);
+    await session.shot(`failure-${name}-hit-controls.png`).catch(() => {});
+  }
+  return ok;
+}
+
 async function checkPages(session, name, index, failures) {
   const phone = PHONE_PROFILES.has(name);
   const minHit = DESKTOP_PROFILES.has(name) ? MIN_HIT_DESKTOP : MIN_HIT_PHONE;
@@ -362,7 +415,11 @@ async function checkPages(session, name, index, failures) {
     if (art.elements.length < spec.artMin) {
       evidence.push({ check: 'artInput', reason: `aspect 输入 ${art.elements.length} < 下限 ${spec.artMin}` });
     }
-    const results = evaluate(snapshot, art, spec, { safeArea: phone, minHit });
+    const results = evaluate(snapshot, art, spec, {
+      safeArea: phone,
+      minHit,
+      hitSelectors: hitSelectorsFor(page),
+    });
     const pageFailures = [...evidence, ...flattenFailures(results)];
     const newErrors = session.consoleErrors.slice(consoleStart);
     for (const message of newErrors) pageFailures.push({ check: 'console', reason: message });
@@ -1175,6 +1232,8 @@ async function runProfile(name, index) {
 
     // 页面侧安全区探针：13 档都验一次，零内缩档案必须解析为 0；安全区断言只在手机/横屏档案跑。
     await checkSafeAreaProbe(session, name, failures);
+    const minHit = DESKTOP_PROFILES.has(name) ? MIN_HIT_DESKTOP : MIN_HIT_PHONE;
+    await checkHitControls(session, name, minHit, failures);
     const coverage = await checkPages(session, name, index, failures);
     if (!checkCoverage(name, coverage)) failures.push({ kind: 'coverage', profile: name, ...coverage });
     if (OVERLAY_PROFILES.has(name)) await checkHomeOverlays(session, name, failures);
@@ -1210,6 +1269,7 @@ async function checkLegacyMigration() {
     if (actual.backup !== true) mismatches.push('缺少 _v5_backup 备份键');
     if (actual.started !== true) mismatches.push(`started=${actual.started}`);
     if (!(actual.plots > 0)) mismatches.push(`plots=${actual.plots}，应大于 0`);
+    if (session.consoleErrors.length) mismatches.push(`页内错误 ${session.consoleErrors.length} 条`);
     const detail = { fixture: 'legacy-v5', actual, mismatches, consoleErrors: session.consoleErrors.slice() };
     const ok = check(label, mismatches.length === 0, detail);
     console.log((ok ? 'PASS ' : 'FAIL ') + label + `  backup=${actual.backup} started=${actual.started} plots=${actual.plots}`);
@@ -1252,6 +1312,7 @@ async function checkSeededFixture() {
     const mismatches = [];
     if (actual.started !== true) mismatches.push(`started=${actual.started}`);
     if (actual.plots !== expected.plots) mismatches.push(`plots ${actual.plots} ≠ ${expected.plots}`);
+    if (actual.tech !== expected.tech) mismatches.push(`tech ${actual.tech} ≠ ${expected.tech}`);
     if (actual.coins !== expected.coins) mismatches.push(`coins ${actual.coins} ≠ ${expected.coins}`);
     if (session.consoleErrors.length) mismatches.push(`页内错误 ${session.consoleErrors.length} 条`);
     const detail = { fixture: 'mobile-developed', expected, actual, mismatches, consoleErrors: session.consoleErrors.slice() };

@@ -31,12 +31,25 @@ test('aspectPreserved 用 naturalSize 比对，容差 2%', () => {
   assert.equal(L.aspectPreserved(bad).length, 1);
 });
 
-test('hitTargets 拦截小于阈值的触摸目标', () => {
+test('artAspectFailures 覆盖 svg-viewbox 与 svg-image，变形用例单独报红', () => {
+  const elements = [
+    { selector: '.ui-icon[0]', kind: 'svg-viewbox', rect: rect(0, 0, 120, 80), naturalWidth: 300, naturalHeight: 200 },
+    { selector: '.home-map image[0]', kind: 'svg-image', rect: rect(0, 100, 90, 60), naturalWidth: 120, naturalHeight: 80 },
+    { selector: '.ui-icon[1]', kind: 'svg-viewbox', rect: rect(0, 200, 90, 80), naturalWidth: 300, naturalHeight: 200 },
+  ];
+  const failures = L.artAspectFailures(elements);
+  assert.deepEqual(failures.map(f => f.selector), ['.ui-icon[1]']);
+  assert.equal(failures[0].kind, 'svg-viewbox');
+  assert.deepEqual(L.artAspectFailures(elements, { tolerance: 0.3 }), []);
+});
+
+test('hitTargets 拦截小于阈值与零面积的触摸目标', () => {
   const s = snap([
     { selector: '.btn-ok', rect: rect(0, 0, 44, 44) },
-    { selector: '.btn-tiny', rect: rect(0, 60, 28, 28) }
+    { selector: '.btn-tiny', rect: rect(0, 60, 28, 28) },
+    { selector: '.btn-zero', rect: rect(0, 120, 0, 0) }
   ]);
-  assert.deepEqual(L.hitTargets(s, { min: 40 }).map(f => f.selector), ['.btn-tiny']);
+  assert.deepEqual(L.hitTargets(s, { min: 40 }).map(f => f.selector), ['.btn-tiny', '.btn-zero']);
 });
 
 test('safeAreaFailures 拦截进入刘海与 Home 条区域的控件', () => {

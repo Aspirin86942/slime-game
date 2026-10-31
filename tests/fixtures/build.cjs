@@ -354,11 +354,18 @@ async function verify(builder) {
   let built = 0;
   for (const name of selected) {
     const builder = known.get(name);
+    const file = path.join(SAVE_DIR, builder.name + '.json');
     const output = await buildOne(builder);
-    const failures = await verify(builder);
+    let failures = [];
+    let verified = false;
+    try {
+      failures = await verify(builder);
+      verified = failures.length === 0;
+    } finally {
+      // verify 抛错或反向校验失败都删掉刚写出的那一份，旧夹具保持原样。
+      if (!verified) fs.rmSync(file, { force: true });
+    }
     if (failures.length) {
-      // 反向校验失败说明这份存档不可用；删掉刚写出的文件，避免误提交。
-      fs.rmSync(path.join(SAVE_DIR, builder.name + '.json'), { force: true });
       throw new Error(builder.name + ' 反向校验失败：' + failures.join('；'));
     }
     console.log('built ' + builder.name + '.json  ' + output.bytes + ' B');
