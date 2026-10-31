@@ -35,11 +35,17 @@ export function scene(w:World,host:Host,camera:Camera,selected:number,crop:numbe
  const s=season(w),phase=dayPhase(w),dark=night(w),lit=dark||phase==='dusk',roads=new Set(w.paths[0]??[]);
  const viewWidth=typeof innerWidth==='number'?innerWidth:1920,viewHeight=typeof innerHeight==='number'?innerHeight:1080;
  const visible=(x:number,y:number)=>!camera.ready||x*TILE>camera.x-220&&x*TILE<camera.x+viewWidth/camera.zoom+220&&y*TILE>camera.y-220&&y*TILE<camera.y+viewHeight/camera.zoom+220;
- const shade=(c:string)=>dark?mix(c,'#243d53',.48):c;
- const groundName=['spring','summer','autumn','winter'][s],snow=s===3,groundTint=['#aac18a','#9db785','#b8b384','#dce3e7'][s];
- const meadow=`<rect width="${HOME_WIDTH*TILE}" height="${HOME_HEIGHT*TILE}" fill="${shade(groundTint)}"/><image class="home-meadow" data-home-ground="${groundName}" href="${artURL(`ground-${groundName}`)}" width="${HOME_WIDTH*TILE}" height="${HOME_HEIGHT*TILE}" preserveAspectRatio="none" style="filter:${dark?(snow?'brightness(.58) saturate(.65)':'brightness(.48) saturate(.65)'):(snow?'saturate(.82)':'saturate(.74)')}"/><rect width="${HOME_WIDTH*TILE}" height="${HOME_HEIGHT*TILE}" fill="${dark?(snow?'#49627f':'#304e5a'):groundTint}" opacity="${dark?'.2':snow?'.12':'.46'}"/>`;
+ // 冷光菌洞：夜间压到 --lw-rock-dark，只改亮度不改色相，路面与建筑轮廓仍靠亮度差辨认。
+ const shade=(c:string)=>dark?mix(c,'#1b2f38',.48):c;
+ const groundName=['spring','summer','autumn','winter'][s],snow=s===3,groundTint=['#4c6b4a','#3f5f68','#5a4636','#b8d4de'][s];
+ // 细节层用程序化纹理加糙，只负责"表面有多糙"，形状仍由手绘底层决定。
+ const terrainName=['moss','crystal','spore','frost'][s];
+ const meadow=`<rect width="${HOME_WIDTH*TILE}" height="${HOME_HEIGHT*TILE}" fill="${shade(groundTint)}"/><image class="home-meadow" data-home-ground="${groundName}" href="${artURL(`ground-${groundName}`)}" width="${HOME_WIDTH*TILE}" height="${HOME_HEIGHT*TILE}" preserveAspectRatio="none" style="filter:${dark?(snow?'brightness(.58) saturate(.65)':'brightness(.48) saturate(.65)'):(snow?'saturate(.82)':'saturate(.74)')}"/><rect width="${HOME_WIDTH*TILE}" height="${HOME_HEIGHT*TILE}" fill="${dark?(snow?'#33495f':'#1b2f38'):groundTint}" opacity="${dark?'.2':snow?'.12':'.46'}"/>`;
+ // 程序化细节层：256 CSS px 一个循环，可视范围内约 5.3 格一循环，避免可识别的重复图案。
+ const detail=`<pattern id="home-terrain-detail" width="256" height="256" patternUnits="userSpaceOnUse"><image href="${artURL(`terrain-${terrainName}`)}" width="256" height="256" preserveAspectRatio="none"/></pattern>`;
+ const detailLayer=`<rect class="home-terrain-detail" data-home-terrain="${terrainName}" data-home-terrain-season="${s}" width="${HOME_WIDTH*TILE}" height="${HOME_HEIGHT*TILE}" opacity="${snow?'.28':'.32'}" pointer-events="none" fill="url(#home-terrain-detail)"/>`;
  // Continue the same meadow through the camera margin; the playable tiles stay 36 by 24.
- let ground=`<defs><pattern id="home-meadow-fill" width="${HOME_WIDTH*TILE}" height="${HOME_HEIGHT*TILE}" patternUnits="userSpaceOnUse">${meadow}</pattern></defs><rect x="${-HOME_WIDTH*TILE}" y="${-HOME_HEIGHT*TILE}" width="${HOME_WIDTH*TILE*3}" height="${HOME_HEIGHT*TILE*3}" fill="url(#home-meadow-fill)"/>`,road='';
+ let ground=`<defs><pattern id="home-meadow-fill" width="${HOME_WIDTH*TILE}" height="${HOME_HEIGHT*TILE}" patternUnits="userSpaceOnUse">${meadow}</pattern>${detail}</defs><rect x="${-HOME_WIDTH*TILE}" y="${-HOME_HEIGHT*TILE}" width="${HOME_WIDTH*TILE*3}" height="${HOME_HEIGHT*TILE*3}" fill="url(#home-meadow-fill)"/>${detailLayer}`,road='';
  if(s===0)ground+=`<g class="home-thaw" opacity="${springThaw(w)}" pointer-events="none" style="${dark?'filter:brightness(.55)':''}">${Array.from({length:32},(_,i)=>{const x=hash(i+52)/1000*HOME_WIDTH*TILE,y=hash(i+910)/1000*HOME_HEIGHT*TILE;return `<path d="M${x} ${y}q-8-5 1-8q3-9 12-6q8-4 13 2q12 3 5 8q-12 7-31 4Z" fill="#dfe8e9" opacity=".85"/>`;}).join('')}</g>`;
  const occupied=new Set(w.crops.map(c=>c.y*HOME_WIDTH+c.x));
  for(const p of w.placements.filter(p=>!p.stored)){const [a,b]=bounds(p);for(let y=p.y;y<p.y+b;y++)for(let x=p.x;x<p.x+a;x++)occupied.add(y*HOME_WIDTH+x);}

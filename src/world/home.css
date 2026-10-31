@@ -86,7 +86,7 @@
 .home-scene{position:absolute;inset:0;background:#a7bb84}
 .home-map{display:block;width:100%;height:100%;touch-action:none;user-select:none;cursor:grab}
 .home-map:active{cursor:grabbing}
-.home-map.night{background:#68816b}
+.home-map.night{background:#1b2f38}
 .home-air{position:absolute;inset:0;overflow:hidden;pointer-events:none}
 /* 产出气泡正在浮动时，把动画预算留给可收取的经营反馈。 */
 .home-world:has(.home-bubble) .home-air{display:none}
@@ -183,6 +183,9 @@
 .home-inventory b{display:block;font-size:17px;font-variant-numeric:tabular-nums}
 .home-world progress{width:100%;height:10px;accent-color:var(--accent)}
 .home-world.reduced-motion *{animation:none!important;transition:none!important}
+/* 水面细节层的缓慢漂移：只在未开启减少动画时运行，下面的 reduced-motion 规则统一关停。 */
+.home-world:not(.reduced-motion) [data-home-terrain="water"]{animation:home-terrain-drift 40s linear infinite}
+@keyframes home-terrain-drift{from{transform:translate(0,0)}to{transform:translate(-256px,0)}}
 
 .home-garden-actions{margin:0 0 10px}.home-garden-actions>.home-button{flex:1}
 .home-plant-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}

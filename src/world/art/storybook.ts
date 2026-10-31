@@ -44,12 +44,14 @@ function grounded(sheet:string,index:number,cx:number,baseline:number,width:numb
  const w=Math.min(width,maxHeight*f[2]/f[3]),h=w*f[3]/f[2];
  return sprite(sheet,index,cx-w/2,baseline-h,w,h,dark,style,paint);
 }
+// 菌洞迷雾：青灰偏紫的低层雾团，夜间压到近黑的冷蓝。
 export const cloudPalette=(season:number,dark:boolean)=>({
- base:(dark?['#162b43','#142940','#1a2c43','#182d46']:['#a2bdd0','#9fbcd1','#a3b9cb','#9ebacf'])[season],
+ base:(dark?['#101c26','#121a2b','#131c28','#101d2a']:['#6f8794','#6d8592','#708492','#6b8391'])[season],
  paint:`home-cloud-${season}-${dark?'night':'day'}`
 });
+// 新雾基色红通道只有 111，滤镜的乘法系数相应提高，让贴图落在基色附近而不是被压得更暗。
 function cloudFilter(season:number,dark:boolean):string {
- const r=dark?.18:[.84,.86,.82,.80][season],g=dark?.26:[.92,.94,.90,.92][season],b=dark?.39:1;
+ const r=dark?.34:[.78,.80,.77,.75][season],g=dark?.44:[.86,.88,.84,.86][season],b=dark?.62:1;
  return `<filter id="${cloudPalette(season,dark).paint}" color-interpolation-filters="sRGB"><feColorMatrix values="${r} 0 0 0 0 0 ${g} 0 0 ${dark?.005:0} 0 0 ${b} 0 ${dark?.015:0} 0 0 0 1 0"/></filter>`;
 }
 export function cloudArt(index:number,cx:number,cy:number,width:number,season:number,dark:boolean):string {

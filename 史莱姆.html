@@ -750,7 +750,7 @@ body{background:#05060c;color:#e8e9f3;}
 .home-scene{position:absolute;inset:0;background:#a7bb84}
 .home-map{display:block;width:100%;height:100%;touch-action:none;user-select:none;cursor:grab}
 .home-map:active{cursor:grabbing}
-.home-map.night{background:#68816b}
+.home-map.night{background:#1b2f38}
 .home-air{position:absolute;inset:0;overflow:hidden;pointer-events:none}
 /* 产出气泡正在浮动时，把动画预算留给可收取的经营反馈。 */
 .home-world:has(.home-bubble) .home-air{display:none}
@@ -847,6 +847,9 @@ body{background:#05060c;color:#e8e9f3;}
 .home-inventory b{display:block;font-size:17px;font-variant-numeric:tabular-nums}
 .home-world progress{width:100%;height:10px;accent-color:var(--accent)}
 .home-world.reduced-motion *{animation:none!important;transition:none!important}
+/* 水面细节层的缓慢漂移：只在未开启减少动画时运行，下面的 reduced-motion 规则统一关停。 */
+.home-world:not(.reduced-motion) [data-home-terrain="water"]{animation:home-terrain-drift 40s linear infinite}
+@keyframes home-terrain-drift{from{transform:translate(0,0)}to{transform:translate(-256px,0)}}
 
 .home-garden-actions{margin:0 0 10px}.home-garden-actions>.home-button{flex:1}
 .home-plant-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
@@ -4612,11 +4615,11 @@ var LivingWorld = (() => {
     return sprite(sheet, index, cx - w / 2, baseline - h, w, h, dark, style, paint);
   }
   var cloudPalette = (season2, dark) => ({
-    base: (dark ? ["#162b43", "#142940", "#1a2c43", "#182d46"] : ["#a2bdd0", "#9fbcd1", "#a3b9cb", "#9ebacf"])[season2],
+    base: (dark ? ["#101c26", "#121a2b", "#131c28", "#101d2a"] : ["#6f8794", "#6d8592", "#708492", "#6b8391"])[season2],
     paint: `home-cloud-${season2}-${dark ? "night" : "day"}`
   });
   function cloudFilter(season2, dark) {
-    const r2 = dark ? 0.18 : [0.84, 0.86, 0.82, 0.8][season2], g = dark ? 0.26 : [0.92, 0.94, 0.9, 0.92][season2], b = dark ? 0.39 : 1;
+    const r2 = dark ? 0.34 : [0.78, 0.8, 0.77, 0.75][season2], g = dark ? 0.44 : [0.86, 0.88, 0.84, 0.86][season2], b = dark ? 0.62 : 1;
     return `<filter id="${cloudPalette(season2, dark).paint}" color-interpolation-filters="sRGB"><feColorMatrix values="${r2} 0 0 0 0 0 ${g} 0 0 ${dark ? 5e-3 : 0} 0 0 ${b} 0 ${dark ? 0.015 : 0} 0 0 0 1 0"/></filter>`;
   }
   function cloudArt(index, cx, cy, width, season2, dark) {
@@ -4882,10 +4885,13 @@ var LivingWorld = (() => {
     const s = season(w), phase = dayPhase(w), dark = night(w), lit = dark || phase === "dusk", roads = new Set(w.paths[0] ?? []);
     const viewWidth = typeof innerWidth === "number" ? innerWidth : 1920, viewHeight = typeof innerHeight === "number" ? innerHeight : 1080;
     const visible = (x, y) => !camera2.ready || x * TILE > camera2.x - 220 && x * TILE < camera2.x + viewWidth / camera2.zoom + 220 && y * TILE > camera2.y - 220 && y * TILE < camera2.y + viewHeight / camera2.zoom + 220;
-    const shade3 = (c) => dark ? mix(c, "#243d53", 0.48) : c;
-    const groundName = ["spring", "summer", "autumn", "winter"][s], snow = s === 3, groundTint = ["#aac18a", "#9db785", "#b8b384", "#dce3e7"][s];
-    const meadow = `<rect width="${HOME_WIDTH * TILE}" height="${HOME_HEIGHT * TILE}" fill="${shade3(groundTint)}"/><image class="home-meadow" data-home-ground="${groundName}" href="${artURL(`ground-${groundName}`)}" width="${HOME_WIDTH * TILE}" height="${HOME_HEIGHT * TILE}" preserveAspectRatio="none" style="filter:${dark ? snow ? "brightness(.58) saturate(.65)" : "brightness(.48) saturate(.65)" : snow ? "saturate(.82)" : "saturate(.74)"}"/><rect width="${HOME_WIDTH * TILE}" height="${HOME_HEIGHT * TILE}" fill="${dark ? snow ? "#49627f" : "#304e5a" : groundTint}" opacity="${dark ? ".2" : snow ? ".12" : ".46"}"/>`;
-    let ground = `<defs><pattern id="home-meadow-fill" width="${HOME_WIDTH * TILE}" height="${HOME_HEIGHT * TILE}" patternUnits="userSpaceOnUse">${meadow}</pattern></defs><rect x="${-HOME_WIDTH * TILE}" y="${-HOME_HEIGHT * TILE}" width="${HOME_WIDTH * TILE * 3}" height="${HOME_HEIGHT * TILE * 3}" fill="url(#home-meadow-fill)"/>`, road = "";
+    const shade3 = (c) => dark ? mix(c, "#1b2f38", 0.48) : c;
+    const groundName = ["spring", "summer", "autumn", "winter"][s], snow = s === 3, groundTint = ["#4c6b4a", "#3f5f68", "#5a4636", "#b8d4de"][s];
+    const terrainName = ["moss", "crystal", "spore", "frost"][s];
+    const meadow = `<rect width="${HOME_WIDTH * TILE}" height="${HOME_HEIGHT * TILE}" fill="${shade3(groundTint)}"/><image class="home-meadow" data-home-ground="${groundName}" href="${artURL(`ground-${groundName}`)}" width="${HOME_WIDTH * TILE}" height="${HOME_HEIGHT * TILE}" preserveAspectRatio="none" style="filter:${dark ? snow ? "brightness(.58) saturate(.65)" : "brightness(.48) saturate(.65)" : snow ? "saturate(.82)" : "saturate(.74)"}"/><rect width="${HOME_WIDTH * TILE}" height="${HOME_HEIGHT * TILE}" fill="${dark ? snow ? "#33495f" : "#1b2f38" : groundTint}" opacity="${dark ? ".2" : snow ? ".12" : ".46"}"/>`;
+    const detail = `<pattern id="home-terrain-detail" width="256" height="256" patternUnits="userSpaceOnUse"><image href="${artURL(`terrain-${terrainName}`)}" width="256" height="256" preserveAspectRatio="none"/></pattern>`;
+    const detailLayer = `<rect class="home-terrain-detail" data-home-terrain="${terrainName}" data-home-terrain-season="${s}" width="${HOME_WIDTH * TILE}" height="${HOME_HEIGHT * TILE}" opacity="${snow ? ".28" : ".32"}" pointer-events="none" fill="url(#home-terrain-detail)"/>`;
+    let ground = `<defs><pattern id="home-meadow-fill" width="${HOME_WIDTH * TILE}" height="${HOME_HEIGHT * TILE}" patternUnits="userSpaceOnUse">${meadow}</pattern>${detail}</defs><rect x="${-HOME_WIDTH * TILE}" y="${-HOME_HEIGHT * TILE}" width="${HOME_WIDTH * TILE * 3}" height="${HOME_HEIGHT * TILE * 3}" fill="url(#home-meadow-fill)"/>${detailLayer}`, road = "";
     if (s === 0) ground += `<g class="home-thaw" opacity="${springThaw(w)}" pointer-events="none" style="${dark ? "filter:brightness(.55)" : ""}">${Array.from({ length: 32 }, (_, i) => {
       const x = hash(i + 52) / 1e3 * HOME_WIDTH * TILE, y = hash(i + 910) / 1e3 * HOME_HEIGHT * TILE;
       return `<path d="M${x} ${y}q-8-5 1-8q3-9 12-6q8-4 13 2q12 3 5 8q-12 7-31 4Z" fill="#dfe8e9" opacity=".85"/>`;
