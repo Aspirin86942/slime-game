@@ -53,6 +53,20 @@ const zeroSafeArea={top:0,right:0,bottom:0,left:0};
     check(label+' keeps the themed catalog readable and scrollable',panel.inside&&!panel.overflow&&panel.body>=70&&panel.background===expectedColor&&panel.texture==='none'&&panel.blur.includes('blur(22px)'),panel);
     if(notch===.7&&(width===390||theme==='sunset'))await session.shot(`catalog-${width}x${height}-${theme}.png`);
     await session.tap('[data-lw="close"]');
+     const tokens=await ev(`(()=>{const app=getComputedStyle(document.querySelector('#app'));const keys=['lw-rock','lw-spore','lw-crystal','lw-vein','lw-ink','lw-text','lw-muted','lw-border'];const values=keys.map(k=>app.getPropertyValue('--'+k).trim());return {values,complete:values.every(v=>v.length>0),unique:new Set(values).size>=6};})()`);
+     check(label+' shares one token set across home and the six pages',tokens.complete&&tokens.unique,tokens);
+     // 夜间可读性取当前主题的 token 值。
+     if(theme==='sunset'||theme==='dark'||theme==='peach'||theme==='lavender'){
+      await ev(`S.world.clock=2800;renderTab()`);
+      const legible=await ev(`(()=>{const lum=h=>{const v=h.replace('#','');const [r,g,b]=[0,2,4].map(i=>parseInt(v.slice(i,i+2),16)/255).map(c=>c<=.03928?c/12.92:((c+.055)/1.055)**2.4);return .2126*r+.7152*g+.0722*b;};const css=getComputedStyle(document.querySelector('#app'));const ink=css.getPropertyValue('--lw-ink').trim(),rock=css.getPropertyValue('--lw-rock').trim(),light=css.getPropertyValue('--lw-rock-light').trim();return {ink,rock,light,inkVsRock:Math.abs(lum(ink)-lum(rock)),rockVsLight:Math.abs(lum(rock)-lum(light))};})()`);
+      check(label+' keeps the road and building edges distinguishable at night',legible.inkVsRock>.04&&legible.rockVsLight>.05,legible);
+      await ev(`S.world.clock=1200;renderTab()`);
+     }
+     // 浅色主题正文与底色对比度至少 4.5:1。
+     if(theme==='light'||theme==='mint'){
+      const ratio=await ev(`(()=>{const parse=c=>c.match(/[\\d.]+/g).slice(0,3).map(Number);const lum=rgb=>{const [r,g,b]=rgb.map(v=>v/255).map(v=>v<=.03928?v/12.92:((v+.055)/1.055)**2.4);return .2126*r+.7152*g+.0722*b;};const s=getComputedStyle(document.querySelector('.home-tools'));const l1=lum(parse(s.backgroundColor)),l2=lum(parse(s.color));const [hi,lo]=[Math.max(l1,l2),Math.min(l1,l2)];return (hi+.05)/(lo+.05);})()`);
+      check(label+' keeps body text readable in a light theme',ratio>=4.5,{ratio});
+     }
    }
   }
   await session.metrics('iphone-14',{dpr:1,mobile:true,safeArea:zeroSafeArea});await ev('S.notchHeight=.7;applyNotch();switchTab("home")');
