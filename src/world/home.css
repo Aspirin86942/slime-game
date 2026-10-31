@@ -1,12 +1,15 @@
-/* Solid equivalents of the reference modals keep text readable over the map. */
-#app{--surface-solid:#121422}
-#app[data-theme="sunset"]{--surface-solid:#161129}
-#app[data-theme="dark"]{--surface-solid:#141a2a}
-#app[data-theme="light"]{--surface-solid:#f5f7ff}
-#app[data-theme="peach"]{--surface-solid:#fff8f3}
-#app[data-theme="mint"]{--surface-solid:#f0fff9}
-#app[data-theme="lavender"]{--surface-solid:#faf7ff}
-#app[data-theme="sky"]{--surface-solid:#f5faff}
+/* 冷光菌洞：唯一色源。所有主题只覆写 --lw-*，界面变量一律取别名。 */
+#app{
+ --lw-rock:#2f4a52;--lw-rock-dark:#1b2f38;--lw-rock-light:#4a6b73;
+ --lw-moss:#4c6b4a;--lw-spore:#8f6bb5;--lw-crystal:#9fe3f0;
+ --lw-vein:#c8913f;--lw-ink:#121c24;--lw-paper:#e6eef0;
+ --lw-text:#dfeaee;--lw-muted:#8aa3ad;--lw-border:rgba(159,227,240,.16);--surface-solid:var(--lw-ink)}
+#app[data-theme="sunset"]{--lw-ink:#131e26}
+#app[data-theme="dark"]{--lw-ink:#14202b;--lw-rock:#263b45;--lw-spore:#a678d8}
+#app[data-theme="light"]{--lw-ink:#e8eef0;--lw-paper:#f4f8f9;--lw-rock:#b8c8ce;--lw-rock-dark:#8fa4ac;--lw-rock-light:#d5e1e5;--lw-text:#1a2730;--lw-muted:#4a5f68;--lw-border:rgba(26,39,48,.18);--lw-crystal:#2f7f93;--lw-spore:#6a4a92;--lw-vein:#8a5f1e}
+#app[data-theme="peach"]{--lw-ink:#241b16;--lw-rock:#4a352a;--lw-vein:#d8a24a}
+#app[data-theme="mint"]{--lw-ink:#e8f2ec;--lw-paper:#f2f8f4;--lw-rock:#a8bfb0;--lw-rock-dark:#7f9a89;--lw-rock-light:#c8dbcf;--lw-text:#16241c;--lw-muted:#456053;--lw-border:rgba(22,36,28,.18);--lw-moss:#4f7d55;--lw-spore:#5f7a9a;--lw-crystal:#2b7a7a;--lw-vein:#8a6a20}
+#app[data-theme="lavender"]{--lw-ink:#16202b;--lw-rock:#2b4450;--lw-spore:#8f8fd8;--lw-crystal:#b8ecf5}
 
 /* Only the scenery expands. Header and navigation retain the reference geometry. */
 #app.home-mode{position:fixed;inset:0;width:100%;max-width:none;height:100dvh;min-height:0;margin:0;overflow:hidden}
