@@ -86,33 +86,36 @@ const home = readFileSync(new URL('../src/world/home.css', import.meta.url), 'ut
 const THEMES = ['sunset', 'dark', 'light', 'peach', 'mint', 'lavender'];
 const TOKENS = ['rock', 'rock-dark', 'rock-light', 'moss', 'spore', 'crystal', 'vein', 'ink', 'paper', 'text', 'muted', 'border'];
 
-// 抽出 `#app[data-theme="x"]{...}` 或 `#app[data-theme="x"] .modal{...}` 之前的属性块
-function block(css, theme) {
+// CSS 级联语义：基础 `#app{}` 给全集，主题块只覆写差异。取「生效值」而不是单看主题块。
+const baseBlock = (css) => { const m = /#app\{([^}]*)\}/.exec(css); return m ? m[1] : ''; };
+const themeBlock = (css, theme) => {
   const m = new RegExp(`#app\\[data-theme="${theme}"\\]\\{([^}]*)\\}`).exec(css);
   return m ? m[1] : '';
-}
+};
 const decls = text => Object.fromEntries([...text.matchAll(/--([\w-]+)\s*:\s*([^;]+)/g)].map(m => [m[1], m[2].trim()]));
+// 生效 token = 基础块，被主题块同名声明覆写。
+const effective = (theme) => ({...decls(baseBlock(home)), ...decls(themeBlock(home, theme)), ...decls(baseBlock(shell)), ...decls(themeBlock(shell, theme))});
 
-test('every theme defines the full --lw-* token set', () => {
+test('every theme resolves the full --lw-* token set through the cascade', () => {
   for (const theme of THEMES) {
-    const vars = decls(block(home, theme) || block(shell, theme));
-    for (const token of TOKENS) assert.ok(vars[`lw-${token}`], `${theme} misses --lw-${token}`);
+    const vars = effective(theme);
+    for (const token of TOKENS) assert.ok(vars[`lw-${token}`], `${theme} resolves no --lw-${token}`);
   }
 });
 
 test('legacy theme variables are aliases of --lw-* tokens', () => {
   for (const theme of THEMES) {
-    const vars = decls(block(shell, theme));
+    const vars = effective(theme);
     for (const [name, token] of [['accent', 'spore'], ['accent2', 'crystal'], ['text', 'text'], ['muted', 'muted'], ['border', 'border']]) {
       assert.match(vars[name] ?? '', new RegExp(`var\\(--lw-${token}\\)`), `${theme} --${name} must alias --lw-${token}`);
     }
   }
 });
 
-test('home surface colour derives from the ink token', () => {
+test('home surface colour derives from the ink token exactly once', () => {
+  assert.match(decls(baseBlock(home))['surface-solid'] ?? '', /var\(--lw-ink\)/, 'base --surface-solid must derive from --lw-ink');
   for (const theme of THEMES) {
-    const vars = decls(block(home, theme));
-    assert.match(vars['surface-solid'] ?? '', /var\(--lw-ink\)/, `${theme} --surface-solid must derive from --lw-ink`);
+    assert.ok(!decls(themeBlock(home, theme))['surface-solid'], `${theme} must not redefine --surface-solid`);
   }
 });
 
@@ -120,16 +123,24 @@ test('the six themes keep their ids so existing saves stay valid', () => {
   const ids = [...shell.matchAll(/#app\[data-theme="(\w+)"\]\{/g)].map(m => m[1]);
   for (const theme of THEMES) assert.ok(ids.includes(theme), `theme id ${theme} removed`);
 });
+
+test('no dead theme block survives outside the six selectable themes', () => {
+  for (const [css, label] of [[home, 'home.css'], [shell, 'shell.html']]) {
+    for (const m of css.matchAll(/#app\[data-theme="(\w+)"\]\{/g)) {
+      assert.ok(THEMES.includes(m[1]), `${label} still defines unreachable theme "${m[1]}"`);
+    }
+  }
+});
 ```
 
 - [ ] **步骤 2：运行测试验证失败**
 
-运行：`node --test tests/palette.test.mjs`
-预期：FAIL，`sunset misses --lw-rock` 之类。
+运行：`node --experimental-strip-types --test tests/palette.test.mjs`
+预期：FAIL，`sunset resolves no --lw-rock` 之类。
 
 - [ ] **步骤 3：在 `src/world/home.css` 写入 token 层并让 `--surface-solid` 派生**
 
-把第 1-8 行替换为下面的结构。基础 `#app` 块给出默认（sunset）值，六个主题块只覆写需要变化的 token，最后一行让 `--surface-solid` 派生自 `--lw-ink`。
+把第 1-8 行替换为下面的结构。基础 `#app` 块给出全集默认值，六个主题块只覆写需要变化的 token，`--surface-solid` 在基础块里派生自 `--lw-ink` 一次。同时**删除死块** `#app[data-theme="sky"]`（`sky` 不在 `THEMES`，永不生效）。
 
 ```css
 /* 冷光菌洞：唯一色源。所有主题只覆写 --lw-*，界面变量一律取别名。 */
@@ -162,18 +173,28 @@ background:radial-gradient(circle at 50% 0%,var(--bgTop) 0%,var(--bgMid) 55%,var
 
 - [ ] **步骤 5：运行测试验证通过**
 
-运行：`node --test tests/palette.test.mjs`
-预期：PASS，4 个测试全绿。
+运行：`node --experimental-strip-types --test tests/palette.test.mjs`
+预期：PASS，5 个测试全绿。
 
-- [ ] **步骤 6：构建并人工核对截图**
+- [ ] **步骤 6：把新测试登记进 `test:world`**
+
+`package.json` 的 `test:world` 是显式文件清单，不登记就永远不会执行。把 `tests/palette.test.mjs` 加到链尾：
+
+```json
+"test:world": "node --experimental-strip-types --test tests/home.test.mjs tests/world.test.mjs tests/common-life.test.mjs tests/storybook.test.mjs tests/building-forms.test.mjs tests/estate.test.mjs tests/palette.test.mjs"
+```
+
+（`tests/terrain.test.mjs` 由任务 5 在同一条链上追加。）
+
+- [ ] **步骤 7：构建并人工核对截图**
 
 运行：`npm run build`，然后 `node tests/home-browser.cjs` 观察 `tools/out/magic-ui/` 下的新截图。
-预期：构建成功；截图里家园与六个页面同为冷调，没有残留暖色。
+预期：构建成功；截图里家园与六个页面同为冷调，没有残留暖色。注意任务 3 会修复该脚本的颜色断言，此处允许它在颜色断言上失败。
 
-- [ ] **步骤 7：Commit**
+- [ ] **步骤 8：Commit**
 
 ```bash
-git add tests/palette.test.mjs src/world/home.css src/shell.html 史莱姆.html
+git add tests/palette.test.mjs src/world/home.css src/shell.html package.json 史莱姆.html
 git commit -m "feat: 引入 --lw-* 语义 token 层并将六套主题重配为冷光菌洞同族"
 ```
 
@@ -204,7 +225,7 @@ test('the shared art palette only uses underdark hues', async () => {
 
 - [ ] **步骤 2：运行测试验证失败**
 
-运行：`node --test tests/palette.test.mjs`
+运行：`node --experimental-strip-types --test tests/palette.test.mjs`
 预期：FAIL，报某个暖色 hex（如 `#c98a6a`）too warm。
 
 - [ ] **步骤 3：替换 `src/world/art/kit.ts:43-52` 的 `PAL`**
@@ -226,7 +247,7 @@ export const PAL={
 
 - [ ] **步骤 4：运行测试验证通过**
 
-运行：`node --test tests/palette.test.mjs`
+运行：`node --experimental-strip-types --test tests/palette.test.mjs`
 预期：PASS，全部 5 个测试通过。
 
 - [ ] **步骤 5：类型检查与构建**
@@ -383,7 +404,7 @@ test('terrain tiles are square, 1024 and seamlessly tileable', () => {
 
 - [ ] **步骤 2：运行测试验证失败**
 
-运行：`DSH_PYTHON="$env:DSH_PYTHON" node --test tests/terrain.test.mjs`
+运行：`$env:DSH_PYTHON='<python 绝对路径>'; node --test tests/terrain.test.mjs`
 预期：FAIL，脚本不存在。
 
 - [ ] **步骤 3：实现 `scripts/terrain-gen.py`**
@@ -409,10 +430,18 @@ test('terrain tiles are square, 1024 and seamlessly tileable', () => {
 
 运行：`node -e "const {execFileSync}=require('child_process');execFileSync(process.env.DSH_PYTHON,['scripts/terrain-gen.py','--out','tools/out/terrain-preview'])"`，然后打开输出 PNG，把图水平与垂直各平铺一次，确认没有接缝。
 
-- [ ] **步骤 6：Commit**
+- [ ] **步骤 6：把新测试登记进 `test:world`**
+
+在任务 1 已追加 `tests/palette.test.mjs` 的基础上，再把 `tests/terrain.test.mjs` 加到 `package.json` 的 `test:world` 链尾：
+
+```json
+"test:world": "node --experimental-strip-types --test tests/home.test.mjs tests/world.test.mjs tests/common-life.test.mjs tests/storybook.test.mjs tests/building-forms.test.mjs tests/estate.test.mjs tests/palette.test.mjs tests/terrain.test.mjs"
+```
+
+- [ ] **步骤 7：Commit**
 
 ```bash
-git add scripts/terrain-gen.py tests/terrain.test.mjs
+git add scripts/terrain-gen.py tests/terrain.test.mjs package.json
 git commit -m "feat: 新增固定种子的地形细节纹理生成器"
 ```
 
@@ -560,10 +589,18 @@ const check=(name,ok,detail)=>{checks.push({name,ok,detail});assert.ok(ok,name+'
 运行：`node tests/home-browser.cjs && node tests/seasons-browser.cjs`
 预期：`home-browser` 全绿；`seasons-browser` 允许在冬季积雪与春季融雪两处失败（任务 8 处理）。
 
-- [ ] **步骤 6：Commit**
+- [ ] **步骤 6：把新套件登记进 `test:browser`**
+
+`package.json` 的 `test:browser` 也是显式套件清单，不登记就不会在 `npm run test:browser` 里执行。把 `tests/terrain-detail-browser.cjs` 插在 `seasons-browser.cjs` 之后：
+
+```json
+"test:browser": "node tests/home-browser.cjs && node tests/reference-browser.cjs && node tests/theme-browser.cjs && node tests/mobile-home-browser.cjs && node tests/building-forms-browser.cjs && node tests/home-actions-browser.cjs && node tests/estate-browser.cjs && node tests/seasons-browser.cjs && node tests/terrain-detail-browser.cjs && node tests/smoke-browser.cjs"
+```
+
+- [ ] **步骤 7：Commit**
 
 ```bash
-git add src/world/home-art.ts src/world/home.css tests/terrain-detail-browser.cjs 史莱姆.html
+git add src/world/home-art.ts src/world/home.css tests/terrain-detail-browser.cjs package.json 史莱姆.html
 git commit -m "feat: 把手绘底层与程序化细节层合成，夜间底色换冷岩"
 ```
 
@@ -904,16 +941,26 @@ export const cloudPalette=(season:number,dark:boolean)=>({
 });
 ```
 
-- [ ] **步骤 6：验证**
+- [ ] **步骤 6：同步白昼云亮度断言**
+
+`tests/seasons-browser.cjs:37` 除 `rgb[2]>rgb[0]` 外还断言 `dayCloud.rgb[0]>150`——新冷雾基色 `#6f8794` 的红通道为 111，这条会失败。改为适配冷雾的下限，其余判据（`minAlpha===255`、`rgb[2]>rgb[0]`、6 种云变体、边缘图不超 96px、层级顺序）全部保留：
+
+```js
+check('day fog is opaque cold mist above the scenery',dayCloud.minAlpha===255&&dayCloud.rgb[2]>dayCloud.rgb[0]&&dayCloud.rgb[0]>90&&await ev(`document.querySelector('.home-cloud-texture').dataset.cloudPalette==='0-day'&&...`),dayCloud);
+```
+
+只改 `rgb[0]>150` → `rgb[0]>90` 这一处数值，检查名称里的 `blue-white hand-painted clouds` 相应改为 `cold mist`。
+
+- [ ] **步骤 7：验证**
 
 运行：`npm run test:world && node tests/seasons-browser.cjs`
-预期：PASS。`storybook.test.mjs` 断言 6 朵云与 3 棵冬树各自独立，数量不变。`seasons-browser` 的「白昼迷雾为不透明白蓝云层」断言 `rgb[2]>rgb[0]`——冷灰紫仍满足蓝 > 红，不会失败。
+预期：PASS。`storybook.test.mjs` 断言 6 朵云与 3 棵冬树各自独立，数量不变。
 
-- [ ] **步骤 7：Commit**
+- [ ] **步骤 8：Commit**
 
 ```bash
-git add src/assets/storybook src/world/art/storybook.ts docs/art-2026-11-01 史莱姆.html
-git commit -m "feat: 重画战争迷雾云与冬树，云色板换冷雾"
+git add src/assets/storybook src/world/art/storybook.ts tests/seasons-browser.cjs docs/art-2026-11-01 史莱姆.html
+git commit -m "feat: 重画战争迷雾云与冬树，云色板换冷雾（同步云亮度断言）"
 ```
 
 ---
