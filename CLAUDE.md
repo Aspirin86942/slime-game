@@ -2,7 +2,7 @@
 
 ## 当前产品
 
-单文件离线网页游戏「最强召唤师」。V5保留完整家园，其他玩法以只读文件史莱姆-参考.html为准，包括手动／自动战斗和待领取的探索收益。家园是一张全屏36×24格的正交地图；建筑立面和遮挡产生立体感。六个导航入口为陪伴、家园、召唤、探索、背包、成长。
+单文件离线网页游戏「最强召唤师」。V5保留完整家园，其他玩法以只读文件史莱姆-参考.html为准，包括手动／自动战斗和待领取的探索收益。家园是一张全屏36×24格的正交地图；建筑立面和遮挡产生立体感。全游戏画风基准是「冷光菌洞」：湿蓝灰岩壁、深色地底木、紫色荧光菌与冷白晶簇，无日光，照明来自生物与矿物；六套主题与家园面板共用src/world/home.css里的--lw-*语义token。六个导航入口为陪伴、家园、召唤、探索、背包、成长。
 
 史莱姆.html是构建产物。修改src/后运行npm run build，不要只编辑生成文件。无外部图片、字体、网络服务或运行时依赖。
 
@@ -35,8 +35,8 @@ advanceWorld在线按秒交织参考版恢复、12秒派遣与家园规则，正
 
 ## 验证入口
 
-- npm test：类型检查、构建、104项世界/迁移/素材/建筑形态/家园经营规则、48项原玩法回归、合体成长专项和10项参考版对照。家园经营专项在tests/estate.test.mjs；几何与旧规则测试用「完全发展的家园」夹具（全部地块与科技），开局进度单独测。tests/home.test.mjs覆盖委托上限引入前的V5存档迁移、原文备份及已有额度保留。
-- npm run test:browser：真实Chromium输入、多档设备、六种主题、三种安全区、原版逐页对照、昼夜、旧小游戏、离线重载、冲突保护和帧率，末尾串联smoke。八个套件合计841项，smoke 235项；输出在忽略目录tools/out/magic-ui/；原接入验收保留在tools/out/reference-home/。
+- npm test：类型检查、构建、114项世界/迁移/素材/建筑形态/家园经营规则（含tests/palette.test.mjs的token一致性7项、tests/terrain.test.mjs的地形纹理可复现与1024²共3项）、48项原玩法回归、合体成长专项和10项参考版对照。家园经营专项在tests/estate.test.mjs；几何与旧规则测试用「完全发展的家园」夹具（全部地块与科技），开局进度单独测。tests/home.test.mjs覆盖委托上限引入前的V5存档迁移、原文备份及已有额度保留。
+- npm run test:browser：真实Chromium输入、多档设备、六种主题、三种安全区、原版逐页对照、昼夜、旧小游戏、离线重载、冲突保护和帧率，末尾串联smoke。九个套件合计1263项（home 54、reference 62、theme 463、mobile 43、building-forms 222、home-actions 60、estate 30、seasons 87、terrain-detail 7），smoke 235项；输出在忽略目录tools/out/magic-ui/；原接入验收保留在tools/out/reference-home/。
 - npm run smoke：13档设备×六页几何断言（显示/比例/覆盖/命中区）、9档家园弹层态、旧玩法五交互、安全区页面探针、夹具读档与断言活力，共235项，约85–88秒（实测84.3–88.2秒）。结构与排错见docs/living-world/TEST-HARNESS.md。
 - 浏览器断言底座在tests/lib/browser/：session（唯一CDP会话）、profiles（13档设备档案）、layout（几何断言）、fixtures（夹具读取与注入），单测为npm run test:harness。tools/out/lib/cdp.js仍只负责启动/求值/截图/触摸。
 - 存档夹具在tests/fixtures/saves/（mobile-baseline/mobile-developed/mobile-orders/mobile-offline/legacy-v5），由tests/fixtures/build.cjs在真实浏览器中生成并反向校验；更新用node tests/fixtures/build.cjs。
@@ -45,7 +45,7 @@ advanceWorld在线按秒交织参考版恢复、12秒派遣与家园规则，正
 - tests/home-actions-browser.cjs覆盖家园直接操作、环形按钮、横滑建造栏、透明面板及键盘；工具只保存界面状态，不改变V5存档结构。
 - 浏览器脚本统一复用tools/out/lib/cdp.js。它自动寻找Chrome，使用独立临时配置。不得用用户真实存档做测试。
 - 资源建筑三档素材在facilities-f/g（3×3，layouts.json标grid:3），新物品与科技图标在items-a；生成后用scripts/repack-atlas.mjs拆开粘连物件再接入，记录在docs/art-2026-10-29/production/estate-art-generation.json。tests/estate-browser.cjs覆盖开垦、研究、气泡收取、委托、集市、桥接物品、五视口和帧率。
-- 建筑形态素材已接入facilities-c/d/e，共48张独立WebP。tests/building-forms-browser.cjs覆盖222项形态验收，八个浏览器套件合计841项，连同smoke 235项共1076项浏览器检查。生成记录与实际裁切坐标在docs/art-2026-10-29/production/。
+- 建筑形态素材已接入facilities-c/d/e，共48张独立WebP。tests/building-forms-browser.cjs覆盖222项形态验收，九个浏览器套件合计1263项，连同smoke 235项共1498项浏览器检查。幽暗地域批次的生成记录、提示词与裁切坐标在docs/art-2026-11-01/；2026-10-29 批次的记录保留在原目录。
 - ?battle=ui仅开放诊断钩子；?selftest=1 / ?gallery=1 / ?fps=1也属于诊断模式。诊断模式不会自动写玩家存档。
 - 战斗局部函数通过window.__TEST__._battle暴露。merge-growth.cjs使用同一套虚拟运行环境执行真实游戏代码，验证合体与成长行为。
 
@@ -55,6 +55,7 @@ advanceWorld在线按秒交织参考版恢复、12秒派遣与家园规则，正
 - 重大改动前在backup/保存程序快照；本次源码与成品快照在backup/reference-home-20261029-implementation/，snapshot.json记录文件哈希。
 - 魔法风统一前的成套快照在backup/magic-ui-20261029/，包含225个文件及逐文件哈希。
 - 家园经营改造前的快照在backup/home-v6-20261029/，324个文件，snapshot.json逐文件记录SHA-256。
-- 地图绘制遵循docs/art-2026-10-27/美术规范.md，画面使用正交地面和纵向遮挡。
+- 地图绘制遵循docs/art-2026-10-27/美术规范.md（冷光菌洞版），画面使用正交地面和纵向遮挡。地形是两层：手绘ground-*/paths负责形状，scripts/terrain-gen.py固定种子生成的terrain-*细节纹理负责表面粗糙度，不透明度上限0.35、运行时不跑Canvas。
+- 幽暗地域改造前的快照在backup/underdark-20261101/，snapshot.json逐文件记录SHA-256。
 - 检查320×568、390×844、844×390、1440×900、1920×1080。实际截图和帧率必须据实记录。
 - 存档导入/导出入口已按用户要求移除，不自动加回。不自动提交、推送或发布。
