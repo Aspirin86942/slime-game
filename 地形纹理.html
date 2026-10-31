@@ -1,0 +1,1443 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>纹理系统 · 参数注释版</title>
+<style>
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    height: 100%;
+    overflow: hidden;
+    font-family: system-ui, -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  }
+
+  body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(ellipse at 50% 0%, #1e3a1a 0%, #0c1a0b 45%, #060d06 100%);
+  }
+
+  .stage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    padding: 12px;
+  }
+
+  .panel {
+    position: relative;
+    width: min(92vw, 920px);
+    height: min(58vh, 500px);
+    min-height: 230px;
+    border-radius: 28px;
+    overflow: hidden;
+    background: #2a4a1c;
+    box-shadow:
+      0 26px 60px rgba(0, 0, 0, 0.55),
+      0 6px 18px rgba(0, 0, 0, 0.4);
+  }
+
+  .panel::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.25);
+    pointer-events: none;
+  }
+
+  #cv { display: block; width: 100%; height: 100%; }
+
+  /* ---------- 精简按钮，全部排在同一排 ---------- */
+  .toolbar {
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: center;
+    gap: 8px;
+    max-width: 92vw;
+  }
+
+  .toolbar button {
+    padding: 6px 14px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    background: rgba(255, 255, 255, 0.07);
+    color: #d9e8cf;
+    font-size: 12.5px;
+    letter-spacing: 0.4px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background .18s ease, color .18s ease, border-color .18s ease, transform .1s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .toolbar button:hover { background: rgba(255,255,255,.14); border-color: rgba(255,255,255,.32); }
+  .toolbar button:active { transform: scale(.95); }
+  .toolbar button.active {
+    background: linear-gradient(180deg, #b6e06a 0%, #7cb63a 100%);
+    color: #1d3010;
+    border-color: rgba(220, 255, 170, 0.9);
+    font-weight: 600;
+    box-shadow: 0 0 14px rgba(150, 220, 90, 0.35);
+  }
+
+  /* ---------- HSL 滑块组 ---------- */
+  .sliders {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 10px 14px;
+    padding: 10px 18px;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    max-width: 92vw;
+    user-select: none;
+  }
+
+  .slider-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .slider-item .name {
+    font-size: 11.5px;
+    color: #9fb392;
+    letter-spacing: 0.5px;
+    width: 26px;
+    text-align: right;
+    flex: none;
+  }
+
+  .slider-item .val {
+    font-family: ui-monospace, "SF Mono", Consolas, monospace;
+    font-size: 11.5px;
+    color: #e8f0dd;
+    width: 28px;
+    text-align: left;
+    flex: none;
+  }
+
+  .step-btn {
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    background: rgba(255, 255, 255, 0.10);
+    color: #dfe9d4;
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: background .15s ease, transform .1s ease, border-color .15s ease;
+  }
+  .step-btn:hover {
+    background: rgba(255, 255, 255, 0.22);
+    border-color: rgba(255, 255, 255, 0.38);
+  }
+  .step-btn:active { transform: scale(.88); }
+
+  input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 175px;
+    height: 14px;
+    border-radius: 7px;
+    background: rgba(255, 255, 255, 0.16);
+    outline: none;
+    cursor: pointer;
+    border: 1px solid rgba(0, 0, 0, 0.30);
+    flex: none;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.35);
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #ffffff 0%, #eef7e2 55%, #cfddbd 100%);
+    border: 1px solid rgba(0, 0, 0, 0.50);
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.55);
+    cursor: pointer;
+    transition: transform .1s ease;
+  }
+  input[type="range"]:active::-webkit-slider-thumb { transform: scale(1.12); }
+
+  input[type="range"]::-moz-range-thumb {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #ffffff 0%, #eef7e2 55%, #cfddbd 100%);
+    border: 1px solid rgba(0, 0, 0, 0.50);
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.55);
+    cursor: pointer;
+  }
+  input[type="range"]::-moz-range-track {
+    height: 14px;
+    border-radius: 7px;
+    background: transparent;
+  }
+</style>
+</head>
+<body>
+
+<div class="stage">
+  <div class="panel"><canvas id="cv"></canvas></div>
+
+  <div class="toolbar" id="toolbar">
+    <button data-tex="grass" class="active">草坪</button>
+    <button data-tex="soil">土地</button>
+    <button data-tex="stone">石板路</button>
+    <button data-tex="water">水面</button>
+  </div>
+
+  <div class="sliders">
+    <div class="slider-item">
+      <span class="name">色相</span>
+      <button class="step-btn" data-target="sH" data-dir="-1" title="减少 1">−</button>
+      <input type="range" id="sH" min="0" max="360" step="1" value="95" />
+      <button class="step-btn" data-target="sH" data-dir="1" title="增加 1">+</button>
+      <span class="val" id="vH">95</span>
+    </div>
+    <div class="slider-item">
+      <span class="name">饱和</span>
+      <button class="step-btn" data-target="sS" data-dir="-1" title="减少 1">−</button>
+      <input type="range" id="sS" min="0" max="100" step="1" value="51" />
+      <button class="step-btn" data-target="sS" data-dir="1" title="增加 1">+</button>
+      <span class="val" id="vS">51</span>
+    </div>
+    <div class="slider-item">
+      <span class="name">明度</span>
+      <button class="step-btn" data-target="sL" data-dir="-1" title="减少 1">−</button>
+      <input type="range" id="sL" min="0" max="100" step="1" value="41" />
+      <button class="step-btn" data-target="sL" data-dir="1" title="增加 1">+</button>
+      <span class="val" id="vL">41</span>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  const DPR = Math.min(window.devicePixelRatio || 1, 2);
+
+  /* =========================================================
+     颜色工具
+     ========================================================= */
+  function clamp(v, lo, hi) { return v < lo ? lo : v > hi ? hi : v; }
+
+  function hexToHsl(hex) {
+    const v = parseInt(hex.replace('#', ''), 16);
+    let r = ((v >> 16) & 255) / 255;
+    let g = ((v >> 8) & 255) / 255;
+    let b = (v & 255) / 255;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    let h = 0, s = 0;
+    const l = (max + min) / 2;
+    if (max !== min) {
+      const d = max - min;
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      switch (max) {
+        case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+        case g: h = (b - r) / d + 2; break;
+        case b: h = (r - g) / d + 4; break;
+      }
+      h *= 60;
+    }
+    return { h: h, s: s * 100, l: l * 100 };
+  }
+
+  function hslToHex(h, s, l) {
+    h = ((h % 360) + 360) % 360;
+    s = clamp(s, 0, 100) / 100;
+    l = clamp(l, 0, 100) / 100;
+    const k = function (n) { return (n + h / 30) % 12; };
+    const a = s * Math.min(l, 1 - l);
+    const f = function (n) {
+      const kk = k(n);
+      return l - a * Math.max(-1, Math.min(kk - 3, Math.min(9 - kk, 1)));
+    };
+    const toHex = function (x) {
+      const t = Math.round(clamp(x, 0, 1) * 255).toString(16);
+      return t.length === 1 ? '0' + t : t;
+    };
+    return '#' + toHex(f(0)) + toHex(f(8)) + toHex(f(4));
+  }
+
+  /* =========================================================
+     画布工具
+     ========================================================= */
+  function makeCanvas(size) {
+    const c = document.createElement('canvas');
+    c.width = c.height = size;
+    return c;
+  }
+
+  // 九宫格环绕绘制：让靠近边缘的笔触从对侧再次出现 → 纹理可无缝平铺
+  function wrapDraw(size, fn) {
+    for (let ox = -1; ox <= 1; ox++)
+      for (let oy = -1; oy <= 1; oy++)
+        fn(ox * size, oy * size);
+  }
+
+  // 宽高不同的环绕绘制（用于纵向压缩的石板路）
+  function wrapDrawRect(w, h, fn) {
+    for (let ox = -1; ox <= 1; ox++)
+      for (let oy = -1; oy <= 1; oy++)
+        fn(ox * w, oy * h);
+  }
+
+  /* =========================================================
+     纹理 1：草坪
+     ---------------------------------------------------------
+     【参数总览】
+       明暗斑块数量 420    —— 越多草面色块越碎
+       斑块半径 10~50px    —— 大斑块营造整体起伏
+       暗块出现概率 26%    —— 越低草面越亮
+       草叶数量 1500       —— 草面细密程度
+       草叶长度 7~23px     —— 草叶长短
+       草叶色相偏移        —— 控制草叶与底色的色差
+       颗粒数量 2500       —— 草面粗糙度
+       暗颗粒比例 36%      —— 越低越亮
+     ========================================================= */
+  function makeGrassTexture(size, baseColor) {
+    const tile = makeCanvas(size);
+    const c = tile.getContext('2d');
+    const s = size / 512;          // 相对于 512 基准的缩放系数
+    const area = s * s;            // 面积系数，用于按比例缩放数量
+    const hsl = hexToHsl(baseColor);
+    const H = hsl.h, S = hsl.s, L = hsl.l;
+
+    // 底色
+    c.fillStyle = baseColor;
+    c.fillRect(0, 0, size, size);
+
+    // 草叶绘制助手
+    const drawBlade = (x, y, len, angle, wid, color, alpha) => {
+      c.save();
+      c.translate(x, y);
+      c.rotate(angle);
+      c.globalAlpha = alpha;
+      c.fillStyle = color;
+      c.beginPath();
+      c.moveTo(0, 0);
+      c.quadraticCurveTo(wid, -len * 0.55, 0, -len);   // 0.55：叶片弯曲位置
+      c.quadraticCurveTo(-wid, -len * 0.55, 0, 0);
+      c.fill();
+      c.restore();
+    };
+
+    // ① 明暗斑块：亮块占 74%，暗块占 26%
+    for (let i = 0; i < 420; i++) {                    // 420：斑块数量
+      const x = Math.random() * size;
+      const y = Math.random() * size;
+      const r = (10 + Math.random() * 40) * s;         // 半径 10~50
+      const light = Math.random() > 0.26;              // 26% 概率生成暗块
+      wrapDraw(size, (dx, dy) => {
+        const g = c.createRadialGradient(x + dx, y + dy, 0, x + dx, y + dy, r);
+        if (light) {
+          // 亮块：色相 +14，亮度 +28，透明度 0.24
+          g.addColorStop(0, 'hsla(' + H.toFixed(1) + ',' + clamp(S + 14, 0, 100).toFixed(0) + '%,' + clamp(L + 28, 0, 95).toFixed(0) + '%,0.24)');
+        } else {
+          // 暗块：色相 -10，亮度 -16，透明度 0.12
+          g.addColorStop(0, 'hsla(' + H.toFixed(1) + ',' + clamp(S - 10, 0, 100).toFixed(0) + '%,' + clamp(L - 16, 0, 100).toFixed(0) + '%,0.12)');
+        }
+        g.addColorStop(1, 'rgba(0,0,0,0)');
+        c.fillStyle = g;
+        c.beginPath();
+        c.arc(x + dx, y + dy, r, 0, Math.PI * 2);
+        c.fill();
+      });
+    }
+
+    // ② 细密草叶
+    const BLADES = 1500 * area;                        // 1500：草叶数量
+    for (let i = 0; i < BLADES; i++) {
+      const x = Math.random() * size;
+      const y = Math.random() * size;
+      const len = (7 + Math.random() * 16) * s;        // 长度 7~23
+      const angle = (Math.random() - 0.5) * 1.0;       // 倾斜 -0.5~+0.5 弧度
+      const wid = (0.9 + Math.random() * 1.3) * s;     // 半宽 0.9~2.2
+      const bh = H - 14 + Math.random() * 34;          // 色相偏移 -14~+20
+      const bs = clamp(S - 6 + Math.random() * 30, 0, 100);  // 饱和偏移 -6~+24
+      const bl = clamp(L - 8 + Math.random() * 26, 0, 95);   // 亮度偏移 -8~+18
+      const alpha = 0.7 + Math.random() * 0.3;         // 不透明度 0.7~1.0
+      const color = 'hsl(' + bh.toFixed(1) + ',' + bs.toFixed(0) + '%,' + bl.toFixed(0) + '%)';
+      wrapDraw(size, (dx, dy) => drawBlade(x + dx, y + dy, len, angle, wid, color, alpha));
+    }
+
+    // ③ 颗粒质感
+    for (let i = 0; i < 2500 * area; i++) {            // 2500：颗粒数量
+      const x = Math.random() * size;
+      const y = Math.random() * size;
+      const a = 0.05 + Math.random() * 0.12;           // 基础透明度 0.05~0.17
+      const bright = Math.random() > 0.36;             // 64% 亮颗粒，36% 暗颗粒
+      wrapDraw(size, (dx, dy) => {
+        c.fillStyle = bright
+          ? 'hsla(' + H.toFixed(1) + ',' + clamp(S + 10, 0, 100).toFixed(0) + '%,' + clamp(L + 42, 0, 98).toFixed(0) + '%,' + a.toFixed(3) + ')'
+          : 'hsla(' + H.toFixed(1) + ',' + clamp(S - 6, 0, 100).toFixed(0) + '%,' + clamp(L - 16, 0, 100).toFixed(0) + '%,' + (a * 0.75).toFixed(3) + ')';
+        c.fillRect(x + dx, y + dy, 1.6 * s, 1.6 * s);  // 颗粒尺寸 1.6
+      });
+    }
+
+    return tile;
+  }
+
+  /* =========================================================
+     纹理 2：土地
+     ---------------------------------------------------------
+     【参数总览】
+       大斑驳数量 180      —— 土壤整体色块层次
+       凹凸颗粒 1100       —— 土面凸起感
+       油光雾层 90         —— 湿润反光的柔光层
+       水膜高光 950        —— 湿润小亮点
+       细颗粒 1600         —— 土面粗糙度
+     ========================================================= */
+  function makeSoilTexture(size, baseColor) {
+    const tile = makeCanvas(size);
+    const c = tile.getContext('2d');
+    const s = size / 512;
+    const area = s * s;
+    const hsl = hexToHsl(baseColor);
+    const H = hsl.h, S = hsl.s, L = hsl.l;
+
+    c.fillStyle = baseColor;
+    c.fillRect(0, 0, size, size);
+
+    // ① 大尺度湿润斑驳
+    for (let i = 0; i < 180; i++) {                    // 180：斑驳数量
+      const x = Math.random() * size;
+      const y = Math.random() * size;
+      const r = (30 + Math.random() * 90) * s;         // 半径 30~120
+      const kind = Math.random();
+      let col;
+      if (kind < 0.46) {
+        // 深色湿区：亮度 -14，透明度 0.15
+        col = 'hsla(' + H.toFixed(1) + ',' + clamp(S, 0, 100).toFixed(0) + '%,' + clamp(L - 14, 0, 100).toFixed(0) + '%,0.15)';
+      } else if (kind < 0.76) {
+        // 微亮土色：饱和 -8，亮度 +18，透明度 0.11
+        col = 'hsla(' + H.toFixed(1) + ',' + clamp(S - 8, 0, 100).toFixed(0) + '%,' + clamp(L + 18, 0, 100).toFixed(0) + '%,0.11)';
+      } else {
+        // 中间调：亮度 +8，透明度 0.12
+        col = 'hsla(' + H.toFixed(1) + ',' + clamp(S, 0, 100).toFixed(0) + '%,' + clamp(L + 8, 0, 100).toFixed(0) + '%,0.12)';
+      }
+      wrapDraw(size, (dx, dy) => {
+        const g = c.createRadialGradient(x + dx, y + dy, 0, x + dx, y + dy, r);
+        g.addColorStop(0, col);
+        g.addColorStop(1, 'rgba(0,0,0,0)');
+        c.fillStyle = g;
+        c.beginPath();
+        c.arc(x + dx, y + dy, r, 0, Math.PI * 2);
+        c.fill();
+      });
+    }
+
+    // ② 湿润凹凸：上亮下暗，模拟颗粒隆起
+    const bumps = 1100 * area;                          // 1100：凹凸颗粒数量
+    for (let i = 0; i < bumps; i++) {
+      const x = Math.random() * size;
+      const y = Math.random() * size;
+      const r = (1.4 + Math.random() * 3.2) * s;        // 半径 1.4~4.6
+      const a = 0.045 + Math.random() * 0.075;          // 透明度 0.045~0.12
+      const lift = r * 0.35;                            // 0.35：上下偏移比例
+      wrapDraw(size, (dx, dy) => {
+        // 高光（偏上）
+        let g = c.createRadialGradient(x + dx, y + dy - lift, 0, x + dx, y + dy - lift, r);
+        g.addColorStop(0, 'hsla(' + H.toFixed(1) + ',' + clamp(S - 6, 0, 100).toFixed(0) + '%,' + clamp(L + 26, 0, 100).toFixed(0) + '%,' + a.toFixed(3) + ')');
+        g.addColorStop(1, 'rgba(0,0,0,0)');
+        c.fillStyle = g;
+        c.beginPath();
+        c.arc(x + dx, y + dy - lift, r, 0, Math.PI * 2);
+        c.fill();
+
+        // 阴影（偏下），透明度 ×1.15
+        g = c.createRadialGradient(x + dx, y + dy + lift, 0, x + dx, y + dy + lift, r);
+        g.addColorStop(0, 'hsla(' + H.toFixed(1) + ',' + clamp(S, 0, 100).toFixed(0) + '%,' + clamp(L - 18, 0, 100).toFixed(0) + '%,' + (a * 1.15).toFixed(3) + ')');
+        g.addColorStop(1, 'rgba(0,0,0,0)');
+        c.fillStyle = g;
+        c.beginPath();
+        c.arc(x + dx, y + dy + lift, r, 0, Math.PI * 2);
+        c.fill();
+      });
+    }
+
+    // ③ 湿润油光雾层
+    for (let i = 0; i < 90 * area; i++) {               // 90：油光雾数量
+      const x = Math.random() * size;
+      const y = Math.random() * size;
+      const r = (10 + Math.random() * 32) * s;          // 半径 10~42
+      const a = 0.04 + Math.random() * 0.06;            // 透明度 0.04~0.10
+      wrapDraw(size, (dx, dy) => {
+        const g = c.createRadialGradient(x + dx, y + dy, 0, x + dx, y + dy, r);
+        g.addColorStop(0, 'hsla(' + H.toFixed(1) + ',' + clamp(S - 4, 0, 100).toFixed(0) + '%,' + clamp(L + 22, 0, 100).toFixed(0) + '%,' + a.toFixed(3) + ')');
+        g.addColorStop(1, 'rgba(0,0,0,0)');
+        c.fillStyle = g;
+        c.beginPath();
+        c.arc(x + dx, y + dy, r, 0, Math.PI * 2);
+        c.fill();
+      });
+    }
+
+    // ④ 水膜小高光点
+    const specks = 950 * area;                          // 950：高光点数量
+    for (let i = 0; i < specks; i++) {
+      const x = Math.random() * size;
+      const y = Math.random() * size;
+      const r = (0.8 + Math.random() * 2.1) * s;        // 半径 0.8~2.9
+      const a = 0.07 + Math.random() * 0.15;            // 透明度 0.07~0.22
+      wrapDraw(size, (dx, dy) => {
+        const g = c.createRadialGradient(x + dx, y + dy, 0, x + dx, y + dy, r);
+        g.addColorStop(0, 'hsla(' + H.toFixed(1) + ',' + clamp(S - 10, 0, 100).toFixed(0) + '%,' + clamp(L + 44, 0, 100).toFixed(0) + '%,' + a.toFixed(3) + ')');
+        g.addColorStop(1, 'rgba(0,0,0,0)');
+        c.fillStyle = g;
+        c.beginPath();
+        c.arc(x + dx, y + dy, r, 0, Math.PI * 2);
+        c.fill();
+      });
+    }
+
+    // ⑤ 细颗粒
+    const grains = 1600 * area;                         // 1600：细颗粒数量
+    for (let i = 0; i < grains; i++) {
+      const x = Math.random() * size;
+      const y = Math.random() * size;
+      const a = 0.04 + Math.random() * 0.10;            // 透明度 0.04~0.14
+      const bright = Math.random() > 0.62;              // 38% 亮颗粒，62% 暗颗粒
+      const sz = (0.6 + Math.random() * 1.3) * s;       // 尺寸 0.6~1.9
+      wrapDraw(size, (dx, dy) => {
+        c.fillStyle = bright
+          ? 'hsla(' + H.toFixed(1) + ',' + clamp(S - 6, 0, 100).toFixed(0) + '%,' + clamp(L + 30, 0, 100).toFixed(0) + '%,' + a.toFixed(3) + ')'
+          : 'hsla(' + H.toFixed(1) + ',' + clamp(S, 0, 100).toFixed(0) + '%,' + clamp(L - 12, 0, 100).toFixed(0) + '%,' + a.toFixed(3) + ')';
+        c.fillRect(x + dx, y + dy, sz, sz);
+      });
+    }
+
+    return tile;
+  }
+
+  /* =========================================================
+     纹理 3：石板路
+     ---------------------------------------------------------
+     【参数总览】
+       纵向压缩系数 0.6    —— 越小石板越扁
+       石缝颗粒 1600       —— 缝隙粗糙度
+       Voronoi 站点 78     —— 站点越多石板越小、裂纹越密
+       站点最小间距系数    —— mdX 0.075 / mdY 0.062，越小越密
+       缝隙宽度 GAP 3.4    —— 石板之间留缝宽度
+       石板亮度 L + 14     —— 越大路面越白
+       石板内部颗粒 70~130 —— 石材颗粒感
+       屏幕空间颗粒 12000  —— 全局颗粒密度
+     ========================================================= */
+  function makeStoneTexture(size, baseColor) {
+    const compress = 0.6;                 // 纵向压缩系数，0.6 = 压扁到 60%
+    const LOG_H = size / compress;        // 压缩后逻辑空间的高度
+
+    const tile = makeCanvas(size);
+    const c = tile.getContext('2d');
+    const s = size / 512;
+    const area = s * s;
+    const hsl = hexToHsl(baseColor);
+    const H = hsl.h, S = hsl.s, L = hsl.l;
+
+    // 石缝底色（比路面暗 20）
+    c.fillStyle = 'hsl(' + H.toFixed(0) + ',' + clamp(S, 0, 100).toFixed(0) + '%,' + clamp(L - 20, 0, 100).toFixed(0) + '%)';
+    c.fillRect(0, 0, size, size);
+
+    // 进入纵向压缩空间
+    c.save();
+    c.scale(1, compress);
+
+    // ① 石缝里的颗粒
+    for (let i = 0; i < 1600 * area; i++) {             // 1600：石缝颗粒数量
+      const x = Math.random() * size;
+      const y = Math.random() * LOG_H;
+      const a = 0.06 + Math.random() * 0.12;            // 透明度 0.06~0.18
+      const r = Math.random();
+      let col;
+      if (r < 0.30) {
+        // 30% 墨绿色（苔藓）
+        col = 'rgba(34,62,42,' + (a * 1.05).toFixed(3) + ')';
+      } else if (r < 0.66) {
+        // 36% 深色
+        col = 'hsla(' + H.toFixed(0) + ',' + clamp(S, 0, 100).toFixed(0) + '%,' + clamp(L - 26, 0, 100).toFixed(0) + '%,' + a.toFixed(3) + ')';
+      } else {
+        // 34% 亮色
+        col = 'hsla(' + H.toFixed(0) + ',' + clamp(S - 4, 0, 100).toFixed(0) + '%,' + clamp(L + 8, 0, 100).toFixed(0) + '%,' + a.toFixed(3) + ')';
+      }
+      c.fillStyle = col;
+      c.fillRect(x, y, (1.4 + Math.random() * 2.0) * s, (1.4 + Math.random() * 2.0) * s);
+    }
+
+    // ② 生成 Voronoi 站点（石板中心）
+    const N = 78;                                       // 78：站点数量（决定石板大小）
+    const pts = [];
+    const mdX = size * 0.075;                           // 水平最小间距系数
+    const mdY = LOG_H * 0.062;                          // 垂直最小间距系数
+    let guard = 0;
+    while (pts.length < N && guard < 12000) {           // 12000：最大尝试次数
+      guard++;
+      const p = { x: Math.random() * size, y: Math.random() * LOG_H };
+      let ok = true;
+      for (let k = 0; k < pts.length; k++) {
+        const q = pts[k];
+        let dx = Math.abs(p.x - q.x); if (dx > size / 2) dx = size - dx;
+        let dy = Math.abs(p.y - q.y); if (dy > LOG_H / 2) dy = LOG_H - dy;
+        if ((dx / mdX) * (dx / mdX) + (dy / mdY) * (dy / mdY) < 1) { ok = false; break; }
+      }
+      if (ok) pts.push(p);
+    }
+
+    // 半平面裁剪：保留落在 Voronoi 单元内的部分
+    function clipHalfPlane(poly, mx, my, dx, dy) {
+      const out = [];
+      const n = poly.length;
+      for (let i = 0; i < n; i++) {
+        const a = poly[i];
+        const b = poly[(i + 1) % n];
+        const va = (a[0] - mx) * dx + (a[1] - my) * dy;
+        const vb = (b[0] - mx) * dx + (b[1] - my) * dy;
+        if (va <= 0) out.push(a);
+        if ((va < 0 && vb > 0) || (va > 0 && vb < 0)) {
+          const t = va / (va - vb);
+          out.push([a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t]);
+        }
+      }
+      return out;
+    }
+
+    // 求每个站点的 Voronoi 单元
+    const cells = [];
+    for (let i = 0; i < pts.length; i++) {
+      const p = pts[i];
+      let poly = [[-2, -2], [size + 2, -2], [size + 2, LOG_H + 2], [-2, LOG_H + 2]];
+      outer:
+      for (let j = 0; j < pts.length; j++) {
+        if (j === i) continue;
+        const q = pts[j];
+        for (let ox = -1; ox <= 1; ox++) {
+          for (let oy = -1; oy <= 1; oy++) {
+            const qx = q.x + ox * size;
+            const qy = q.y + oy * LOG_H;
+            const dx = qx - p.x;
+            const dy = qy - p.y;
+            if (dx === 0 && dy === 0) continue;
+            const mx = (p.x + qx) / 2;
+            const my = (p.y + qy) / 2;
+            poly = clipHalfPlane(poly, mx, my, dx, dy);
+            if (poly.length < 3) break outer;
+          }
+        }
+      }
+      if (poly.length >= 3) {
+        let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+        for (let k = 0; k < poly.length; k++) {
+          const v = poly[k];
+          if (v[0] < minX) minX = v[0];
+          if (v[0] > maxX) maxX = v[0];
+          if (v[1] < minY) minY = v[1];
+          if (v[1] > maxY) maxY = v[1];
+        }
+        cells.push({ poly: poly, minX: minX, maxX: maxX, minY: minY, maxY: maxY });
+      }
+    }
+
+    // 多边形内缩：把每块石板向内收 GAP 距离，形成缝隙
+    function insetPolygon(poly, d) {
+      const n = poly.length;
+      if (n < 3) return poly;
+      let cx = 0, cy = 0;
+      for (let i = 0; i < n; i++) { cx += poly[i][0]; cy += poly[i][1]; }
+      cx /= n; cy /= n;
+
+      const out = [];
+      for (let i = 0; i < n; i++) {
+        const p0 = poly[(i - 1 + n) % n];
+        const p1 = poly[i];
+        const p2 = poly[(i + 1) % n];
+
+        let d1x = p0[0] - p1[0], d1y = p0[1] - p1[1];
+        let d2x = p2[0] - p1[0], d2y = p2[1] - p1[1];
+        const l1 = Math.hypot(d1x, d1y) || 1;
+        const l2 = Math.hypot(d2x, d2y) || 1;
+        d1x /= l1; d1y /= l1;
+        d2x /= l2; d2y /= l2;
+
+        let bx = d1x + d2x, by = d1y + d2y;
+        let bl = Math.hypot(bx, by);
+        if (bl < 1e-6) { out.push([p1[0], p1[1]]); continue; }
+        bx /= bl; by /= bl;
+
+        if ((cx - p1[0]) * bx + (cy - p1[1]) * by < 0) { bx = -bx; by = -by; }
+
+        const cross = Math.abs(d1x * by - d1y * bx);
+        const sinHalf = Math.max(0.3, cross);           // 0.3：最小夹角保护
+        const dist = d / sinHalf;
+        out.push([p1[0] + bx * dist, p1[1] + by * dist]);
+      }
+      return out;
+    }
+
+    const GAP = 3.4 * s;                                // 3.4：缝隙宽度
+
+    // ③ 绘制每块石板
+    for (const cell of cells) {
+      const inner = insetPolygon(cell.poly, GAP);
+      if (inner.length < 3) continue;
+
+      let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+      for (const v of inner) {
+        if (v[0] < minX) minX = v[0];
+        if (v[0] > maxX) maxX = v[0];
+        if (v[1] < minY) minY = v[1];
+        if (v[1] > maxY) maxY = v[1];
+      }
+
+      // 石板色：主色 ± 抖动
+      const stoneH = H + (Math.random() - 0.5) * 6;     // 色相抖动 ±3
+      const stoneS = clamp(S - 4 + (Math.random() - 0.5) * 8, 0, 40);  // 饱和抖动 ±4
+      const stoneL = clamp(L + 14 + (Math.random() - 0.5) * 12, 30, 97); // 亮度 +14 ±6
+
+      let icx = 0, icy = 0;
+      for (const v of inner) { icx += v[0]; icy += v[1]; }
+      icx /= inner.length; icy /= inner.length;
+
+      // 云斑（石板内部斑驳）
+      const clouds = [];
+      const cloudCount = 3 + Math.floor(Math.random() * 3);  // 3~5 个
+      for (let i = 0; i < cloudCount; i++) {
+        clouds.push({
+          x: minX + Math.random() * (maxX - minX),
+          y: minY + Math.random() * (maxY - minY),
+          r: (8 + Math.random() * 22) * s,              // 半径 8~30
+          dark: Math.random() > 0.35                    // 65% 暗云斑
+        });
+      }
+
+      // 石纹线
+      const veins = [];
+      const veinCount = 1 + Math.floor(Math.random() * 2);  // 1~2 条
+      for (let i = 0; i < veinCount; i++) {
+        veins.push({
+          x: minX + Math.random() * (maxX - minX),
+          y: minY + Math.random() * (maxY - minY),
+          ang: Math.random() * Math.PI,
+          len: Math.min(maxX - minX, maxY - minY) * (0.2 + Math.random() * 0.5),  // 长度系数 0.2~0.7
+          a: 0.05 + Math.random() * 0.07,               // 透明度 0.05~0.12
+          moss: Math.random() < 0.22                    // 22% 概率偏墨绿
+        });
+      }
+
+      // 石板内部颗粒
+      const gravel = [];
+      const gCount = 70 + Math.floor(Math.random() * 60);   // 70~130 个
+      for (let i = 0; i < gCount; i++) {
+        gravel.push({
+          x: minX + Math.random() * (maxX - minX),
+          y: minY + Math.random() * (maxY - minY),
+          w: (0.7 + Math.random() * 1.8) * s,           // 宽 0.7~2.5
+          h: (0.6 + Math.random() * 1.4) * s,           // 高 0.6~2.0
+          dark: Math.random() > 0.55,                   // 45% 暗颗粒
+          a: 0.09 + Math.random() * 0.20,               // 透明度 0.09~0.29
+          moss: Math.random() < 0.08                    // 8% 墨绿色
+        });
+      }
+
+      wrapDrawRect(size, LOG_H, (dx, dy) => {
+        if (minX + dx > size + 14 || maxX + dx < -14) return;
+        if (minY + dy > LOG_H + 14 || maxY + dy < -14) return;
+
+        c.save();
+        c.translate(dx, dy);
+
+        // 石板投影（向右下偏移 1.4，不透明度 0.26）
+        c.beginPath();
+        for (let k = 0; k < inner.length; k++) {
+          const px = inner[k][0] + 1.4 * s;
+          const py = inner[k][1] + 1.4 * s;
+          if (k === 0) c.moveTo(px, py); else c.lineTo(px, py);
+        }
+        c.closePath();
+        c.fillStyle = 'rgba(26,24,18,0.26)';
+        c.fill();
+
+        // 石板本体
+        c.beginPath();
+        for (let k = 0; k < inner.length; k++) {
+          const px = inner[k][0], py = inner[k][1];
+          if (k === 0) c.moveTo(px, py); else c.lineTo(px, py);
+        }
+        c.closePath();
+
+        // 明暗渐变：左上 +3 → 中间 → 右下 -6
+        const g = c.createLinearGradient(minX, minY, maxX, maxY);
+        g.addColorStop(0,   'hsl(' + stoneH.toFixed(0) + ',' + stoneS.toFixed(0) + '%,' + clamp(stoneL + 3, 0, 98).toFixed(1) + '%)');
+        g.addColorStop(0.5, 'hsl(' + stoneH.toFixed(0) + ',' + stoneS.toFixed(0) + '%,' + stoneL.toFixed(1) + '%)');
+        g.addColorStop(1,   'hsl(' + stoneH.toFixed(0) + ',' + stoneS.toFixed(0) + '%,' + clamp(stoneL - 6, 0, 98).toFixed(1) + '%)');
+        c.fillStyle = g;
+        c.fill();
+
+        c.save();
+        c.clip();
+
+        // 云斑
+        for (const cl of clouds) {
+          const cg = c.createRadialGradient(cl.x, cl.y, 0, cl.x, cl.y, cl.r);
+          if (cl.dark) {
+            cg.addColorStop(0, 'hsla(' + stoneH.toFixed(0) + ',' + stoneS.toFixed(0) + '%,' + clamp(stoneL - 16, 0, 100).toFixed(0) + '%,0.09)');
+          } else {
+            cg.addColorStop(0, 'hsla(' + stoneH.toFixed(0) + ',' + stoneS.toFixed(0) + '%,' + clamp(stoneL + 20, 0, 100).toFixed(0) + '%,0.07)');
+          }
+          cg.addColorStop(1, 'rgba(0,0,0,0)');
+          c.fillStyle = cg;
+          c.beginPath();
+          c.arc(cl.x, cl.y, cl.r, 0, Math.PI * 2);
+          c.fill();
+        }
+
+        // 石纹线
+        for (const v of veins) {
+          c.strokeStyle = v.moss
+            ? 'rgba(48,72,52,' + v.a.toFixed(3) + ')'
+            : 'hsla(' + stoneH.toFixed(0) + ',' + stoneS.toFixed(0) + '%,' + clamp(stoneL - 20, 0, 100).toFixed(0) + '%,' + v.a.toFixed(3) + ')';
+          c.lineWidth = (0.7 + Math.random() * 0.5) * s;
+          c.beginPath();
+          c.moveTo(v.x, v.y);
+          c.lineTo(v.x + Math.cos(v.ang) * v.len, v.y + Math.sin(v.ang) * v.len);
+          c.stroke();
+        }
+
+        // 颗粒
+        for (const gr of gravel) {
+          if (gr.moss) {
+            c.fillStyle = 'rgba(40,74,48,' + gr.a.toFixed(3) + ')';
+          } else {
+            c.fillStyle = gr.dark
+              ? 'hsla(' + stoneH.toFixed(0) + ',' + stoneS.toFixed(0) + '%,' + clamp(stoneL - 20, 0, 100).toFixed(0) + '%,' + gr.a.toFixed(3) + ')'
+              : 'hsla(' + stoneH.toFixed(0) + ',' + clamp(stoneS - 4, 0, 100).toFixed(0) + '%,' + clamp(stoneL + 24, 0, 100).toFixed(0) + '%,' + (gr.a * 0.9).toFixed(3) + ')';
+          }
+          c.fillRect(gr.x, gr.y, gr.w, gr.h);
+        }
+
+        c.restore();
+
+        // 边缘：背光暗边 + 受光亮边
+        for (let k = 0; k < inner.length; k++) {
+          const p1 = inner[k];
+          const p2 = inner[(k + 1) % inner.length];
+          const edx = p2[0] - p1[0];
+          const edy = p2[1] - p1[1];
+          const elen = Math.hypot(edx, edy) || 1;
+          let nx = edy / elen, ny = -edx / elen;
+          const mx = (p1[0] + p2[0]) / 2;
+          const my = (p1[1] + p2[1]) / 2;
+          if ((icx - mx) * nx + (icy - my) * ny > 0) { nx = -nx; ny = -ny; }
+
+          if (nx + ny > 0.05) {
+            // 背光边：暗 36，不透明度 0.38，线宽 1.6
+            c.strokeStyle = 'hsla(' + stoneH.toFixed(0) + ',' + stoneS.toFixed(0) + '%,' + clamp(stoneL - 36, 0, 100).toFixed(0) + '%,0.38)';
+            c.lineWidth = 1.6 * s;
+          } else {
+            // 受光边：亮 34，不透明度 0.12，线宽 1.0
+            c.strokeStyle = 'hsla(' + stoneH.toFixed(0) + ',' + stoneS.toFixed(0) + '%,' + clamp(stoneL + 34, 0, 100).toFixed(0) + '%,0.12)';
+            c.lineWidth = 1.0 * s;
+          }
+          c.beginPath();
+          c.moveTo(p1[0], p1[1]);
+          c.lineTo(p2[0], p2[1]);
+          c.stroke();
+        }
+
+        c.restore();
+      });
+    }
+
+    // 退出压缩空间
+    c.restore();
+
+    // ④ 屏幕空间整体颗粒（补齐纵向压缩带来的疏密差）
+    for (let i = 0; i < 12000 * area; i++) {            // 12000：全局颗粒数量
+      const x = Math.random() * size;
+      const y = Math.random() * size;
+      const r = Math.random();
+      const a = 0.05 + Math.random() * 0.12;            // 透明度 0.05~0.17
+      let col;
+      if (r < 0.06) {
+        col = 'rgba(40,72,46,' + (a * 1.05).toFixed(3) + ')';     // 6% 墨绿
+      } else if (r < 0.44) {
+        col = 'hsla(' + H.toFixed(0) + ',' + clamp(S, 0, 100).toFixed(0) + '%,' + clamp(L - 28, 0, 100).toFixed(0) + '%,' + a.toFixed(3) + ')';
+      } else {
+        col = 'hsla(' + H.toFixed(0) + ',' + clamp(S - 6, 0, 100).toFixed(0) + '%,' + clamp(L + 26, 0, 100).toFixed(0) + '%,' + (a * 0.9).toFixed(3) + ')';
+      }
+      c.fillStyle = col;
+      c.fillRect(x, y, 0.8 + Math.random() * 1.3, 0.8 + Math.random() * 1.3);
+    }
+
+    return tile;
+  }
+
+  /* =========================================================
+     纹理 4：水面
+     ---------------------------------------------------------
+     【参数总览】
+       水色斑驳 130        —— 水面明暗层次
+       波光斑块 160        —— 中尺度亮斑
+       微小闪光 1200       —— 细碎波光点
+       中尺度亮斑 280      —— 补充光斑
+       光点尺寸已整体调大
+     ========================================================= */
+  function makeWaterTexture(size, baseColor) {
+    const tile = makeCanvas(size);
+    const c = tile.getContext('2d');
+    const s = size / 512;
+    const area = s * s;
+    const hsl = hexToHsl(baseColor);
+    const H = hsl.h, S = hsl.s, L = hsl.l;
+
+    c.fillStyle = baseColor;
+    c.fillRect(0, 0, size, size);
+
+    // ① 水色斑驳（暗部极少）
+    for (let i = 0; i < 130; i++) {                     // 130：斑驳数量
+      const x = Math.random() * size;
+      const y = Math.random() * size;
+      const r = (30 + Math.random() * 110) * s;         // 半径 30~140
+      const kind = Math.random();
+      let col;
+      if (kind < 0.55) {
+        // 提亮斑块：色相 +8，亮度 +14，透明度 0.17
+        col = 'hsla(' + H.toFixed(1) + ',' + clamp(S + 8, 0, 100).toFixed(0) + '%,' + clamp(L + 14, 0, 100).toFixed(0) + '%,0.17)';
+      } else if (kind < 0.72) {
+        // 极轻暗部：亮度 -6，透明度仅 0.045
+        col = 'hsla(' + H.toFixed(1) + ',' + clamp(S - 4, 0, 100).toFixed(0) + '%,' + clamp(L - 6, 0, 100).toFixed(0) + '%,0.045)';
+      } else {
+        // 浅水亮部：亮度 +26，透明度 0.14
+        col = 'hsla(' + H.toFixed(1) + ',' + clamp(S, 0, 100).toFixed(0) + '%,' + clamp(L + 26, 0, 100).toFixed(0) + '%,0.14)';
+      }
+      wrapDraw(size, (dx, dy) => {
+        const g = c.createRadialGradient(x + dx, y + dy, 0, x + dx, y + dy, r);
+        g.addColorStop(0, col);
+        g.addColorStop(1, 'rgba(0,0,0,0)');
+        c.fillStyle = g;
+        c.beginPath();
+        c.arc(x + dx, y + dy, r, 0, Math.PI * 2);
+        c.fill();
+      });
+    }
+
+    // ② 波光斑块
+    for (let i = 0; i < 160; i++) {                     // 160：波光斑块数量
+      const x = Math.random() * size;
+      const y = Math.random() * size;
+      const r = (5 + Math.random() * 24) * s;           // 半径 5~29
+      const alpha = 0.12 + Math.random() * 0.28;        // 透明度 0.12~0.40
+      wrapDraw(size, (dx, dy) => {
+        const g = c.createRadialGradient(x + dx, y + dy, 0, x + dx, y + dy, r);
+        g.addColorStop(0,   'hsla(' + H.toFixed(0) + ',' + clamp(S - 20, 0, 100).toFixed(0) + '%,97%,' + alpha.toFixed(3) + ')');
+        g.addColorStop(0.5, 'hsla(' + H.toFixed(0) + ',' + clamp(S - 4, 0, 100).toFixed(0) + '%,90%,' + (alpha * 0.45).toFixed(3) + ')');
+        g.addColorStop(1,   'hsla(' + H.toFixed(0) + ',' + clamp(S - 4, 0, 100).toFixed(0) + '%,90%,0)');
+        c.fillStyle = g;
+        c.beginPath();
+        c.arc(x + dx, y + dy, r, 0, Math.PI * 2);
+        c.fill();
+      });
+    }
+
+    // ③ 微小闪光点
+    for (let i = 0; i < 1200 * area; i++) {             // 1200：闪光点数量
+      const x = Math.random() * size;
+      const y = Math.random() * size;
+      const a = 0.16 + Math.random() * 0.40;            // 透明度 0.16~0.56
+      const sz = (1.0 + Math.random() * 2.4) * s;       // 尺寸 1.0~3.4
+      wrapDraw(size, (dx, dy) => {
+        c.fillStyle = 'hsla(' + H.toFixed(0) + ',' + clamp(S - 30, 0, 100).toFixed(0) + '%,97%,' + a.toFixed(3) + ')';
+        c.fillRect(x + dx, y + dy, sz, sz);
+      });
+    }
+
+    // ④ 中尺度亮斑
+    for (let i = 0; i < 280 * area; i++) {              // 280：中尺度亮斑数量
+      const x = Math.random() * size;
+      const y = Math.random() * size;
+      const r = (2.2 + Math.random() * 7) * s;          // 半径 2.2~9.2
+      const a = 0.10 + Math.random() * 0.24;            // 透明度 0.10~0.34
+      wrapDraw(size, (dx, dy) => {
+        const g = c.createRadialGradient(x + dx, y + dy, 0, x + dx, y + dy, r);
+        g.addColorStop(0, 'hsla(' + H.toFixed(0) + ',' + clamp(S - 24, 0, 100).toFixed(0) + '%,96%,' + a.toFixed(3) + ')');
+        g.addColorStop(1, 'rgba(255,255,255,0)');
+        c.fillStyle = g;
+        c.beginPath();
+        c.arc(x + dx, y + dy, r, 0, Math.PI * 2);
+        c.fill();
+      });
+    }
+
+    return tile;
+  }
+
+  /* =========================================================
+     纹理注册
+     ========================================================= */
+  const TEX_SIZE = 512;   // 纹理分辨率（越大越细腻，开销也越大）
+
+  const TEX_GENERATORS = {
+    grass: makeGrassTexture,
+    soil:  makeSoilTexture,
+    stone: makeStoneTexture,
+    water: makeWaterTexture
+  };
+
+  const TEX_LABELS = {
+    grass: '草坪',
+    soil:  '土地',
+    stone: '石板路',
+    water: '水面'
+  };
+
+  // 各纹理默认 HSL：h 色相(0~360) / s 饱和(0~100) / l 明度(0~100)
+  const TEX_HSL = {
+    grass: { h: 95,  s: 51, l: 41 },
+    soil:  { h: 28,  s: 49, l: 15 },
+    stone: { h: 33,  s: 16, l: 72 },
+    water: { h: 180, s: 58, l: 39 }
+  };
+
+  const textureCanvases = {};
+  const textureDataURLs = {};
+
+  function currentHex(name) {
+    const c = TEX_HSL[name];
+    return hslToHex(c.h, c.s, c.l);
+  }
+
+  function buildTexture(name) {
+    textureCanvases[name] = TEX_GENERATORS[name](TEX_SIZE, currentHex(name));
+    textureDataURLs[name] = textureCanvases[name].toDataURL('image/png');
+  }
+
+  for (const name in TEX_GENERATORS) buildTexture(name);
+
+  window.GrassTextures = {
+    names: ['grass', 'soil', 'stone', 'water'],
+    getCanvas(name) {
+      if (!textureCanvases[name]) throw new Error('未知纹理: ' + name);
+      return textureCanvases[name];
+    },
+    getDataURL(name) {
+      if (!textureDataURLs[name]) throw new Error('未知纹理: ' + name);
+      return textureDataURLs[name];
+    },
+    getPattern(ctx, name) {
+      if (!textureCanvases[name]) throw new Error('未知纹理: ' + name);
+      return ctx.createPattern(textureCanvases[name], 'repeat');
+    },
+    getHSL() {
+      const o = {};
+      for (const k in TEX_HSL) o[k] = Object.assign({}, TEX_HSL[k]);
+      return o;
+    }
+  };
+
+  console.log('%c纹理已生成 → window.GrassTextures', 'color:#9bdc5a;font-weight:bold');
+  console.log('可用纹理: grass, soil, stone, water');
+
+  /* =========================================================
+     主场景
+     ========================================================= */
+  const panel   = document.querySelector('.panel');
+  const cv      = document.getElementById('cv');
+  const ctx     = cv.getContext('2d');
+  const toolbar = document.getElementById('toolbar');
+
+  const sH = document.getElementById('sH');
+  const sS = document.getElementById('sS');
+  const sL = document.getElementById('sL');
+  const vH = document.getElementById('vH');
+  const vS = document.getElementById('vS');
+  const vL = document.getElementById('vL');
+
+  let W = 0, H = 0;
+  let curTex = 'grass';
+  let pattern = null;
+  let blades = [];
+  let bladeVis = 1;
+  const startTime = performance.now();
+
+  /* 各纹理光照参数
+     sun：阳光强度 0~1，越低越暗
+     vig：暗角强度 0~1，越大四角越暗 */
+  const LIGHT = {
+    grass: { sun: 0.92, vig: 0.55 },
+    soil:  { sun: 0.78, vig: 0.58 },
+    stone: { sun: 0.62, vig: 0.55 },
+    water: { sun: 0.55, vig: 0.36 }
+  };
+
+  /* ---------- 动态草叶生成
+     len：长度系数
+     w：宽度系数
+     lean：自然倾斜 ±3.5
+     amp：摆动幅度
+     flex：对风力的敏感度
+     hOff/sOff/lOff：相对草坪主色的偏移
+  ------------------------------------------------ */
+  function makeBlade(w, h) {
+    const y = Math.random() * (h + 140) - 70;
+    const depth = Math.min(1, Math.max(0, (y + 70) / (h + 140))); // 0=远 1=近
+    const g = TEX_HSL.grass;
+
+    const hOff = -14 + Math.random() * 34;              // 色相偏移 -14~+20
+    const sOff = -6 + Math.random() * 30;               // 饱和偏移 -6~+24
+    const lOff = -8 + Math.random() * 26 + depth * 6;   // 亮度偏移（近处更亮）
+
+    return {
+      x: Math.random() * (w + 220) - 110,
+      y: y,
+      len: (10 + Math.random() * 18) * (0.62 + depth * 0.8),  // 长度 10~28 × 深度系数
+      w: 1.0 + Math.random() * 1.8 * (0.7 + depth * 0.5),     // 线宽 1.0~2.8
+      lean: (Math.random() - 0.5) * 7,                  // 倾斜 -3.5~+3.5
+      phase: Math.random() * Math.PI * 2,               // 相位，错开摆动
+      speed: 0.9 + Math.random() * 1.6,                 // 摆动速度 0.9~2.5
+      amp: (3.5 + Math.random() * 7) * (0.5 + depth * 0.95),  // 摆幅 3.5~10.5
+      flex: 0.5 + Math.random() * 0.9,                  // 风力系数 0.5~1.4
+      hOff: hOff,
+      sOff: sOff,
+      lOff: lOff,
+      h: g.h + hOff,
+      s: clamp(g.s + sOff, 0, 100),
+      l: clamp(g.l + lOff, 0, 95),
+      a: 0.55 + Math.random() * 0.40                    // 基础不透明度 0.55~0.95
+    };
+  }
+
+  // 草叶数量 ≈ 面积 / 520，上限 1300
+  function buildBlades() {
+    blades = [];
+    const count = Math.round(Math.min(1300, (W * H) / 520));
+    for (let i = 0; i < count; i++) blades.push(makeBlade(W, H));
+  }
+
+  // 只刷新草叶颜色，保留位置和相位
+  function refreshBladeColors() {
+    const g = TEX_HSL.grass;
+    for (let i = 0; i < blades.length; i++) {
+      const b = blades[i];
+      b.h = g.h + b.hOff;
+      b.s = clamp(g.s + b.sOff, 0, 100);
+      b.l = clamp(g.l + b.lOff, 0, 95);
+    }
+  }
+
+  function updatePattern() {
+    pattern = ctx.createPattern(textureCanvases[curTex], 'repeat');
+  }
+
+  /* 羽化草叶：从根部（半透明）到尖端（不透明）的竖直渐变
+     三层描边叠加：
+       ① 外晕  线宽 ×2.9，透明度 ×0.13
+       ② 过渡  线宽 ×1.7，透明度 ×0.38
+       ③ 实心  线宽 ×1.0，透明度 ×1.00
+  ------------------------------------------------ */
+  function drawFeatheredBlade(b, tx, ty, cx, cy, alphaScale) {
+    const a = b.a;
+    const hh = b.h.toFixed(0);
+    const ss = b.s.toFixed(0);
+    const lRoot = Math.max(10, b.l - 5).toFixed(0);
+    const lMid  = b.l.toFixed(0);
+    const lTip  = Math.min(95, b.l + 6).toFixed(0);
+
+    const grad = ctx.createLinearGradient(b.x, b.y, tx, ty);
+    grad.addColorStop(0,    'hsla(' + hh + ',' + ss + '%,' + lRoot + '%,' + (a * 0.20).toFixed(3) + ')');  // 根部 20% 不透明
+    grad.addColorStop(0.55, 'hsla(' + hh + ',' + ss + '%,' + lMid  + '%,' + (a * 0.65).toFixed(3) + ')');  // 中段 65%
+    grad.addColorStop(1,    'hsla(' + hh + ',' + ss + '%,' + lTip  + '%,' + a.toFixed(3) + ')');           // 尖端 100%
+
+    ctx.beginPath();
+    ctx.moveTo(b.x, b.y);
+    ctx.quadraticCurveTo(cx, cy, tx, ty);
+    ctx.strokeStyle = grad;
+
+    ctx.globalAlpha = 0.13 * alphaScale;
+    ctx.lineWidth = b.w * 2.9;
+    ctx.stroke();
+
+    ctx.globalAlpha = 0.38 * alphaScale;
+    ctx.lineWidth = b.w * 1.7;
+    ctx.stroke();
+
+    ctx.globalAlpha = 1.0 * alphaScale;
+    ctx.lineWidth = b.w;
+    ctx.stroke();
+
+    ctx.globalAlpha = 1;
+  }
+
+  function drawScene(t, dt) {
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    ctx.clearRect(0, 0, W, H);
+
+    // ① 背景纹理
+    if (curTex === 'water') {
+      // 水面动态平移：X 速度 11 px/s，Y 速度 4.5 px/s
+      const shiftX = (t * 11) % 512;
+      const shiftY = (t * 4.5) % 512;
+      ctx.save();
+      ctx.translate(-shiftX, -shiftY);
+      ctx.fillStyle = pattern;
+      ctx.fillRect(0, 0, W + shiftX + 512, H + shiftY + 512);
+      ctx.restore();
+    } else {
+      ctx.fillStyle = pattern;
+      ctx.fillRect(0, 0, W, H);
+    }
+
+    // ② 草叶显隐（只在草坪纹理下显示）
+    const target = (curTex === 'grass') ? 1 : 0;
+    bladeVis += (target - bladeVis) * Math.min(1, dt * 6);   // 6：显隐速度
+    if (Math.abs(bladeVis - target) < 0.002) bladeVis = target;
+
+    const light = LIGHT[curTex] || LIGHT.grass;
+
+    if (bladeVis > 0.01) {
+      // 阵风：两个低频正弦叠加，形成一阵一阵的风感
+      const gust = Math.sin(t * 0.55) * 0.65 + Math.sin(t * 0.27 + 2.1) * 0.35;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+
+      for (let i = 0; i < blades.length; i++) {
+        const b = blades[i];
+        const sway =
+          Math.sin(t * b.speed + b.phase + b.x * 0.007) * b.amp +
+          Math.sin(t * b.speed * 0.43 + b.phase * 2.1 + b.y * 0.005) * b.amp * 0.45 +
+          gust * b.flex * 7;                              // 7：阵风放大系数
+
+        const tx = b.x + b.lean + sway;                   // 叶尖 X
+        const ty = b.y - b.len;                           // 叶尖 Y
+        const cx = b.x + b.lean * 0.4 + sway * 0.32;      // 控制点 X
+        const cy = b.y - b.len * 0.55;                    // 控制点 Y
+
+        drawFeatheredBlade(b, tx, ty, cx, cy, bladeVis);
+      }
+    }
+
+    // ③ 暖阳光晕
+    ctx.save();
+    ctx.globalCompositeOperation = 'soft-light';
+    const sun = ctx.createRadialGradient(
+      W * 0.24, H * 0.12, 0,
+      W * 0.24, H * 0.12, Math.max(W, H) * 0.95
+    );
+    sun.addColorStop(0,    'rgba(255,250,190,' + (0.90 * light.sun).toFixed(3) + ')');
+    sun.addColorStop(0.45, 'rgba(255,240,150,' + (0.30 * light.sun).toFixed(3) + ')');
+    sun.addColorStop(1,    'rgba(0,0,0,0)');
+    ctx.fillStyle = sun;
+    ctx.fillRect(0, 0, W, H);
+    ctx.restore();
+
+    // ④ 暗角
+    const vig = ctx.createRadialGradient(
+      W * 0.5, H * 0.5, Math.min(W, H) * 0.2,
+      W * 0.5, H * 0.5, Math.max(W, H) * 0.82
+    );
+    vig.addColorStop(0, 'rgba(0,0,0,0)');
+    vig.addColorStop(1, 'rgba(8,22,6,' + light.vig.toFixed(2) + ')');
+    ctx.fillStyle = vig;
+    ctx.fillRect(0, 0, W, H);
+  }
+
+  function resizeCanvas() {
+    const rect = panel.getBoundingClientRect();
+    W = Math.max(1, Math.round(rect.width));
+    H = Math.max(1, Math.round(rect.height));
+    cv.width  = Math.round(W * DPR);
+    cv.height = Math.round(H * DPR);
+    updatePattern();
+    buildBlades();
+  }
+
+  /* ---------- 滑块同步 ---------- */
+  function updateTrackColors() {
+    const c = TEX_HSL[curTex];
+    // 色相轨道：固定彩虹
+    sH.style.background =
+      'linear-gradient(90deg, hsl(0,90%,50%), hsl(60,90%,50%), hsl(120,90%,50%),' +
+      ' hsl(180,90%,50%), hsl(240,90%,50%), hsl(300,90%,50%), hsl(360,90%,50%))';
+    // 饱和轨道：灰 → 当前色相满饱和
+    sS.style.background =
+      'linear-gradient(90deg, hsl(' + c.h.toFixed(0) + ',0%,' + c.l.toFixed(0) + '%),' +
+      ' hsl(' + c.h.toFixed(0) + ',100%,' + c.l.toFixed(0) + '%))';
+    // 明度轨道：黑 → 当前色相中亮 → 白
+    sL.style.background =
+      'linear-gradient(90deg, #000, hsl(' + c.h.toFixed(0) + ',' + c.s.toFixed(0) + '%,50%), #fff)';
+  }
+
+  function syncSliders() {
+    const c = TEX_HSL[curTex];
+    sH.value = Math.round(c.h);
+    sS.value = Math.round(c.s);
+    sL.value = Math.round(c.l);
+    vH.textContent = Math.round(c.h);
+    vS.textContent = Math.round(c.s);
+    vL.textContent = Math.round(c.l);
+    updateTrackColors();
+  }
+
+  function setTexture(name) {
+    if (!textureCanvases[name]) return;
+    curTex = name;
+    updatePattern();
+    Array.prototype.forEach.call(toolbar.children, (btn) => {
+      btn.classList.toggle('active', btn.dataset.tex === name);
+    });
+    syncSliders();
+  }
+
+  toolbar.addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-tex]');
+    if (btn) setTexture(btn.dataset.tex);
+  });
+
+  /* ---------- 滑块实时调色 ---------- */
+  let colorDirty = false;
+  let colorRaf = null;
+
+  function applyColorNow() {
+    buildTexture(curTex);
+    if (curTex === 'grass') refreshBladeColors();
+    updatePattern();
+    colorDirty = false;
+    colorRaf = null;
+  }
+
+  function requestColorApply() {
+    colorDirty = true;
+    if (colorRaf === null) {
+      colorRaf = requestAnimationFrame(applyColorNow);
+    }
+  }
+
+  function onSliderInput() {
+    const c = TEX_HSL[curTex];
+    c.h = parseFloat(sH.value);
+    c.s = parseFloat(sS.value);
+    c.l = parseFloat(sL.value);
+
+    vH.textContent = Math.round(c.h);
+    vS.textContent = Math.round(c.s);
+    vL.textContent = Math.round(c.l);
+    updateTrackColors();
+
+    requestColorApply();
+  }
+
+  sH.addEventListener('input', onSliderInput);
+  sS.addEventListener('input', onSliderInput);
+  sL.addEventListener('input', onSliderInput);
+
+  /* ---------- 步进按钮（支持长按连续步进） ---------- */
+  const stepTimers = new WeakMap();
+
+  function stepOnce(btn) {
+    const target = document.getElementById(btn.dataset.target);
+    if (!target) return;
+    const dir = parseFloat(btn.dataset.dir);
+    const step = parseFloat(target.step) || 1;
+    const min = parseFloat(target.min);
+    const max = parseFloat(target.max);
+    const cur = parseFloat(target.value);
+    let next = cur + dir * step;
+    next = Math.max(min, Math.min(max, next));
+    if (next !== cur) {
+      target.value = next;
+      onSliderInput();
+    }
+  }
+
+  function startStepping(btn) {
+    stepOnce(btn);
+    const holdDelay = setTimeout(() => {                 // 380ms 后开始连发
+      const repeat = setInterval(() => stepOnce(btn), 70);  // 每 70ms 变化一次
+      const existing = stepTimers.get(btn);
+      if (existing) existing.repeat = repeat;
+      else stepTimers.set(btn, { hold: holdDelay, repeat: repeat });
+    }, 380);
+    stepTimers.set(btn, { hold: holdDelay, repeat: null });
+  }
+
+  function stopStepping(btn) {
+    const t = stepTimers.get(btn);
+    if (t) {
+      clearTimeout(t.hold);
+      if (t.repeat) clearInterval(t.repeat);
+      stepTimers.delete(btn);
+    }
+  }
+
+  Array.prototype.forEach.call(document.querySelectorAll('.step-btn'), (btn) => {
+    btn.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      startStepping(btn);
+    });
+    btn.addEventListener('pointerup', () => stopStepping(btn));
+    btn.addEventListener('pointerleave', () => stopStepping(btn));
+    btn.addEventListener('pointercancel', () => stopStepping(btn));
+    btn.addEventListener('click', (e) => e.preventDefault());
+  });
+
+  window.addEventListener('pointerup', () => {
+    Array.prototype.forEach.call(document.querySelectorAll('.step-btn'), stopStepping);
+  });
+
+  /* ---------- 动画循环 ---------- */
+  let last = performance.now();
+  function loop(now) {
+    let dt = (now - last) / 1000;
+    last = now;
+    if (dt < 0) dt = 0;
+    if (dt > 0.05) dt = 0.05;                            // 限制最大帧间隔，防止卡顿后跳变
+    drawScene((now - startTime) / 1000, dt);
+    requestAnimationFrame(loop);
+  }
+
+  /* ---------- 监听尺寸变化 ---------- */
+  let pending = false;
+  if (window.ResizeObserver) {
+    const ro = new ResizeObserver(() => {
+      if (pending) return;
+      pending = true;
+      requestAnimationFrame(() => {
+        pending = false;
+        resizeCanvas();
+      });
+    });
+    ro.observe(panel);
+  } else {
+    let timer = null;
+    window.addEventListener('resize', () => {
+      clearTimeout(timer);
+      timer = setTimeout(resizeCanvas, 150);
+    });
+  }
+
+  /* ---------- 启动 ---------- */
+  resizeCanvas();
+  syncSliders();
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
