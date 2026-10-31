@@ -37,10 +37,11 @@ export function scene(w:World,host:Host,camera:Camera,selected:number,crop:numbe
  const visible=(x:number,y:number)=>!camera.ready||x*TILE>camera.x-220&&x*TILE<camera.x+viewWidth/camera.zoom+220&&y*TILE>camera.y-220&&y*TILE<camera.y+viewHeight/camera.zoom+220;
  // 冷光菌洞：夜间压到 --lw-rock-dark，只改亮度不改色相，路面与建筑轮廓仍靠亮度差辨认。
  const shade=(c:string)=>dark?mix(c,'#1b2f38',.48):c;
- const groundName=['spring','summer','autumn','winter'][s],snow=s===3,groundTint=['#4c6b4a','#3f5f68','#5a4636','#b8d4de'][s];
+ // 染色层只做季节氛围的轻推，手绘底图自己带岩面、裂缝与渗水，不能再用重色盖住它。
+ const groundName=['spring','summer','autumn','winter'][s],snow=s===3,groundTint=['#3f5a44','#33515c','#4a3a2c','#a8c6d2'][s];
  // 细节层用程序化纹理加糙，只负责"表面有多糙"，形状仍由手绘底层决定。
  const terrainName=['moss','crystal','spore','frost'][s];
- const meadow=`<rect width="${HOME_WIDTH*TILE}" height="${HOME_HEIGHT*TILE}" fill="${shade(groundTint)}"/><image class="home-meadow" data-home-ground="${groundName}" href="${artURL(`ground-${groundName}`)}" width="${HOME_WIDTH*TILE}" height="${HOME_HEIGHT*TILE}" preserveAspectRatio="none" style="filter:${dark?(snow?'brightness(.58) saturate(.65)':'brightness(.48) saturate(.65)'):(snow?'saturate(.82)':'saturate(.74)')}"/><rect width="${HOME_WIDTH*TILE}" height="${HOME_HEIGHT*TILE}" fill="${dark?(snow?'#33495f':'#1b2f38'):groundTint}" opacity="${dark?'.2':snow?'.12':'.46'}"/>`;
+ const meadow=`<rect width="${HOME_WIDTH*TILE}" height="${HOME_HEIGHT*TILE}" fill="${shade(groundTint)}"/><image class="home-meadow" data-home-ground="${groundName}" href="${artURL(`ground-${groundName}`)}" width="${HOME_WIDTH*TILE}" height="${HOME_HEIGHT*TILE}" preserveAspectRatio="none" style="filter:${dark?(snow?'brightness(.58) saturate(.7)':'brightness(.48) saturate(.7)'):(snow?'saturate(.92)':'saturate(.9)')}"/><rect width="${HOME_WIDTH*TILE}" height="${HOME_HEIGHT*TILE}" fill="${dark?(snow?'#33495f':'#1b2f38'):groundTint}" opacity="${dark?'.2':snow?'.1':'.18'}"/>`;
  // 程序化细节层：256 CSS px 一个循环，可视范围内约 5.3 格一循环，避免可识别的重复图案。
  const detail=`<pattern id="home-terrain-detail" width="256" height="256" patternUnits="userSpaceOnUse"><image href="${artURL(`terrain-${terrainName}`)}" width="256" height="256" preserveAspectRatio="none"/></pattern>`;
  const detailLayer=`<rect class="home-terrain-detail" data-home-terrain="${terrainName}" data-home-terrain-season="${s}" width="${HOME_WIDTH*TILE}" height="${HOME_HEIGHT*TILE}" opacity="${snow?'.28':'.32'}" pointer-events="none" fill="url(#home-terrain-detail)"/>`;
