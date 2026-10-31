@@ -1,0 +1,32 @@
+Use case: stylized-concept
+Asset type: game sprite atlas, 4x4 grid = 16 cells, square canvas, genuinely transparent background
+Style baseline (apply to every sprite):
+- hand-painted gouache storybook sprites, fine visible brush texture, NO black outlines
+- elevated front-facing orthographic view, screen-aligned horizontal bases, NOT diamond isometric
+- single light from upper left, soft contact shadow only
+- palette: wet blue-grey stone #2f4a52, darker rock #1b2f38, cave timber #5a4a3e, purple bioluminescent #8f6bb5, pale crystal #9fe1f0, amber vein #c8913f
+- genuinely transparent background, generous transparent gutters, no grid lines, no frame, no watermark, no text
+
+Primary request: 16 separate sprites for a bioluminescent underground cave home, reading order left to right then top to bottom, exactly one sprite per cell:
+1 long stone table with four mushroom-cap stools
+2 drying rack with hanging cave herbs
+3 stone fire pit ring with cold violet embers
+4 timber storage crate stack with crystal handles
+5 barrel of pale phosphorescent sap
+6 wooden cart with stone wheels and a crystal load
+7 hanging net of glowing spore pods
+8 stone wash basin with a folded cloth
+9 small anvil and hammer on a stump
+10 crystal grinding wheel on a timber frame
+11 woven mushroom-fibre rug, flat on the ground, pure item with no base plate
+12 round stone millstone leaning upright
+13 lantern post with a violet flame, tall and thin
+14 stone footpath marker with an amber groove, NO text
+15 bundle of dark timber planks tied with vine
+16 stack of flat stone paving slabs
+
+Constraints: each sprite isolated inside its own cell with generous transparent gutters, nothing touching between cells, no text, no frame, no grid lines, no watermark, no ground base plate.
+
+Style reference: match the rendering of D:\python_program\game\.agents\worktrees\underdark-art\docs\art-2026-11-01\production\facilities-a.png exactly — same brush scale, same lighting, same palette.
+
+Final step: save the generated PNG exactly as D:\python_program\game\.agents\worktrees\underdark-art\docs/art-2026-11-01/production\decor-b.png, then print the absolute path, byte size and pixel dimensions. Do nothing else.

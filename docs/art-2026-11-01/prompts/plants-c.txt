@@ -1,0 +1,33 @@
+Use case: stylized-concept
+Asset type: game sprite atlas, 4x4 grid = 16 cells, square canvas, genuinely transparent background
+Style baseline (apply to every sprite):
+- hand-painted gouache storybook sprites, fine visible brush texture, NO black outlines
+- elevated front-facing orthographic view, screen-aligned horizontal bases, NOT diamond isometric
+- single light from upper left, soft contact shadow only
+- palette: wet blue-grey stone #2f4a52, darker rock #1b2f38, cave timber #5a4a3e, purple bioluminescent #8f6bb5, pale crystal #9fe1f0, amber vein #c8913f
+- genuinely transparent background, generous transparent gutters, no grid lines, no frame, no watermark, no text
+
+Primary request: 16 separate sprites for a bioluminescent underground cave home, reading order left to right then top to bottom, exactly one sprite per cell:
+1 glowing violet mushroom, mature with a wide cap
+2 pale crystal flower fully open with long stamens
+3 cave fern fully unfurled with dark fronds
+4 phosphorescent vine in full leaf
+5 GROWTH STAGE 1, a single pale seed resting on a wet stone
+6 GROWTH STAGE 2, a tiny two-leaf pale sprout pushing out of wet rock
+7 GROWTH STAGE 3, a small closed pale bud on a short green stem
+8 GROWTH STAGE 4, a bud starting to crack open with violet light inside
+9 GROWTH STAGE 5, half-open violet cap with a pale stem
+10 GROWTH STAGE 6, fully open glowing violet cap with wide gills
+11 tall cave reed with pale seedhead, elegant
+12 low dark moss cushion with violet crystal tips
+13 broad rust-brown fungus shelf, layered
+14 crystal rosette cluster with six pale blades
+15 glowing water lily with a pale bloom and two pads
+16 small mushroom trio with mixed cap sizes
+No flowering meadow plants, no daisies, no sunlight green. Every plant is adapted to a lightless cave: bioluminescent caps, pale crystal petals, waxy dark leaves.
+
+Constraints: each sprite isolated inside its own cell with generous transparent gutters, nothing touching between cells, no text, no frame, no grid lines, no watermark, no ground base plate.
+
+Style reference: match the rendering of D:\python_program\game\.agents\worktrees\underdark-art\docs\art-2026-11-01\production\facilities-a.png exactly — same brush scale, same lighting, same palette.
+
+Final step: save the generated PNG exactly as D:\python_program\game\.agents\worktrees\underdark-art\docs/art-2026-11-01/production\plants-c.png, then print the absolute path, byte size and pixel dimensions. Do nothing else.

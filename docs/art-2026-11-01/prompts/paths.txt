@@ -1,0 +1,16 @@
+Use the imagegen skill's built-in image_gen tool to generate ONE image, then copy it to the exact path at the end.
+
+Use case: stylized-concept
+Asset type: game tile atlas, 3x2 grid = 6 cells, square canvas, full-frame opaque tiles (NO transparency needed)
+Style/medium: hand-painted gouache, visible brush texture, NO black outlines, top-down tileable ground patches
+Primary request: six underground road surface tiles, each filling its own cell edge to edge, in reading order left to right then top to bottom:
+1 wet flagstone paving, blue-grey slabs with dark seams
+2 crushed crystal gravel, pale shards with cyan glow in the gaps
+3 mycelium walkway, woven pale fungal threads over dark soil
+4 dark cave cobblestone, round wet pebbles
+5 mossy brick path, dark brick half covered in cave moss
+6 ley-line crack surface, dark rock split by thin amber glowing fissures
+Constraints: each tile fills its cell completely with no gutter, no border, no frame, no text, no watermark, no objects standing on the surface, each cell must tile seamlessly with itself
+Color palette: wet blue-grey stone #2f4a52, dark rock #1b2f38, cave moss #4c6b4a, pale crystal #9fe1f0, amber vein #c8913f
+
+Final step: save the generated PNG exactly as D:\python_program\game\.agents\worktrees\underdark-art\docs\art-2026-11-01\production\paths.png, then print the absolute path, byte size and pixel dimensions. Do nothing else.

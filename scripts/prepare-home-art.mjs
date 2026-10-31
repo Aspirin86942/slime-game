@@ -4,11 +4,14 @@ import {createRequire} from 'node:module';
 import {resolve} from 'node:path';
 
 const require = createRequire(import.meta.url);
-const sharp = process.argv[2] ? require(resolve(process.argv[2], 'sharp')) : require('sharp');
-const source = 'docs/art-2026-10-29/production';
+const argv = process.argv.slice(2);
+// --source 指向另一批图集的生成目录（默认沿用 2026-10-29 那批）。
+const sourceAt = argv.indexOf('--source');
+const source = sourceAt >= 0 ? argv.splice(sourceAt, 2)[1] : 'docs/art-2026-10-29/production';
+const sharp = argv[0] ? require(resolve(argv[0], 'sharp')) : require('sharp');
 const output = 'src/assets/storybook';
 const layouts = JSON.parse(await readFile(`${source}/layouts.json`, 'utf8'));
-const selected = process.argv.slice(3);
+const selected = argv.slice(1);
 for (const name of selected) if (!layouts[name]) throw Error(`Unknown sheet: ${name}`);
 await mkdir(output, {recursive:true});
 const manifest = selected.length ? JSON.parse(await readFile(`${output}/manifest.json`, 'utf8')) : {};

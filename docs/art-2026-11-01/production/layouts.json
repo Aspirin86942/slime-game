@@ -1,0 +1,357 @@
+{
+  "facilities-a": {
+    "grid": 4,
+    "items": [
+      "house: cream cottage with terracotta roof, arched door and one warm window",
+      "kitchen: outdoor timber cooking station, cream canvas awning and little stone stove",
+      "table: wooden dining table with two benches, small bowls",
+      "spa: shallow rounded natural stone hot spring with muted teal water, no steam beyond its cell",
+      "bed: rectangular raised wooden seedbed with orderly small seedlings",
+      "greenhouse: small timber framed glass greenhouse with moss green pitched roof",
+      "pollen: wooden pollination flower shelter with three hanging baskets",
+      "seedbank: narrow tall timber seed cabinet with tiny roof and labeled drawers WITHOUT text",
+      "grove: compact cluster of three leafy saplings in wooden nursery border",
+      "compost: small timber compost bin with a few fallen leaves",
+      "insects: upright little insect hotel with bamboo holes and tiny terracotta roof",
+      "observe: small wood lookout desk with binoculars and a field notebook",
+      "channel: long narrow stone-lined water trough with small pouring bamboo spout",
+      "pond: broad natural teal pond edged by stones, a few lily pads and reeds",
+      "filter: two small stone water-filter basins vertically connected by a spout",
+      "waterbed: wide raised wood aquatic planter with water and a lotus"
+    ]
+  },
+  "facilities-b": {
+    "grid": 4,
+    "items": [
+      "woodshop: carpenter workbench, timber planks, saw, mallet",
+      "alchemy: herbal alchemy workbench with amber glass flasks, mortar and hanging herbs",
+      "expedition: small wooden travel pavilion with a rolled map and packed rucksack",
+      "training: small fenced practice yard with one straw target",
+      "archive: small cream plaster library cottage, terracotta roof, books visible in window",
+      "stars: brass telescope on a narrow raised wood platform",
+      "resonance: low natural stone holding one muted turquoise crystal",
+      "memorial: small open wooden memory pavilion with pictures and flowers, NO readable text",
+      "trough: low wooden feeding trough filled with golden grain",
+      "toys: small basket of wooden blocks with one cloth ball",
+      "nature-tree: large round-canopy broadleaf tree with visible thick trunk and layered leaves",
+      "nature-fruit: fruit tree with a smaller rounded canopy and a few red apples",
+      "nature-bush: wide dense leafy shrub with small white daisies",
+      "nature-rock: low natural mossy gray rock cluster",
+      "nature-flowers: low irregular wildflower tuft of cream daisies and a few pink blossoms",
+      "nature-reeds: cluster of green pond reeds with three brown seedheads"
+    ]
+  },
+  "decor-a": {
+    "grid": 4,
+    "items": [
+      "pale wooden picket fence five boards",
+      "woven willow fence panel",
+      "low white stone garden wall",
+      "bamboo fence panel",
+      "short rustic fence with three little mushrooms at its base",
+      "short pale fence decorated with one crescent moon",
+      "cream paper lantern hanging from a short wooden post",
+      "warm amber glass lantern hanging from short wooden post",
+      "one warm glowing mushroom lamp",
+      "small frosted pale blue crystal lamp",
+      "one warm cream star lantern hanging on a wooden post",
+      "small terracotta brazier lamp with warm flame",
+      "wood garden bench",
+      "wood rocking chair",
+      "folded cream and moss picnic blanket with a small basket",
+      "wooden garden swing on a low timber frame"
+    ]
+  },
+  "decor-b": {
+    "grid": 4,
+    "items": [
+      "reclining wooden deck chair with cream cushion",
+      "tree stump table with two short stump stools",
+      "wooden flower rack with three hanging pots",
+      "leafy vine arch with two timber posts",
+      "single hanging terracotta flowerpot on a short bracket",
+      "two pale blue ceramic wind chimes on little timber stand",
+      "large wide ceramic bowl holding a lotus and lily pads",
+      "wooden two-tier mushroom cultivation shelf",
+      "garden wooden direction signpost with NO writing",
+      "tiny wooden seedbed marker on short stake, NO writing",
+      "visitor notice board on two wooden posts, NO writing",
+      "rustic visitor message board with pinned blank cream notes, NO writing",
+      "dark teal star-chart sign with a gold constellation diagram, NO writing",
+      "small oval wooden companion nameplate on one post, NO writing",
+      "low pile of ochre autumn leaves",
+      "woven basket with cream and pink nectar flowers"
+    ]
+  },
+  "decor-c": {
+    "grid": 4,
+    "items": [
+      "low pale stone birdbath with teal water and tiny bird on rim",
+      "short hollow log with small insect holes",
+      "small moss-covered stone mound",
+      "wide shallow ceramic water dish",
+      "wooden photo frame containing a pressed seed illustration",
+      "flat stream stone carved with a subtle wavy motif",
+      "small clay cooking stove with a copper pot",
+      "little house-shaped wooden door sign with a leaf emblem, NO writing",
+      "pale blue frosted vase with white flowers",
+      "closed cream journey scrapbook with wood clasp and a leaf",
+      "resource icon: three short logs tied together",
+      "resource icon: angular gray stone",
+      "resource icon: large blue dew drop",
+      "resource icon: small wooden bowl of golden grain",
+      "tool icon: small wood-handled carpenter hammer",
+      "tool icon: woven gathering basket with leaves"
+    ]
+  },
+  "plants-a": {
+    "grid": 4,
+    "items": [
+      "cream daisy plant, three blossoms on leafy stems",
+      "white lily-of-the-valley plant with hanging bell flowers",
+      "golden sunflower plant with three flower heads",
+      "pale moon-colored evening primrose flowers",
+      "coral-red rounded petal flower plant",
+      "cream and soft pink star-shaped fluffy flower plant",
+      "lush mint herb with serrated small leaves",
+      "dew-covered broad leaf medicinal herb",
+      "warm olive-green pointed-leaf herb",
+      "pale sage herb with subtle icy blue leaf edges",
+      "upright narrow-leaf healing herb",
+      "long arching fern-like herb",
+      "white sweet radish with green leafy top, partly exposed root",
+      "small ripe red tomato plant on short wood stake",
+      "low pumpkin vine with one warm ochre pumpkin",
+      "green bean plant on small two-stick support"
+    ]
+  },
+  "plants-b": {
+    "grid": 5,
+    "items": [
+      "low berry bush with luminous golden berries",
+      "low melon vine with one pale green melon",
+      "apple tree with rounded moss canopy and red fruit",
+      "peach tree with pink-orange fruit",
+      "slender pear-like tree with yellow-green fruit",
+      "small golden green ginkgo tree with fan leaves",
+      "snow pear tree with pale cream fruit",
+      "small jujube tree with dark red berries",
+      "cluster of three moss-capped mushrooms",
+      "cluster of orange lantern mushrooms",
+      "pale tan broad umbrella mushroom cluster",
+      "cream puffball mushroom cluster",
+      "pale translucent ear-shaped fungus cluster",
+      "muted mauve round dream-mushroom cluster",
+      "floating duckweed cluster with two tiny white flowers",
+      "pink-white lotus on broad green lily pads",
+      "tall narrow reed plant with brown seedheads"
+    ]
+  },
+  "plants-c": {
+    "grid": 4,
+    "items": [
+      "low graceful teal aquatic algae ribbon cluster",
+      "pale blue ice lotus on one lily pad",
+      "small crescent-shaped green water plant with cream star blossom",
+      "mature magical glowing flower with broad green leaves and one warm cream luminous blossom",
+      "one tiny green two-leaf seedling in small soil mound",
+      "one young leafy flower plant with an unopened bud",
+      "one slender young tree sapling with three leaf clusters",
+      "two very small cream mushroom sprouts",
+      "one tiny aquatic sprout on a small floating leaf",
+      "one dry seed in a small mound of earth",
+      "low grass tuft of six painterly blades",
+      "a small cluster of cream daisies, ground decoration",
+      "a tiny pink wildflower tuft, ground decoration",
+      "small smooth gray stones, ground decoration",
+      "a small clover patch, ground decoration",
+      "three ochre fallen leaves, ground decoration"
+    ]
+  },
+  "ground": {
+    "grid": 4,
+    "items": []
+  },
+  "paths": {
+    "grid": 3,
+    "items": [
+      "limestone",
+      "moss-stone",
+      "wood",
+      "sand",
+      "leaves",
+      "star-sand"
+    ]
+  },
+  "facilities-c": {
+    "grid": 4,
+    "items": [
+      "house level 2: the same cream cottage expanded: a side wing with a second terracotta roof, small timber porch with two lanterns, flower boxes under two warm windows, stone chimney. About as wide as tall",
+      "house level 3: grand two-storey storybook manor version of the same cottage: cream plaster upper floor with honey timber framing, terracotta roofs with one small round turret, gilded trim on the eaves, an arched stained-glass window, climbing roses, warm glowing windows. Somewhat taller than wide",
+      "kitchen level 2: the same outdoor kitchen enlarged into a timber cookhouse: the cream canvas awning becomes a shingled half-roof, brick stove with chimney, hanging copper pans, herb strings, prep counter. Somewhat taller than wide",
+      "kitchen level 3: festive feast kitchen pavilion: carved timber frame, terracotta roof, two stone ovens glowing amber, long counter with pies and bread, string of warm lanterns, small gilded weathervane. About as wide as tall",
+      "table level 2: longer wooden dining table for four with two long benches, linen runner, small vase of flowers, two little lanterns. Clearly wider than tall",
+      "table level 3: elegant garden banquet table under a carved timber pergola with climbing flowers and hanging lanterns, gilded chair backs, cake stand and teapots. About as wide as tall",
+      "spa level 2: larger natural stone hot spring with two connected teal pools, wooden deck edge, bamboo water spout, small bench with folded towels, soft steam kept inside the cell. About as wide as tall",
+      "spa level 3: luxurious hot spring retreat: terraced stone pools, a small timber bathhouse with terracotta roof and paper lanterns, softly glowing turquoise crystals at the edge, gentle steam inside the cell. Somewhat taller than wide",
+      "bed level 2: wider raised wooden seedbed with three rows of sprouting seedlings, little picket border, watering can, plain wooden marker posts WITHOUT text. Clearly wider than tall",
+      "bed level 3: grand tiered garden bed: two levels of timber planters with lush seedlings and blossoms, small arched trellis with lanterns, tiny dew-collecting glass bulbs glowing softly. About as wide as tall",
+      "greenhouse level 2: the same timber glass greenhouse widened with a side wing, moss green pitched roofs, potted plants visible inside, small door with brass handle. About as wide as tall",
+      "greenhouse level 3: grand storybook conservatory: domed glass roof with moss green ribs and a gilded finial, two glass wings, hanging ferns, warm glowing interior. Somewhat taller than wide",
+      "pollen level 2: larger pollination shelter: timber frame with small shingled roof, five hanging flower baskets, one wooden beehive box, two butterflies. Somewhat taller than wide",
+      "pollen level 3: ornate flower pavilion: carved arched timber gazebo with terracotta roof, cascading flower baskets, two beehives, softly glowing pollen motes, gilded trim. About as wide as tall",
+      "seedbank level 2: wider timber seed cabinet: two columns of small drawers WITHOUT text, little roof with carved brackets, seed jars on top, small ladder. Somewhat taller than wide",
+      "seedbank level 3: tall seed library tower: narrow two-storey timber tower with terracotta roof, many tiny drawers WITHOUT text, round window, brass lantern, small balcony with seed jars. Clearly taller than wide"
+    ]
+  },
+  "facilities-d": {
+    "grid": 4,
+    "items": [
+      "grove level 2: nursery grove of five young leafy trees in a wooden border, stacked log pile, small chopping stump. About as wide as tall",
+      "grove level 3: majestic grove: one great old broadleaf tree with a small treehouse platform and rope ladder, surrounded by saplings and log stacks, hanging lanterns. Somewhat taller than wide",
+      "compost level 2: double timber compost bins with hinged lids, a pile of fallen leaves, small shovel. About as wide as tall",
+      "compost level 3: tidy compost station: three timber bins under a small shingled roof, mushroom clusters, wheelbarrow of rich dark soil, a few glowing fireflies. Somewhat taller than wide",
+      "insects level 2: taller two-storey insect hotel with bamboo, pinecone and log sections and a tiny terracotta roof. Narrow, clearly taller than wide",
+      "insects level 3: grand insect sanctuary: wide insect hotel with three gabled terracotta roofs, flower boxes, bee and butterfly visitors, small gilded weathervane. Somewhat taller than wide",
+      "observe level 2: raised timber lookout platform with railing, binoculars on a tripod, field notebook, small canvas shade. Somewhat taller than wide",
+      "observe level 3: observation tower: two-level timber tower with an outside stair, brass spyglass, small banner flag, map table, terracotta roof. Clearly taller than wide",
+      "channel level 2: longer narrow stone-lined water channel receding upward in the elevated view, two bamboo spouts, tiny wooden footbridge. Narrow, clearly taller than wide",
+      "channel level 3: two parallel stone water channels joined by a small stone arch, a little wooden water wheel, moss and ferns. Somewhat taller than wide",
+      "pond level 2: larger natural teal pond with stepping stones, lily pads, reeds and a small wooden dock. About as wide as tall",
+      "pond level 3: grand lotus pond: wide teal pond with a curved wooden bridge, blooming lotuses, a little stone lantern, a few glowing fireflies. Somewhat taller than wide",
+      "filter level 2: three cascading stone water-filter basins with mossy rims connected by bamboo spouts. Somewhat taller than wide",
+      "filter level 3: ornate purification fountain: tiered carved stone basins with a softly glowing turquoise crystal at the top, water cascading. Clearly taller than wide",
+      "waterbed level 2: longer raised wood aquatic planter with two lotuses and water lilies, small wooden steps. Clearly wider than tall",
+      "waterbed level 3: elegant water garden: two-tier wooden aquatic planters with lotus and iris blooms, small bamboo fountain, floating lanterns. About as wide as tall"
+    ]
+  },
+  "facilities-e": {
+    "grid": 4,
+    "items": [
+      "woodshop level 2: covered carpenter workshop: workbench under a shingled lean-to roof, tool wall, stacked planks, sawhorse. Somewhat taller than wide",
+      "woodshop level 3: master woodshop: small timber workshop house with terracotta roof, big carved door open showing tools, finished furniture outside, hanging lantern, carved sign WITHOUT text. About as wide as tall",
+      "alchemy level 2: larger alchemy station: workbench with a copper still, shelves of amber glass flasks, hanging herbs under a small canvas roof. Somewhat taller than wide",
+      "alchemy level 3: alchemist workshop: small round tower with terracotta conical roof, glowing colored flasks in the window, copper still with soft amber glow, little herb garden. About as wide as tall",
+      "training level 2: larger fenced practice yard with two straw targets, a rack of wooden practice sticks, small flag. About as wide as tall",
+      "training level 3: grand training arena: round timber-fenced arena with banners, three straw targets, small wooden viewing stand with roof, softly glowing rune stones. Somewhat taller than wide",
+      "archive level 2: the same cream plaster library cottage with a side wing, bay window full of books, flower boxes, porch lantern. About as wide as tall",
+      "archive level 3: grand storybook library: two-storey cream plaster library with terracotta roofs, round rose window WITHOUT numerals, tall arched windows full of books, gilded trim. Somewhat taller than wide",
+      "stars level 2: raised star-gazing platform with railing, a larger brass telescope, star chart table, small canvas canopy. Somewhat taller than wide",
+      "stars level 3: observatory tower: cream stone tower with an open domed copper roof holding a big brass telescope, star-pattern banner, softly glowing star lamps. Clearly taller than wide",
+      "memorial level 2: larger memory pavilion: timber pavilion with shingled roof, framed pictures with NO readable content, flower wreaths, two lanterns. Somewhat taller than wide",
+      "memorial level 3: grand memorial hall: open carved timber hall with terracotta roof, gilded trim, flower garlands, keepsakes on shelves, warm lantern glow, NO readable text. About as wide as tall",
+      "trough level 2: longer double wooden feeding trough filled with golden grain, one small grain sack. About as wide as tall",
+      "trough level 3: cozy feeding pavilion: wooden feeding troughs under a small shingled roof, grain sacks, hanging feed scoop, flowers around. Somewhat taller than wide",
+      "toys level 2: toy corner: wooden block tower, two cloth balls, small wooden slide, toy chest. About as wide as tall",
+      "toys level 3: little playground: wooden slide and swing set, toy chest, colorful pennant bunting, soft balls. Somewhat taller than wide"
+    ]
+  },
+  "facilities-f": {
+    "grid": 3,
+    "items": [
+      "quarry level 1",
+      "quarry level 2",
+      "quarry level 3",
+      "mine level 1",
+      "mine level 2",
+      "mine level 3",
+      "apiary level 1",
+      "apiary level 2",
+      "apiary level 3"
+    ]
+  },
+  "facilities-g": {
+    "grid": 3,
+    "items": [
+      "spring level 1",
+      "spring level 2",
+      "spring level 3",
+      "warehouse level 1",
+      "warehouse level 2",
+      "warehouse level 3",
+      "market level 1",
+      "market level 2",
+      "market level 3"
+    ]
+  },
+  "items-a": {
+    "grid": 4,
+    "items": [
+      "ore",
+      "ingot",
+      "honey",
+      "essence",
+      "stardust",
+      "net",
+      "expPotion",
+      "treasure",
+      "notes",
+      "branch resources",
+      "branch craft",
+      "branch farming",
+      "branch ecology",
+      "branch companions",
+      "prosperity banner",
+      "clearing sign"
+    ]
+  },
+  "clouds-handpainted": {
+    "grid": 3,
+    "items": [
+      "rounded cloud",
+      "tall soft cloud",
+      "leaning cloud",
+      "low cloud",
+      "wide cloud",
+      "layered cloud"
+    ]
+  },
+  "ground-winter": {
+    "grid": 4,
+    "items": []
+  },
+  "ground-spring": {
+    "grid": 4,
+    "items": []
+  },
+  "ground-summer": {
+    "grid": 4,
+    "items": []
+  },
+  "ground-autumn": {
+    "grid": 4,
+    "items": []
+  },
+  "nature-winter": {
+    "grid": 3,
+    "items": [
+      "snowy broadleaf tree",
+      "snowy fruit tree",
+      "snowy bush"
+    ],
+    "rows": [
+      0.4,
+      1
+    ],
+    "cells": {
+      "0": [
+        0,
+        0.4,
+        0.333,
+        1
+      ],
+      "1": [
+        0.333,
+        0.4,
+        0.667,
+        1
+      ],
+      "2": [
+        0.667,
+        0.4,
+        1,
+        1
+      ]
+    }
+  }
+}

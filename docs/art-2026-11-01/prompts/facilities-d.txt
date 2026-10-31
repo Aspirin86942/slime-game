@@ -1,0 +1,24 @@
+Use case: stylized-concept
+Asset type: game sprite atlas, 4x4 grid = 16 cells, square canvas, genuinely transparent background
+Style baseline:
+Use the imagegen skill's built-in image_gen tool to generate ONE image, then copy it to the exact path at the end.
+Style baseline (apply to every sprite):
+- hand-painted gouache storybook sprites, fine visible brush texture, NO black outlines
+- elevated front-facing orthographic view, screen-aligned horizontal bases, NOT diamond isometric
+- single light from upper left, soft contact shadow only
+- palette: wet blue-grey stone #2f4a52, darker rock #1b2f38, cave timber #5a4a3e, purple bioluminescent #8f6bb5, pale crystal #9fe1f0, amber vein #c8913f
+- genuinely transparent background, generous transparent gutters, no grid lines, no frame, no text, no watermark, no grass or soil base plate
+
+Form rule: every PAIR of horizontally adjacent cells is the SAME building at upgrade level 2 (left) and level 3 (right). Level 2 = added wing, stone foundation, carved eaves, a lantern, a planter. Level 3 = taller roof or a small tower, gilded trim, a banner, one softly glowing crystal. Both keep the same main colour, material and signature silhouette as the level-1 form.
+Primary request: sixteen bioluminescent cave buildings, two per row (level 2 then level 3), in reading order:
+1-2 grove
+3-4 compost
+5-6 insects
+7-8 observe
+9-10 channel
+11-12 pond
+13-14 filter
+15-16 waterbed
+Constraints: each sprite isolated inside its own cell with generous transparent gutters, nothing touching between cells, no text, no frame, no grid lines, no watermark, no ground base plate.
+
+Final step: save the generated PNG exactly as D:\python_program\game\.agents\worktrees\underdark-art\docs\art-2026-11-01\production\facilities-d.png, then print the absolute path, byte size and pixel dimensions. Do nothing else.

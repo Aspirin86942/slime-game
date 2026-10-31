@@ -1,0 +1,11 @@
+Use the imagegen skill's built-in image_gen tool to generate ONE image, then copy it to the exact path at the end.
+
+Use case: stylized-concept
+Asset type: top-down game ground texture, seamless tile, full frame
+Style/medium: hand-painted gouache, visible brush texture, NO black outlines, NO objects, NO text
+Primary request: pale frost-blue ice crust over dark cave rock, crystalline rime in the cracks, faint violet refractions
+Constraints: full-frame ground texture only, absolutely no objects, no plants standing up, no text, no border, no frame, no vignette, no lens effect, opposite edges must meet seamlessly when tiled 2 by 2, even flat top-down lighting, 3:2 aspect ratio
+Color palette: frost blue #b8d4de, pale crystal #9fe1f0, dark rock #1b2f38, faint violet #8f6bb5
+Do NOT include: grass lawn, flowers, daisies, sunlight, warm daylight, sky, horizon
+
+Final step: save the generated PNG exactly as D:\python_program\game\.agents\worktrees\underdark-art\docs\art-2026-11-01\production\ground-winter.png, then print the absolute path, byte size and pixel dimensions. Do nothing else.

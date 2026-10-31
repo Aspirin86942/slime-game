@@ -1,0 +1,33 @@
+Use case: stylized-concept
+Asset type: game sprite atlas, 4x4 grid = 16 cells, square canvas, genuinely transparent background
+Style baseline:
+Use the imagegen skill's built-in image_gen tool to generate ONE image, then copy it to the exact path at the end.
+Style baseline (apply to every sprite):
+- hand-painted gouache storybook sprites, fine visible brush texture, NO black outlines
+- elevated front-facing orthographic view, screen-aligned horizontal bases, NOT diamond isometric
+- single light from upper left, soft contact shadow only
+- palette: wet blue-grey stone #2f4a52, darker rock #1b2f38, cave timber #5a4a3e, purple bioluminescent #8f6bb5, pale crystal #9fe1f0, amber vein #c8913f
+- genuinely transparent background, generous transparent gutters, no grid lines, no frame, no text, no watermark, no grass or soil base plate
+
+Primary request: 16 separate sprites for a bioluminescent underground cave home, reading order left to right then top to bottom, exactly one sprite per cell:
+1 woodshop: cave timber carpenter workbench with planks, saw and mallet
+2 alchemy: dark timber alchemy bench with amber flasks, mortar and hanging cave herbs
+3 expedition: small stone-and-timber travel shelter with a rolled map and packed rucksack, no readable text
+4 training: small stone-walled practice yard with one straw target
+5 archive: small wet-stone library cottage with glowing crystal windows and books visible
+6 stars: brass telescope on a narrow raised stone platform
+7 resonance: low natural rock plinth holding one pale cyan crystal
+8 memorial: small open timber pavilion with blank framed pictures and pale flowers, NO readable text
+9 trough: low dark timber feeding trough filled with pale grain
+10 toys: small basket of stone blocks with one cloth ball
+11 nature-tree: large glowing cave mushroom tree with thick pale stalk and layered violet cap
+12 nature-fruit: cave mushroom tree with smaller cap and a few glowing spore pods
+13 nature-bush: wide dense dark cave moss shrub with tiny pale mushrooms
+14 nature-rock: low natural wet blue-grey rock cluster with moss
+15 nature-flowers: low irregular tuft of pale crystal flowers and small violet mushrooms
+16 nature-reeds: cluster of dark cave reeds with three pale glowing seedheads
+Constraints: each sprite isolated inside its own cell with generous transparent gutters, nothing touching between cells, no text, no frame, no grid lines, no watermark, no ground base plate.
+
+Style reference: match the rendering of D:\python_program\game\.agents\worktrees\underdark-art\docs\art-2026-11-01\production\facilities-a.png exactly — same brush scale, same lighting, same palette.
+
+Final step: save the generated PNG exactly as D:\python_program\game\.agents\worktrees\underdark-art\docs\art-2026-11-01\production\facilities-b.png, then print the absolute path, byte size and pixel dimensions. Do nothing else.

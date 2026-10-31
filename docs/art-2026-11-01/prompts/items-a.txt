@@ -1,0 +1,33 @@
+Use case: stylized-concept
+Asset type: game sprite atlas, 4x4 grid = 16 cells, square canvas, genuinely transparent background
+Style baseline (apply to every sprite):
+- hand-painted gouache storybook sprites, fine visible brush texture, NO black outlines
+- elevated front-facing orthographic view, screen-aligned horizontal bases, NOT diamond isometric
+- single light from upper left, soft contact shadow only
+- palette: wet blue-grey stone #2f4a52, darker rock #1b2f38, cave timber #5a4a3e, purple bioluminescent #8f6bb5, pale crystal #9fe1f0, amber vein #c8913f
+- genuinely transparent background, generous transparent gutters, no grid lines, no frame, no watermark, no text
+
+Primary request: 16 separate sprites for a bioluminescent underground cave home, reading order left to right then top to bottom, exactly one sprite per cell:
+1 rough ore chunk, blue-grey stone with amber flecks
+2 stack of cold silver-blue metal ingots
+3 jar of pale glowing honey with a sealed lid
+4 vial of violet elemental essence, corked and glowing
+5 pile of pale phosphorescent stardust with tiny sparkles
+6 woven capture net on a short handle with a stone ring
+7 small crystal flask of pale blue experience potion with a cork
+8 cluster of pale crystal treasure shards, highest value
+9 open research notebook with a stone tablet and a crystal pen, NO readable text
+10 TECH BRANCH icon, resources: pickaxe crossed with a stone block
+11 TECH BRANCH icon, crafting: hammer crossed with a crystal gear
+12 TECH BRANCH icon, agriculture: spade crossed with a glowing mushroom
+13 TECH BRANCH icon, ecology: leaf crossed with a spore pod
+14 TECH BRANCH icon, companions: two small glowing orbs tied with a vine ribbon
+15 home level banner on a short pole, violet cloth with a pale crystal emblem, NO text
+16 wooden clearing signpost with two blank arms, NO text
+Pure item icons on transparent background, no ground base, no grass. Same brush scale and palette as the facility sprites.
+
+Constraints: each sprite isolated inside its own cell with generous transparent gutters, nothing touching between cells, no text, no frame, no grid lines, no watermark, no ground base plate.
+
+Style reference: match the rendering of D:\python_program\game\.agents\worktrees\underdark-art\docs\art-2026-11-01\production\facilities-a.png exactly — same brush scale, same lighting, same palette.
+
+Final step: save the generated PNG exactly as D:\python_program\game\.agents\worktrees\underdark-art\docs/art-2026-11-01/production\items-a.png, then print the absolute path, byte size and pixel dimensions. Do nothing else.

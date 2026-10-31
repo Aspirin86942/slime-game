@@ -1,0 +1,19 @@
+Use case: stylized-concept
+Asset type: game sprite atlas, 3x3 grid = 9 cells, square canvas, genuinely transparent background
+Style baseline:
+Use the imagegen skill's built-in image_gen tool to generate ONE image, then copy it to the exact path at the end.
+Style baseline (apply to every sprite):
+- hand-painted gouache storybook sprites, fine visible brush texture, NO black outlines
+- elevated front-facing orthographic view, screen-aligned horizontal bases, NOT diamond isometric
+- single light from upper left, soft contact shadow only
+- palette: wet blue-grey stone #2f4a52, darker rock #1b2f38, cave timber #5a4a3e, purple bioluminescent #8f6bb5, pale crystal #9fe1f0, amber vein #c8913f
+- genuinely transparent background, generous transparent gutters, no grid lines, no frame, no text, no watermark, no grass or soil base plate
+
+Form rule: three rows of three. Each row is ONE building at levels 1, 2 and 3 from left to right, all three drawn from the same design with consistent main colour and the same sign silhouette. Level 2 adds a wing, stone foundation, carved eaves and a lantern. Level 3 adds a taller roof or tower, gilded trim, a banner and one softly glowing crystal.
+Primary request: nine cave resource buildings:
+row 1: spring: phosphorescent element spring
+row 2: warehouse: stone cellar storehouse
+row 3: market: underground market stall
+Constraints: each sprite isolated inside its own cell, generous transparent gutters, nothing touching between cells, no text, no frame, no grid lines, no watermark, no ground base plate.
+
+Final step: save the generated PNG exactly as D:\python_program\game\.agents\worktrees\underdark-art\docs\art-2026-11-01\production\facilities-g.png, then print the absolute path, byte size and pixel dimensions. Do nothing else.

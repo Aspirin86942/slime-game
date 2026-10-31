@@ -1,12 +1,21 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {execFileSync} from 'node:child_process';
-import {readFileSync, rmSync} from 'node:fs';
+import {existsSync, readFileSync, rmSync} from 'node:fs';
 import {createHash} from 'node:crypto';
 
-const PY = process.env.DSH_PYTHON;
+// 生成器只在制作期跑；优先用 DSH_PYTHON，否则在已知安装位置里找第一个存在的 Python。
+const PY = process.env.DSH_PYTHON || [
+  'C:\\ProgramData\\miniforge3\\python.exe',
+  'C:\\Users\\lcf\\.dsh\\dsh-runtimes\\dsh-primary-runtime\\dependencies\\python\\python.exe',
+].find(existsSync);
 const run = out => execFileSync(PY, ['scripts/terrain-gen.py', '--out', out], {encoding: 'utf8'});
 const sha = p => createHash('sha256').update(readFileSync(p)).digest('hex');
+
+test('a Python with Pillow and NumPy drives the terrain generator', () => {
+  assert.ok(PY, 'set DSH_PYTHON to a Python that has Pillow and NumPy installed');
+  execFileSync(PY, ['-c', 'import PIL, numpy'], {encoding: 'utf8'});
+});
 
 test('terrain detail textures are byte-identical across runs', () => {
   const a = 'src/assets/storybook/.terrain-a', b = 'src/assets/storybook/.terrain-b';
