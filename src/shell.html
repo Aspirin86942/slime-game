@@ -657,6 +657,10 @@ body{background:#05060c;color:#e8e9f3;}
 }
 @media(prefers-reduced-motion:reduce){.hit-flash,.hit-flash.crit,.battle-row .slime-wrap.attack-jump{animation:none!important}}
 .save-protection-banner{position:fixed;top:0;left:0;right:0;z-index:100000;padding:12px 16px;background:#4b2631;color:#fff;font:14px/1.5 system-ui;text-align:center}.save-protection-banner button{margin-left:8px;padding:4px 10px;color:#211620;background:#fff4df;border:0;border-radius:6px;cursor:pointer}
+/* 触摸目标：设置按钮的可点区域至少 40×40。参考版的几何尺寸必须原样保留，所以不改上面那条规则，
+   而是在交付版样式里覆盖：盒子 40×40，再用 margin:-4px 把布局占位抵回原来的 32×32，
+   .topbar 的矩形与参考版一致，逐页对照不受影响。 */
+.topbar .settings-trigger{min-width:40px;min-height:40px;box-sizing:border-box;align-items:center;justify-content:center;margin:-4px}
 </style>
 </head>
 <body>

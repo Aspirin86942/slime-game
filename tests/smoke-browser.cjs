@@ -106,11 +106,6 @@ const PHONE_PROFILES = new Set([
 const DESKTOP_PROFILES = new Set(profiles.matrix({ group: 'desktop' }));
 const MIN_HIT_PHONE = 40;
 const MIN_HIT_DESKTOP = 32;
-// 触摸目标豁免（控制者批准的唯一一条）：只按选择器精确匹配，不按档案、不改阈值、不豁免其它控件。
-// 产品把按钮做到 ≥40 后必须删除本条；它只免尺寸检查，中心点遮挡仍然如实报红。
-const HIT_TARGET_EXEMPT = {
-  '.topbar .settings-trigger': '产品当前 13 档实测均 32×32，低于手机档 40 承诺；产品把按钮做到 ≥40 后必须删除本条豁免',
-};
 // 命中区只喂真实交互控件：顶栏设置按钮、底栏六个导航按钮、家园工具条五个按钮。
 // .topbar .cur / #lvCur 是纯文本计数，只参与安全区断言，不冒充触摸目标。
 const HIT_CONTROL_SELECTORS = [
@@ -134,15 +129,9 @@ function hitSelectorsFor(page) {
   return PAGE_HIT_SELECTORS[page] || [];
 }
 
-// 命中区断言的唯一入口：按选择器精确摘掉 HIT_TARGET_EXEMPT 登记项，再交给 hitTargets。
-// exempt 会写进 detail 并出现在 PASS 行，避免豁免被静默扩大。
+// 命中区断言的唯一入口：所有登记控件都必须达标，不做任何选择器豁免。
 function hitFailures(snapshot, { min }) {
-  const elements = snapshot.elements || [];
-  const exempt = elements
-    .filter(element => Object.hasOwn(HIT_TARGET_EXEMPT, element.selector))
-    .map(element => ({ selector: element.selector, reason: HIT_TARGET_EXEMPT[element.selector] }));
-  const checked = elements.filter(element => !Object.hasOwn(HIT_TARGET_EXEMPT, element.selector));
-  return { failures: hitTargets({ ...snapshot, elements: checked }, { min }), exempt };
+  return hitTargets(snapshot, { min });
 }
 
 function requiredFor(page) {
@@ -227,7 +216,7 @@ function evaluate(snapshot, artSnapshot, spec, { safeArea = false, minHit = MIN_
     overflow: [...noOverflow(hud), ...noHorizontalOverflow(content)],
     overlap: [...noOverlap(hud), ...noOverlap(content)],
     aspect: artAspectFailures(artSnapshot.elements),
-    hit: hit.failures,
+    hit,
     occlusion: [...occlusionFailures(hud), ...occlusionFailures(controls)],
   };
   if (safeArea) results.safeArea = safeAreaFailures(safe);
@@ -320,7 +309,6 @@ async function checkHitControls(session, name, minHit, failures) {
   const problems = [];
   let snapshot = null;
   let present = 0;
-  let exempt = [];
   try {
     snapshot = await measure(session, HIT_CONTROL_SELECTORS);
     const measured = new Set(snapshot.elements.map(element => element.selector));
@@ -328,9 +316,7 @@ async function checkHitControls(session, name, minHit, failures) {
     if (missing.length) problems.push(`缺少交互控件：${missing.join(', ')}`);
     const controls = pick(snapshot, HIT_CONTROL_SELECTORS);
     present = controls.elements.length;
-    const hit = hitFailures(controls, { min: minHit });
-    exempt = hit.exempt;
-    for (const failure of hit.failures) problems.push(failure.reason);
+    for (const failure of hitFailures(controls, { min: minHit })) problems.push(failure.reason);
     for (const failure of occlusionFailures(controls)) problems.push(`遮挡：${failure.reason}`);
   } catch (error) {
     problems.push(`测量失败：${(error && error.message) || String(error)}`);
@@ -344,7 +330,6 @@ async function checkHitControls(session, name, minHit, failures) {
     selectors: HIT_CONTROL_SELECTORS,
     present,
     expected: HIT_CONTROL_SELECTORS.length,
-    exempt,
     snapshot,
     problems,
     consoleErrors: newErrors,
@@ -354,7 +339,6 @@ async function checkHitControls(session, name, minHit, failures) {
     (ok ? 'PASS ' : 'FAIL ') + label +
     `  controls=${present}/${HIT_CONTROL_SELECTORS.length}` +
     ` min=${minHit}` +
-    ` exempt=${exempt.length}` +
     ` errors=${newErrors.length}` +
     (ok ? '' : `  problems=${problems.length}`)
   );

@@ -147,7 +147,7 @@ node tests/fixtures/build.cjs mobile-orders   # 只重生成一份
 - 13 档各 5 个旧玩法交互：接球、叠叠乐切换、战斗手动普攻、切换自动、撤退结算，合计 65；每个交互都核对 console 无增量。
 - 另 4 项：`mobile-developed` 夹具读档、`legacy-v5` 迁移备份、`tap` 展开/滚动辅助、断言活力。
 
-当前已知真实产品问题：`.topbar .settings-trigger` 在 13 档实测均为 32×32 CSS px（含 320/360 宽档），手机/横屏/平板档低于 40×40。控制者只批准一条**按选择器精确匹配**的触摸目标豁免（`smoke-browser.cjs` 顶部 `HIT_TARGET_EXEMPT`）：它只免尺寸检查，不按档案豁免、不改 40/32 阈值、不豁免 `.tabbar button[data-tab]` 或 `.home-tools` 按钮，中心点遮挡检查仍然生效。PASS 行会显示 `exempt=1`，产品把按钮做到 ≥40 后必须删除该豁免。这是产品缺口，不是断言口径问题。
+触摸目标不再有豁免：`.topbar .settings-trigger` 已改为 40×40（`min-width/min-height:40px` + `box-sizing:border-box`），并用 `margin:-4px` 抵消外扩，使它在顶栏里的布局占位仍是原来的 32×32——`.topbar` 的矩形与 `史莱姆-参考.html` 保持一致，参考版逐页对照因此不受影响，但按钮实际可点区域是 40×40。
 
 每页比较三层元素：固定 HUD（`.topbar`、`.tabbar`、家园工具栏等）参与溢出、压盖、比例、命中区与安全区，并额外用 `occlusionFailures` 对 HUD 中心点做 `elementFromPoint` 可点性；滚动内容只查横向溢出和兄弟压盖，因为 `.content` 纵向滚动时子元素越过视口底部是正常行为；命中区只喂真实交互控件——家园工具条五个按钮随页面检查，顶栏设置与底栏导航属于全局控件，每档单独检查一次（`hit controls tabbar/settings <档案>`），避免同一失败被六页重复放大。缺控件、零面积控件或被遮挡的控件都直接失败，不静默跳过。`page coverage` 再核对六页都执行到、required selector 数量、测量元素总数（105）与 required 总数（103）。
 
@@ -160,7 +160,7 @@ node tests/fixtures/build.cjs mobile-orders   # 只重生成一份
 | 显示（溢出） | 文档无横向滚动；元素矩形有限、非零面积、完整在视口内。滚动内容只判横向越界，允许纵向滚动。 |
 | 比例 | 产品没有 `<img>`。`layout.measureArt` 采集三类输入：`<img>` 的 `naturalWidth/naturalHeight`、家园 `<svg><image>` 的 `width/height.baseVal`、内联 `<svg>` 的 `viewBox`；`artAspectFailures` 用它们与渲染盒宽高比比较，容差 2%。旧玩法页因此用 UI 图标的 `viewBox` 作为图片式输入。每页还有 `artMin` 下限，防止比例断言因没有输入而空转。 |
 | 覆盖 | 测量元素两两求交，跳过父子关系与背景层白名单；再用中心点 `elementFromPoint` 对 HUD 与命中区控件判断可点性，命中自身或后代才算通过。滚动内容只做兄弟压盖，不做中心点可点性。 |
-| 命中区 | 手机与横屏 40×40，桌面 32×32，平板按手机口径。只测真实交互控件：顶栏设置按钮、底栏六个导航按钮、家园工具条五个按钮；`.topbar .cur` / `#lvCur` 是纯文本，不参与命中区。`.home-stock` 是只读库存条，内部没有可点按钮，明确排除；其余不放宽。唯一豁免是 `.topbar .settings-trigger` 的尺寸检查（产品现状 32×32，见下）。缺失、零面积或被遮挡的控件即失败。 |
+| 命中区 | 手机与横屏 40×40，桌面 32×32，平板按手机口径。只测真实交互控件：顶栏设置按钮、底栏六个导航按钮、家园工具条五个按钮；`.topbar .cur` / `#lvCur` 是纯文本，不参与命中区。`.home-stock` 是只读库存条，内部没有可点按钮，明确排除；其余不放宽，也不保留任何选择器豁免。缺失、零面积或被遮挡的控件即失败。 |
 
 ### 安全区页面探针
 
@@ -203,7 +203,7 @@ const WHITELIST = [
 - 每条必须带一行理由，说明为什么这个压盖是设计允许的；`['*', x]` 只用于背景层，HUD 之间的压盖仍要报出来。
 - 套件如需临时追加，用 `noOverlap(snapshot, { whitelist })` 传入，并在同一处写理由；不要修改全局表来迁就单个页面。
 - 布局调整后重新确认每条是否仍必要；能删就删。遮罩造成的不可点由 `occlusionFailures` 判定，不能用白名单掩盖。
-- 白名单只处理压盖，不处理命中区。命中区只有一条显式豁免：`.topbar .settings-trigger`——产品当前在 13 档实测均为 32×32，低于手机档 40 承诺；豁免按选择器精确登记在 `smoke-browser.cjs` 的 `HIT_TARGET_EXEMPT`，不按档案、不改阈值，产品修到 ≥40 后必须删除。
+- 白名单只处理压盖，不处理命中区。命中区没有豁免表：任何控件低于 40/32 都直接失败；需要缩小触碰范围的产品改动必须在产品侧修，不允许在测试里登记例外。
 
 ## 实测时长
 
