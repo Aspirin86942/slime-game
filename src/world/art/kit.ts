@@ -41,12 +41,12 @@ export function shadow(a:number,b:number):string{
 export const jitter=(n:number,k:number):number=>{const v=Math.sin(n*127.1+k*311.7)*43758.5453;return v-Math.floor(v);};
 /** 共享色板：所有素材优先从这里取色，保证同一世界观。 */
 export const PAL={
- wood:'#b08a66',woodDark:'#8a6a4f',woodLight:'#d8b98e',
- stone:'#b9b3c4',stoneDark:'#8f88a0',
- plaster:'#efe2c6',cream:'#f6e6bf',
- leaf:'#83ac84',leafLight:'#b6d8a0',leafDark:'#5f8a6a',
- water:'#8dcbd0',waterDeep:'#5aa6b4',foam:'#effbf6',
- glow:'#ffe4a0',glowWarm:'#f5c58d',star:'#fff6c8',
- roofs:['#c98a6a','#7fae8c','#6c9eae','#c99a6f','#86aac4','#a08fc9'],
- ink:'#2a3048',highlight:'#fff3dc'
+ wood:'#5a4a3e',woodDark:'#3d322a',woodLight:'#7d6a56',
+ stone:'#4a6b73',stoneDark:'#2f4a52',
+ plaster:'#93a6ab',cream:'#c4d2d4',
+ leaf:'#4c6b4a',leafLight:'#7fa07a',leafDark:'#334d38',
+ water:'#5f9aa8',waterDeep:'#2f6472',foam:'#bfe6ea',
+ glow:'#9fe3f0',glowWarm:'#c8913f',star:'#d8f4f8',
+ roofs:['#3f5a63','#4c6b5a','#6b5a78','#2f4a52','#556f7a','#7a6a8f'],
+ ink:'#121c24',highlight:'#d8ecf0'
 };

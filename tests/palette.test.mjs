@@ -52,3 +52,28 @@ test('no dead theme block survives outside the six selectable themes', () => {
     }
   }
 });
+
+test('the shared art palette only uses underdark hues', async () => {
+  const {PAL} = await import('../src/world/art/kit.ts');
+  const hexes = JSON.stringify(PAL).match(/#[0-9a-f]{6}/gi).map(h => h.toLowerCase());
+  // 旧暖色板的采样值一个都不能残留。
+  for (const warm of ['#b08a66', '#8a6a4f', '#d8b98e', '#efe2c6', '#f6e6bf', '#ffe4a0', '#f5c58d', '#fff6c8', '#c98a6a', '#7fae8c', '#c99a6f']) {
+    assert.ok(!hexes.includes(warm), `warm legacy hue ${warm} survived`);
+  }
+  // 语义槽必须落在菌洞色板的区间：石/水/光偏冷，叶偏苔绿，地脉偏琥珀。
+  for (const key of ['stone', 'stoneDark', 'water', 'waterDeep', 'glow', 'star']) {
+    const [r, , b] = [1, 3, 5].map(i => parseInt(PAL[key].slice(i, i + 2), 16));
+    assert.ok(b >= r, `${key} ${PAL[key]} must read cold, not warm`);
+  }
+  for (const key of ['leaf', 'leafDark']) {
+    const [r, g, b] = [1, 3, 5].map(i => parseInt(PAL[key].slice(i, i + 2), 16));
+    assert.ok(g > r && g > b, `${key} ${PAL[key]} must read as cave moss green`);
+  }
+  {
+    const [r, g, b] = [1, 3, 5].map(i => parseInt(PAL.glowWarm.slice(i, i + 2), 16));
+    assert.ok(r > b && r > g, `glowWarm ${PAL.glowWarm} must stay the warm accent slot`);
+  }
+  assert.equal(PAL.roofs.length, 6, 'six roof variants are required');
+  assert.ok(hexes.length >= 12, 'palette must keep its full spread');
+  assert.deepEqual(Object.keys(PAL).sort(), ['cream', 'foam', 'glow', 'glowWarm', 'highlight', 'ink', 'leaf', 'leafDark', 'leafLight', 'plaster', 'roofs', 'star', 'stone', 'stoneDark', 'water', 'waterDeep', 'wood', 'woodDark', 'woodLight'].sort());
+});
