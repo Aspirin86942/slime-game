@@ -14,8 +14,9 @@ const themeBlock = (css, theme) => {
   return m ? m[1] : '';
 };
 const decls = text => Object.fromEntries([...text.matchAll(/--([\w-]+)\s*:\s*([^;]+)/g)].map(m => [m[1], m[2].trim()]));
-// 生效 token = 基础块，被主题块同名声明覆写。
-const effective = (theme) => ({...decls(baseBlock(home)), ...decls(themeBlock(home, theme)), ...decls(baseBlock(shell)), ...decls(themeBlock(shell, theme))});
+// src/shell.html 的第一个 <style> 是逐字保留的参考版样式表，主题层不许写进去；
+// 唯一的主题层在 home.css，构建时注入到 </head> 之前，同权重规则由它胜出。
+const effective = (theme) => ({...decls(baseBlock(home)), ...decls(themeBlock(home, theme))});
 
 test('every theme resolves the full --lw-* token set through the cascade', () => {
   for (const theme of THEMES) {
@@ -46,11 +47,14 @@ test('the six themes keep their ids so existing saves stay valid', () => {
 });
 
 test('no dead theme block survives outside the six selectable themes', () => {
-  for (const [css, label] of [[home, 'home.css'], [shell, 'shell.html']]) {
-    for (const m of css.matchAll(/#app\[data-theme="(\w+)"\]\{/g)) {
-      assert.ok(THEMES.includes(m[1]), `${label} still defines unreachable theme "${m[1]}"`);
-    }
+  // 参考版样式表里有一份永不可达的 sky 主题块，它必须逐字保留，所以只约束主题层所在的 home.css。
+  for (const m of home.matchAll(/#app\[data-theme="(\w+)"\]\{/g)) {
+    assert.ok(THEMES.includes(m[1]), `home.css still defines unreachable theme "${m[1]}"`);
   }
+});
+
+test('the frozen reference stylesheet stays out of the token layer', () => {
+  assert.ok(!/--lw-/.test(shell), 'src/shell.html must stay the verbatim reference; the --lw-* layer belongs in home.css');
 });
 
 test('the shared art palette only uses underdark hues', async () => {

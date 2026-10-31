@@ -1,15 +1,70 @@
-/* 冷光菌洞：唯一色源。所有主题只覆写 --lw-*，界面变量一律取别名。 */
+/* 冷光菌洞：唯一色源。所有主题只覆写 --lw-*，界面变量一律取别名。
+   参考版样式表（src/shell.html 的第一个 <style>）必须逐字保留，所以主题层集中放在这里：
+   本文件在构建时注入到 </head> 之前，晚于参考版样式表，同权重规则由这里胜出；
+   参考版的 #app[data-theme="x"] 带主题选择器，故每个主题块都要重新声明旧变量别名。 */
 #app{
  --lw-rock:#2f4a52;--lw-rock-dark:#1b2f38;--lw-rock-light:#4a6b73;
  --lw-moss:#4c6b4a;--lw-spore:#8f6bb5;--lw-crystal:#9fe3f0;
  --lw-vein:#c8913f;--lw-ink:#121c24;--lw-paper:#e6eef0;
- --lw-text:#dfeaee;--lw-muted:#8aa3ad;--lw-border:rgba(159,227,240,.16);--surface-solid:var(--lw-ink)}
-#app[data-theme="sunset"]{--lw-ink:#131e26}
+ --lw-text:#dfeaee;--lw-muted:#8aa3ad;--lw-border:rgba(159,227,240,.16);--surface-solid:var(--lw-ink);
+ --bgTop:color-mix(in srgb,var(--lw-ink) 82%,var(--lw-rock));--bgMid:var(--lw-ink);--bgBot:color-mix(in srgb,var(--lw-ink) 78%,#000);
+ --accent:var(--lw-spore);--accent2:var(--lw-crystal);--gold:var(--lw-vein);
+ --panel:color-mix(in srgb,var(--lw-rock) 22%,transparent);--border:var(--lw-border);
+ --text:var(--lw-text);--muted:var(--lw-muted);
+ --topbar:color-mix(in srgb,var(--lw-ink) 82%,transparent);--tabbar:color-mix(in srgb,var(--lw-ink) 94%,transparent);
+ --btn-text:#ffffff;--btn-gold-text:#2a1e00;--hp-outline:rgba(192,192,192,.55)}
+#app[data-theme="sunset"]{--lw-ink:#131e26;--btn-gold-text:#ffffff}
 #app[data-theme="dark"]{--lw-ink:#14202b;--lw-rock:#2f4a52;--lw-spore:#a678d8}
-#app[data-theme="light"]{--lw-ink:#e8eef0;--lw-paper:#f4f8f9;--lw-rock:#b8c8ce;--lw-rock-dark:#8fa4ac;--lw-rock-light:#d5e1e5;--lw-text:#1a2730;--lw-muted:#4a5f68;--lw-border:rgba(26,39,48,.18);--lw-crystal:#2f7f93;--lw-spore:#6a4a92;--lw-vein:#8a5f1e}
-#app[data-theme="peach"]{--lw-ink:#241b16;--lw-rock:#594538;--lw-vein:#d8a24a}
-#app[data-theme="mint"]{--lw-ink:#e8f2ec;--lw-paper:#f2f8f4;--lw-rock:#a8bfb0;--lw-rock-dark:#7f9a89;--lw-rock-light:#c8dbcf;--lw-text:#16241c;--lw-muted:#456053;--lw-border:rgba(22,36,28,.18);--lw-moss:#4f7d55;--lw-spore:#5f7a9a;--lw-crystal:#2b7a7a;--lw-vein:#8a6a20}
-#app[data-theme="lavender"]{--lw-ink:#16202b;--lw-rock:#2f4a52;--lw-spore:#8f8fd8;--lw-crystal:#b8ecf5}
+#app[data-theme="light"]{--lw-ink:#e8eef0;--lw-paper:#f4f8f9;--lw-rock:#b8c8ce;--lw-rock-dark:#8fa4ac;--lw-rock-light:#d5e1e5;--lw-text:#1a2730;--lw-muted:#4a5f68;--lw-border:rgba(26,39,48,.18);--lw-crystal:#2f7f93;--lw-spore:#6a4a92;--lw-vein:#8a5f1e;--btn-gold-text:#ffffff}
+#app[data-theme="peach"]{--lw-ink:#241b16;--lw-rock:#594538;--lw-vein:#d8a24a;--btn-gold-text:#ffffff}
+#app[data-theme="mint"]{--lw-ink:#e8f2ec;--lw-paper:#f2f8f4;--lw-rock:#a8bfb0;--lw-rock-dark:#7f9a89;--lw-rock-light:#c8dbcf;--lw-text:#16241c;--lw-muted:#456053;--lw-border:rgba(22,36,28,.18);--lw-moss:#4f7d55;--lw-spore:#5f7a9a;--lw-crystal:#2b7a7a;--lw-vein:#8a6a20;--btn-gold-text:#ffffff}
+#app[data-theme="lavender"]{--lw-ink:#16202b;--lw-rock:#2f4a52;--lw-spore:#8f8fd8;--lw-crystal:#b8ecf5;--btn-gold-text:#ffffff}
+/* 每个可切换主题都从 token 重新派生旧变量，覆盖参考版里的六套硬编码色值。 */
+#app[data-theme="sunset"]{
+ --bgTop:color-mix(in srgb,var(--lw-ink) 82%,var(--lw-rock));--bgMid:var(--lw-ink);--bgBot:color-mix(in srgb,var(--lw-ink) 78%,#000);
+ --accent:var(--lw-spore);--accent2:var(--lw-crystal);--gold:var(--lw-vein);
+ --panel:color-mix(in srgb,var(--lw-rock) 22%,transparent);--border:var(--lw-border);
+ --text:var(--lw-text);--muted:var(--lw-muted);
+ --topbar:color-mix(in srgb,var(--lw-ink) 82%,transparent);--tabbar:color-mix(in srgb,var(--lw-ink) 94%,transparent)}
+#app[data-theme="dark"]{
+ --bgTop:color-mix(in srgb,var(--lw-ink) 82%,var(--lw-rock));--bgMid:var(--lw-ink);--bgBot:color-mix(in srgb,var(--lw-ink) 78%,#000);
+ --accent:var(--lw-spore);--accent2:var(--lw-crystal);--gold:var(--lw-vein);
+ --panel:color-mix(in srgb,var(--lw-rock) 22%,transparent);--border:var(--lw-border);
+ --text:var(--lw-text);--muted:var(--lw-muted);
+ --topbar:color-mix(in srgb,var(--lw-ink) 82%,transparent);--tabbar:color-mix(in srgb,var(--lw-ink) 94%,transparent)}
+#app[data-theme="light"]{
+ --bgTop:color-mix(in srgb,var(--lw-ink) 82%,var(--lw-rock));--bgMid:var(--lw-ink);--bgBot:color-mix(in srgb,var(--lw-ink) 78%,#000);
+ --accent:var(--lw-spore);--accent2:var(--lw-crystal);--gold:var(--lw-vein);
+ --panel:color-mix(in srgb,var(--lw-rock) 22%,transparent);--border:var(--lw-border);
+ --text:var(--lw-text);--muted:var(--lw-muted);
+ --topbar:color-mix(in srgb,var(--lw-ink) 82%,transparent);--tabbar:color-mix(in srgb,var(--lw-ink) 94%,transparent)}
+#app[data-theme="peach"]{
+ --bgTop:color-mix(in srgb,var(--lw-ink) 82%,var(--lw-rock));--bgMid:var(--lw-ink);--bgBot:color-mix(in srgb,var(--lw-ink) 78%,#000);
+ --accent:var(--lw-spore);--accent2:var(--lw-crystal);--gold:var(--lw-vein);
+ --panel:color-mix(in srgb,var(--lw-rock) 22%,transparent);--border:var(--lw-border);
+ --text:var(--lw-text);--muted:var(--lw-muted);
+ --topbar:color-mix(in srgb,var(--lw-ink) 82%,transparent);--tabbar:color-mix(in srgb,var(--lw-ink) 94%,transparent)}
+#app[data-theme="mint"]{
+ --bgTop:color-mix(in srgb,var(--lw-ink) 82%,var(--lw-rock));--bgMid:var(--lw-ink);--bgBot:color-mix(in srgb,var(--lw-ink) 78%,#000);
+ --accent:var(--lw-spore);--accent2:var(--lw-crystal);--gold:var(--lw-vein);
+ --panel:color-mix(in srgb,var(--lw-rock) 22%,transparent);--border:var(--lw-border);
+ --text:var(--lw-text);--muted:var(--lw-muted);
+ --topbar:color-mix(in srgb,var(--lw-ink) 82%,transparent);--tabbar:color-mix(in srgb,var(--lw-ink) 94%,transparent)}
+#app[data-theme="lavender"]{
+ --bgTop:color-mix(in srgb,var(--lw-ink) 82%,var(--lw-rock));--bgMid:var(--lw-ink);--bgBot:color-mix(in srgb,var(--lw-ink) 78%,#000);
+ --accent:var(--lw-spore);--accent2:var(--lw-crystal);--gold:var(--lw-vein);
+ --panel:color-mix(in srgb,var(--lw-rock) 22%,transparent);--border:var(--lw-border);
+ --text:var(--lw-text);--muted:var(--lw-muted);
+ --topbar:color-mix(in srgb,var(--lw-ink) 82%,transparent);--tabbar:color-mix(in srgb,var(--lw-ink) 94%,transparent)}
+/* 弹窗与故事面板同样只取 token：参考版为六套主题各写了一份不透明底色，这里统一收回。 */
+.modal{background:var(--surface-solid)}
+.story-text{background:color-mix(in srgb,var(--lw-ink) 86%,transparent)}
+.custom-panel{background:color-mix(in srgb,var(--lw-ink) 90%,transparent)}
+.story-input{background:color-mix(in srgb,var(--lw-text) 6%,transparent);color:var(--lw-text)}
+#app[data-theme="sunset"] .modal,#app[data-theme="dark"] .modal,#app[data-theme="light"] .modal,#app[data-theme="peach"] .modal,#app[data-theme="mint"] .modal,#app[data-theme="lavender"] .modal{background:var(--surface-solid)}
+#app[data-theme="sunset"] .story-text,#app[data-theme="dark"] .story-text,#app[data-theme="light"] .story-text,#app[data-theme="peach"] .story-text,#app[data-theme="mint"] .story-text,#app[data-theme="lavender"] .story-text{background:color-mix(in srgb,var(--lw-ink) 86%,transparent)}
+#app[data-theme="sunset"] .custom-panel,#app[data-theme="dark"] .custom-panel,#app[data-theme="light"] .custom-panel,#app[data-theme="peach"] .custom-panel,#app[data-theme="mint"] .custom-panel,#app[data-theme="lavender"] .custom-panel{background:color-mix(in srgb,var(--lw-ink) 90%,transparent)}
+#app[data-theme="sunset"] .story-input,#app[data-theme="dark"] .story-input,#app[data-theme="light"] .story-input,#app[data-theme="peach"] .story-input,#app[data-theme="mint"] .story-input,#app[data-theme="lavender"] .story-input{background:color-mix(in srgb,var(--lw-text) 6%,transparent);color:var(--lw-text)}
 
 /* Only the scenery expands. Header and navigation retain the reference geometry. */
 #app.home-mode{position:fixed;inset:0;width:100%;max-width:none;height:100dvh;min-height:0;margin:0;overflow:hidden}
