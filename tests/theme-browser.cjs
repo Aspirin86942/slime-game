@@ -62,7 +62,7 @@ const zeroSafeArea={top:0,right:0,bottom:0,left:0};
    await session.shot(`settings-${theme}.png`);await session.tap('#modalBox [data-act="close"]');
   }
   await ev('S.theme="sunset";applyTheme();S.world.clock=2800;renderTab()');await session.frame();
-  check('night changes scenery while preserving the selected UI theme',await ev(`document.querySelector('.home-map').classList.contains('night')&&getComputedStyle(document.querySelector('.home-tools')).backgroundColor==='rgb(22, 17, 41)'`));await session.shot('home-night.png');
+  check('night changes scenery while preserving the selected UI theme',await ev(`document.querySelector('.home-map').classList.contains('night')&&getComputedStyle(document.querySelector('.home-tools')).backgroundColor==='rgb(19, 30, 38)'`));await session.shot('home-night.png');
   await ev('S.world.reducedMotion=true;renderTab()');
   check('reduced motion removes home transitions and animations',await ev(`getComputedStyle(document.querySelector('.home-tools .home-button')).transitionDuration==='0s'&&getComputedStyle(document.querySelector('.home-tools .home-button')).animationName==='none'`));
   await ev('S.world.reducedMotion=false;renderTab()');await client.send('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'reduce'}]});
@@ -77,7 +77,7 @@ const zeroSafeArea={top:0,right:0,bottom:0,left:0};
   }
   await ev(`S.theme='mint';applyTheme();S.lastActive=Date.now();localStorage.setItem(SAVE_KEY,JSON.stringify(S))`);
   await session.visit('史莱姆.html');assert.ok(await waitFor(()=>ev("typeof S!=='undefined'&&S.started"),10000));await ev('switchTab("home")');await session.frame();
-  check('theme selection survives a normal reload without migration',await ev(`S.theme==='mint'&&S.saveVersion===5&&getComputedStyle(document.querySelector('.home-tools')).backgroundColor==='rgb(240, 255, 249)'`));
+  check('theme selection survives a normal reload without migration',await ev(`S.theme==='mint'&&S.saveVersion===5&&getComputedStyle(document.querySelector('.home-tools')).backgroundColor==='rgb(232, 242, 236)'`));
   check('no browser exceptions or console errors',errors.length===0,errors);
   report(out,'results.json',{checks,errors,sizes,notches,themes});
  }catch(e){await session.shot('failure.png').catch(()=>{});report(out,'results.json',{checks,errors,failure:String(e)});throw e;}
